@@ -3,6 +3,10 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import { ServersViewTreeDataProvider } from './serverExplorer';
+//import { LanguageClient, LanguageClientOptions, RevealOutputChannelOn, StreamInfo} from 'vscode-languageclient';
+import * as net from 'net';
+import * as rpc from 'vscode-jsonrpc';
+import { ServerAddedNotification } from './protocol';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -21,13 +25,29 @@ export function activate(context: vscode.ExtensionContext) {
         // Display a message box to the user
         vscode.window.showInformationMessage('Hello World!');
     });
-    const serversData = new ServersViewTreeDataProvider();
-    vscode.window.registerTreeDataProvider('servers', serversData);
+    
+    let connectionInfo = {
+        port: 27511,
+        host:"localhost"
+    };
 
-    vscode.commands.registerCommand('servers.addLocation', () => serversData.addLocation());
-	vscode.commands.registerCommand('nodeDependencies.addEntry', node => vscode.window.showInformationMessage('Successfully called add entry'));
-	vscode.commands.registerCommand('nodeDependencies.deleteEntry', node => vscode.window.showInformationMessage('Successfully called delete entry'));
-	vscode.commands.registerCommand('extension.openPackageOnNpm', moduleName => vscode.commands.executeCommand('vscode.open', vscode.Uri.parse(`https://www.npmjs.com/package/${moduleName}`)));
+    let socket = net.connect(connectionInfo).on('connect', async () => {
+        let connection = rpc.createMessageConnection(
+            new rpc.StreamMessageReader(socket),
+            new rpc.StreamMessageWriter(socket));
+        
+        connection.listen();
+       
+        connection.onNotification(ServerAddedNotification.type, handle => {
+            serversData.refresh();
+        });
+
+        const serversData = new ServersViewTreeDataProvider(connection);
+        vscode.window.registerTreeDataProvider('servers', serversData);
+        vscode.commands.registerCommand('servers.addLocation', () => serversData.addLocation());
+
+        context.subscriptions.push(connection);
+    });
 
     context.subscriptions.push(disposable);
 }

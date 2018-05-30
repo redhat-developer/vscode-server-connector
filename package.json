@@ -16,30 +16,30 @@
     ],
     "main": "./out/extension",
     "contributes": {
-		"commands": [
-			{
-				"command": "servers.addLocation",
-                "title": "Add Search Location...",
+        "commands": [
+            {
+                "command": "servers.addLocation",
+                "title": "Add Server Location ...",
                 "icon": "resources/dark/add-location.svg"
-			},
+            },
             {
                 "command": "extension.sayHello",
                 "title": "Hello World"
             }
         ],
-		"views": {
-			"explorer": [
-				{
-					"id": "servers",
-					"name": "Servers"
-				}
+        "views": {
+            "explorer": [
+                {
+                    "id": "servers",
+                    "name": "Servers"
+                }
             ]
         },
         "menus": {
             "view/title": [
-				{
-					"command": "servers.addLocation",
-					"when": "view == servers",
+                {
+                    "command": "servers.addLocation",
+                    "when": "view == servers",
                     "group": "navigation"
                 }
             ]
@@ -60,6 +60,8 @@
         "@types/mocha": "^2.2.42"
     },
     "dependencies": {
-        "npm": "^6.0.1"
+        "npm": "^6.0.1",
+        "vscode-jsonrpc": "^3.6.2",
+        "vscode-languageclient": "^4.1.4"
     }
 }
