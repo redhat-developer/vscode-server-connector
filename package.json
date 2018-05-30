@@ -11,16 +11,39 @@
         "Other"
     ],
     "activationEvents": [
-        "onCommand:extension.sayHello"
+        "onCommand:extension.sayHello",
+        "onView:servers"
     ],
     "main": "./out/extension",
     "contributes": {
         "commands": [
             {
+                "command": "servers.addLocation",
+                "title": "Add Server Location ...",
+                "icon": "resources/dark/add-location.svg"
+            },
+            {
                 "command": "extension.sayHello",
                 "title": "Hello World"
             }
-        ]
+        ],
+        "views": {
+            "explorer": [
+                {
+                    "id": "servers",
+                    "name": "Servers"
+                }
+            ]
+        },
+        "menus": {
+            "view/title": [
+                {
+                    "command": "servers.addLocation",
+                    "when": "view == servers",
+                    "group": "navigation"
+                }
+            ]
+        }
     },
     "scripts": {
         "vscode:prepublish": "npm run compile",
@@ -35,5 +58,10 @@
         "tslint": "^5.8.0",
         "@types/node": "^7.0.43",
         "@types/mocha": "^2.2.42"
+    },
+    "dependencies": {
+        "npm": "^6.0.1",
+        "vscode-jsonrpc": "^3.6.2",
+        "vscode-languageclient": "^4.1.4"
     }
 }
