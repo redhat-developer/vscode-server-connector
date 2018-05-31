@@ -1,6 +1,6 @@
 # adapters-extension README
 
-This is the README for your extension "adapters-extension". After writing up a brief description, we recommend including the following sections.
+VS Code server adapters extension.
 
 ## Features
 
