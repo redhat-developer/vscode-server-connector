@@ -45,6 +45,10 @@ export function activate(context: vscode.ExtensionContext) {
         const serversData = new ServersViewTreeDataProvider(connection);
         vscode.window.registerTreeDataProvider('servers', serversData);
         vscode.commands.registerCommand('servers.addLocation', () => serversData.addLocation());
+        vscode.commands.registerCommand('server.start', () => vscode.window.showInformationMessage('Server Started'));
+        vscode.commands.registerCommand('server.stop', () => vscode.window.showInformationMessage('Server Stopped'));
+        vscode.commands.registerCommand('server.remove', () => vscode.window.showInformationMessage('Server Removed'));
+        vscode.commands.registerCommand('server.output', () => vscode.window.showInformationMessage('Server Output'));
 
         context.subscriptions.push(connection);
     });
