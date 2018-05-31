@@ -16,31 +16,59 @@
     ],
     "main": "./out/extension",
     "contributes": {
-        "commands": [
-            {
+        "commands": [{
                 "command": "servers.addLocation",
                 "title": "Add Server Location ...",
                 "icon": "resources/dark/add-location.svg"
             },
             {
-                "command": "extension.sayHello",
-                "title": "Hello World"
+                "command": "server.start",
+                "title": "Start"
+            },
+            {
+                "command": "server.stop",
+                "title": "Stop"
+            },
+            {
+                "command": "server.remove",
+                "title": "Remove"
+            },
+            {
+                "command": "server.output",
+                "title": "Show Output"
             }
         ],
         "views": {
-            "explorer": [
-                {
-                    "id": "servers",
-                    "name": "Servers"
-                }
-            ]
+            "explorer": [{
+                "id": "servers",
+                "name": "Servers"
+            }]
         },
         "menus": {
-            "view/title": [
-                {
-                    "command": "servers.addLocation",
+            "view/title": [{
+                "command": "servers.addLocation",
+                "when": "view == servers",
+                "group": "navigation"
+            }],
+            "view/item/context": [{
+                    "command": "server.start",
                     "when": "view == servers",
-                    "group": "navigation"
+                    "group": "a@1"
+                },
+                {
+                    "command": "server.stop",
+                    "when": "view == servers",
+                    "group": "a@2"
+                },
+                {
+                    "command": "server.remove",
+                    "when": "view == servers",
+                    "group": "b"
+                },
+                {
+                    "command": "server.output",
+                    "when": "view == servers",
+                    "group": "c"
                 }
             ]
         }
