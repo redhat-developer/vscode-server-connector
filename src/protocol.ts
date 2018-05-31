@@ -142,3 +142,15 @@ export namespace GetOptionalAttributesRequest {
 export namespace GetServerHandlersRequest {
     export const type = new RequestType0<Array<ServerHandle>, void, void>('server/getServerHandles');
 }
+
+export namespace DeleteServerNotification {
+    export const type = new NotificationType<ServerHandle, void>('server/deleteServer');
+}
+
+export namespace StartServerAsyncNotification {
+    export const type = new NotificationType<ServerHandle, void>('server/startServerAsync');
+}
+
+export namespace StopServerAsyncNotification {
+    export const type = new NotificationType<ServerHandle, void>('server/stopServerAsync');
+}
