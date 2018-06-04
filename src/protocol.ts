@@ -1,5 +1,4 @@
-import { NotificationType, RequestType0 } from 'vscode-languageclient';
-import { RequestType1 } from 'vscode-jsonrpc';
+import { NotificationType, RequestType0, RequestType1 } from 'vscode-jsonrpc';
 
 export interface CreateServerAttribute {
     type: string;
@@ -153,4 +152,8 @@ export namespace StartServerAsyncNotification {
 
 export namespace StopServerAsyncNotification {
     export const type = new NotificationType<ServerHandle, void>('server/stopServerAsync');
+}
+
+export namespace ServerStateChangeNotification {
+    export const type = new NotificationType<ServerStateChange, void>('client/serverStateChanged');
 }

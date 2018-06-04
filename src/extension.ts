@@ -6,7 +6,7 @@ import { ServersViewTreeDataProvider } from './serverExplorer';
 //import { LanguageClient, LanguageClientOptions, RevealOutputChannelOn, StreamInfo} from 'vscode-languageclient';
 import * as net from 'net';
 import * as rpc from 'vscode-jsonrpc';
-import { ServerAddedNotification } from './protocol';
+import { ServerAddedNotification, ServerStateChangeNotification } from './protocol';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -41,6 +41,11 @@ export function activate(context: vscode.ExtensionContext) {
         connection.onNotification(ServerAddedNotification.type, handle => {
             serversData.refresh();
         });
+
+        connection.onNotification(ServerStateChangeNotification.type, serverChangeEvent => {
+            serversData.sreverChanged(serverChangeEvent);
+        });
+
 
         const serversData = new ServersViewTreeDataProvider(connection);
         vscode.window.registerTreeDataProvider('servers', serversData);
