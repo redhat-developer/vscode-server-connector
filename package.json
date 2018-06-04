@@ -4,6 +4,10 @@
     "description": "Connects vscode with different server adapters",
     "version": "0.0.1",
     "publisher": "mohitsuman",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/mohitsuman/adapters-vscode.git"
+    },
     "engines": {
         "vscode": "^1.23.0"
     },
