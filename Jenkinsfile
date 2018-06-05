@@ -32,4 +32,9 @@ node('rhel7'){
 			archiveArtifacts artifacts: '*.vsix'
 		}
 	}
+
+	stage('Snapshot') {
+		def filesToPush = findFiles(glob: '**.vsix')
+		sh "rsync -Pzrlt --rsh=ssh --protocol=28 ${filesToPush[0].path} ${UPLOAD_LOCATION}/snapshots/"
+	}
 }
