@@ -6,7 +6,7 @@ import { ServersViewTreeDataProvider } from './serverExplorer';
 //import { LanguageClient, LanguageClientOptions, RevealOutputChannelOn, StreamInfo} from 'vscode-languageclient';
 import * as net from 'net';
 import * as rpc from 'vscode-jsonrpc';
-import { ServerAddedNotification, ServerStateChangeNotification, StartServerAsyncNotification, StopServerAsyncNotification } from './protocol';
+import { ServerAddedNotification, ServerStateChangeNotification, StartServerAsyncNotification, StopServerAsyncNotification, ServerRemovedNotification, DeleteServerNotification } from './protocol';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -42,6 +42,14 @@ export function activate(context: vscode.ExtensionContext) {
             serversData.insertServer(handle);
         });
 
+        connection.onNotification(ServerAddedNotification.type, handle => {
+            serversData.insertServer(handle);
+        });
+
+        connection.onNotification(ServerRemovedNotification.type, handle => {
+            serversData.removeServer(handle);
+        });
+
         connection.onNotification(ServerStateChangeNotification.type, event => {
             serversData.updateServer(event);
             console.log(event);
@@ -57,7 +65,9 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand('server.stop', (context) => {
             connection.sendNotification(StopServerAsyncNotification.type, {id: context.id, force: true});
         });
-        vscode.commands.registerCommand('server.remove', () => vscode.window.showInformationMessage('Server Removed'));
+        vscode.commands.registerCommand('server.remove', (context) => {
+            connection.sendNotification(DeleteServerNotification.type, {id: context.id, type: context.type});
+        }); 
         vscode.commands.registerCommand('server.output', () => vscode.window.showInformationMessage('Server Output'));
 
         context.subscriptions.push(connection);
