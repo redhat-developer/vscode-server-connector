@@ -11,6 +11,7 @@ import { MessageConnection } from 'vscode-jsonrpc';
 import { FindServerBeansRequest, CreateServerRequest, ServerAttributes, GetServerHandlersRequest, ServerHandle, ServerStateChange } from './protocol';
 
 export class ServersViewTreeDataProvider implements TreeDataProvider<ServerHandle> {
+
     private _onDidChangeTreeData: EventEmitter<ServerHandle | undefined> = new EventEmitter<ServerHandle | undefined>();
     readonly onDidChangeTreeData: Event<ServerHandle | undefined> = this._onDidChangeTreeData.event;
     private connection: MessageConnection;
@@ -38,6 +39,16 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<ServerHandl
             if(value.id === event.server.id) {
                 this.serverStatus.set(value.id,event.state);
                 this.refresh(value);
+            }
+        });
+    }
+
+    removeServer(handle: ServerHandle): any {
+        this.servers.forEach((value, index) => {
+            if(value.id === handle.id) {
+                this.servers.splice(index, 1);
+                this.serverStatus.delete(handle.id);
+                this.refresh();
             }
         });
     }

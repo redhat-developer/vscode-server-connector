@@ -118,6 +118,10 @@ export namespace ServerAddedNotification {
     export const type = new NotificationType<ServerHandle, void>('client/serverAdded');
 }
 
+export namespace ServerRemovedNotification {
+    export const type = new NotificationType<ServerHandle, void>('client/serverRemoved');
+}
+
 export namespace GetDiscoveryPathsRequest {
     export const type = new RequestType0<Array<DiscoveryPath>, void, void>('server/getDiscoveryPaths');
 }
