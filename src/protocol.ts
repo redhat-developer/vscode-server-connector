@@ -147,11 +147,11 @@ export namespace DeleteServerNotification {
 }
 
 export namespace StartServerAsyncNotification {
-    export const type = new NotificationType<ServerHandle, void>('server/startServerAsync');
+    export const type = new NotificationType<StartServerAttributes, void>('server/startServerAsync');
 }
 
 export namespace StopServerAsyncNotification {
-    export const type = new NotificationType<ServerHandle, void>('server/stopServerAsync');
+    export const type = new NotificationType<StopServerAttributes, void>('server/stopServerAsync');
 }
 
 export namespace ServerStateChangeNotification {
