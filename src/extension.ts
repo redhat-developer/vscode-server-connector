@@ -6,7 +6,7 @@ import { ServersViewTreeDataProvider } from './serverExplorer';
 //import { LanguageClient, LanguageClientOptions, RevealOutputChannelOn, StreamInfo} from 'vscode-languageclient';
 import * as net from 'net';
 import * as rpc from 'vscode-jsonrpc';
-import { ServerAddedNotification, ServerStateChangeNotification } from './protocol';
+import { ServerAddedNotification, ServerStateChangeNotification, StartServerAsyncNotification, StopServerAsyncNotification } from './protocol';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -39,19 +39,24 @@ export function activate(context: vscode.ExtensionContext) {
         connection.listen();
        
         connection.onNotification(ServerAddedNotification.type, handle => {
-            serversData.refresh();
+            serversData.insertServer(handle);
         });
 
-        connection.onNotification(ServerStateChangeNotification.type, serverChangeEvent => {
-            serversData.sreverChanged(serverChangeEvent);
+        connection.onNotification(ServerStateChangeNotification.type, event => {
+            serversData.updateServer(event);
+            console.log(event);
         });
 
 
         const serversData = new ServersViewTreeDataProvider(connection);
         vscode.window.registerTreeDataProvider('servers', serversData);
         vscode.commands.registerCommand('servers.addLocation', () => serversData.addLocation());
-        vscode.commands.registerCommand('server.start', () => vscode.window.showInformationMessage('Server Started'));
-        vscode.commands.registerCommand('server.stop', () => vscode.window.showInformationMessage('Server Stopped'));
+        vscode.commands.registerCommand('server.start', (context) => {
+            connection.sendNotification(StartServerAsyncNotification.type, {id: context.id, mode: 'run'});
+        });
+        vscode.commands.registerCommand('server.stop', (context) => {
+            connection.sendNotification(StopServerAsyncNotification.type, {id: context.id, force: true});
+        });
         vscode.commands.registerCommand('server.remove', () => vscode.window.showInformationMessage('Server Removed'));
         vscode.commands.registerCommand('server.output', () => vscode.window.showInformationMessage('Server Output'));
 

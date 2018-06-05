@@ -8,28 +8,42 @@ import {
     EventEmitter
 } from 'vscode';
 import { MessageConnection } from 'vscode-jsonrpc';
-import { FindServerBeansRequest, CreateServerRequest, ServerAttributes, GetServerHandlersRequest, ServerHandle } from './protocol';
+import { FindServerBeansRequest, CreateServerRequest, ServerAttributes, GetServerHandlersRequest, ServerHandle, ServerStateChange } from './protocol';
 
 export class ServersViewTreeDataProvider implements TreeDataProvider<ServerHandle> {
     private _onDidChangeTreeData: EventEmitter<ServerHandle | undefined> = new EventEmitter<ServerHandle | undefined>();
     readonly onDidChangeTreeData: Event<ServerHandle | undefined> = this._onDidChangeTreeData.event;
     private connection: MessageConnection;
-    private servers: Thenable<ServerHandle[]>;
+    private servers: ServerHandle[] = new Array<ServerHandle>();
     private serverStatus: Map<string, number> = new Map<string, number>();
+    private serverStatusEnum: Map<number, string> = new Map<number, string>();
 
     constructor(connection: MessageConnection) {
         this.connection = connection;
-        this.servers = this.connection.sendRequest(GetServerHandlersRequest.type);
-        this.servers.then((s:ServerHandle[]) => {
-            s.forEach((value) => {
-                this.serverStatus.set(value.id,4);
-            });
-        });
-
+        this.serverStatusEnum.set(0, 'Unknown');
+        this.serverStatusEnum.set(1, 'Starting');
+        this.serverStatusEnum.set(2, 'Started');
+        this.serverStatusEnum.set(3, 'Stopping');
+        this.serverStatusEnum.set(4, 'Stopped');
     }
 
-    refresh(): void {
-        this._onDidChangeTreeData.fire();
+    insertServer(handle) {
+        this.servers.push(handle);
+        this.serverStatus.set(handle.id,4);
+        this.refresh();
+    }
+
+    updateServer(event:ServerStateChange) {
+        this.servers.forEach((value) => {
+            if(value.id === event.server.id) {
+                this.serverStatus.set(value.id,event.state);
+                this.refresh(value);
+            }
+        });
+    }
+
+    refresh(data?): void {
+        this._onDidChangeTreeData.fire(data);
     }
 
     addLocation(): any {
@@ -67,9 +81,9 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<ServerHandl
         });
     }
 
-    getTreeItem(label: ServerHandle): TreeItem | Thenable<TreeItem> {
-        var status:number = this.serverStatus.get(label.id);
-        return new TreeItem(label.id + '(' + status + ')');
+    getTreeItem(server: ServerHandle): TreeItem | Thenable<TreeItem> {
+        var status:number = this.serverStatus.get(server.id);
+        return new TreeItem(server.id + '(' + this.serverStatusEnum.get(status) + ')');
     }
 
     getChildren(element?: ServerHandle | undefined): ServerHandle[] | Thenable<ServerHandle[] | null | undefined> | null | undefined {
