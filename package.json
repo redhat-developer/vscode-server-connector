@@ -56,22 +56,22 @@
             }],
             "view/item/context": [{
                     "command": "server.start",
-                    "when": "view == servers",
+                    "when": "view == servers && viewItem == 'server'",
                     "group": "a@1"
                 },
                 {
                     "command": "server.stop",
-                    "when": "view == servers",
+                    "when": "view == servers && viewItem == 'server'",
                     "group": "a@2"
                 },
                 {
                     "command": "server.remove",
-                    "when": "view == servers",
+                    "when": "view == servers && viewItem == 'server'",
                     "group": "b"
                 },
                 {
                     "command": "server.output",
-                    "when": "view == servers",
+                    "when": "view == servers && viewItem == 'server'",
                     "group": "c"
                 }
             ]
