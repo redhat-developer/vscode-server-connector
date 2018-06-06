@@ -5,10 +5,11 @@ import {
     window,
     OpenDialogOptions,
     InputBoxOptions,
-    EventEmitter
+    EventEmitter,
+    OutputChannel
 } from 'vscode';
 import { MessageConnection } from 'vscode-jsonrpc';
-import { FindServerBeansRequest, CreateServerRequest, ServerAttributes, GetServerHandlersRequest, ServerHandle, ServerStateChange } from './protocol';
+import { FindServerBeansRequest, CreateServerRequest, ServerAttributes, GetServerHandlersRequest, ServerHandle, ServerStateChange, ServerProcessOutput } from './protocol';
 
 export class ServersViewTreeDataProvider implements TreeDataProvider<ServerHandle> {
 
@@ -17,6 +18,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<ServerHandl
     private connection: MessageConnection;
     private servers: ServerHandle[] = new Array<ServerHandle>();
     private serverStatus: Map<string, number> = new Map<string, number>();
+    private serverOutputChannels: Map<string, OutputChannel> = new Map<string, OutputChannel>();
     private serverStatusEnum: Map<number, string> = new Map<number, string>();
 
     constructor(connection: MessageConnection) {
@@ -39,6 +41,10 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<ServerHandl
             if(value.id === event.server.id) {
                 this.serverStatus.set(value.id,event.state);
                 this.refresh(value);
+                var channel:OutputChannel = this.serverOutputChannels.get(value.id);
+                if(event.state == 1 && channel) {
+                    channel.clear();
+                }
             }
         });
     }
@@ -49,8 +55,22 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<ServerHandl
                 this.servers.splice(index, 1);
                 this.serverStatus.delete(handle.id);
                 this.refresh();
+                var channel:OutputChannel = this.serverOutputChannels.get(handle.id);
+                this.serverOutputChannels.delete(handle.id);
+                channel.hide();
+                channel.dispose();
             }
         });
+    }
+
+
+    addServerOutput(output: ServerProcessOutput): any {
+        var channel:OutputChannel = this.serverOutputChannels.get(output.server.id);
+        if(channel === undefined) {
+            channel = window.createOutputChannel(`Server: ${output.server.id}`);
+            this.serverOutputChannels.set(output.server.id, channel);
+        } 
+        channel.append(output.text);
     }
 
     refresh(data?): void {

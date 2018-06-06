@@ -161,3 +161,7 @@ export namespace StopServerAsyncNotification {
 export namespace ServerStateChangeNotification {
     export const type = new NotificationType<ServerStateChange, void>('client/serverStateChanged');
 }
+
+export namespace ServerProcessOutputAppendedNotification {
+    export const type = new NotificationType<ServerProcessOutput, void>('client/serverProcessOutputAppended');
+}
