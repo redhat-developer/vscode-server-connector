@@ -124,7 +124,9 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<ServerHandl
 
     getTreeItem(server: ServerHandle): TreeItem | Thenable<TreeItem> {
         var status:number = this.serverStatus.get(server.id);
-        return new TreeItem(server.id + '(' + this.serverStatusEnum.get(status) + ')');
+        var item:TreeItem = new TreeItem(server.id + '(' + this.serverStatusEnum.get(status) + ')');
+        item.contextValue = 'server';
+        return item;
     }
 
     getChildren(element?: ServerHandle | undefined): ServerHandle[] | Thenable<ServerHandle[] | null | undefined> | null | undefined {
