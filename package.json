@@ -56,22 +56,37 @@
             }],
             "view/item/context": [{
                     "command": "server.start",
-                    "when": "view == servers && viewItem == 'server'",
+                    "when": "view == servers && viewItem == 'Stopped'",
                     "group": "a@1"
                 },
                 {
                     "command": "server.stop",
-                    "when": "view == servers && viewItem == 'server'",
+                    "when": "view == servers && viewItem == 'Started'",
                     "group": "a@2"
                 },
                 {
                     "command": "server.remove",
-                    "when": "view == servers && viewItem == 'server'",
+                    "when": "view == servers && viewItem == 'Stopped'",
                     "group": "b"
                 },
                 {
                     "command": "server.output",
-                    "when": "view == servers && viewItem == 'server'",
+                    "when": "view == servers && viewItem == 'Started'",
+                    "group": "c"
+                },
+                {
+                    "command": "server.output",
+                    "when": "view == servers && viewItem == 'Stopped'",
+                    "group": "c"
+                },
+                {
+                    "command": "server.output",
+                    "when": "view == servers && viewItem == 'Starting'",
+                    "group": "c"
+                },
+                {
+                    "command": "server.output",
+                    "when": "view == servers && viewItem == 'Stopping'",
                     "group": "c"
                 }
             ]
