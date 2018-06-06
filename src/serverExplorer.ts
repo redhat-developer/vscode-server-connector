@@ -10,7 +10,7 @@ import {
     workspace
 } from 'vscode';
 import { MessageConnection } from 'vscode-jsonrpc';
-import { FindServerBeansRequest, CreateServerRequest, ServerAttributes, GetServerHandlersRequest, ServerHandle, ServerStateChange, ServerProcessOutput } from './protocol';
+import { FindServerBeansRequest, CreateServerRequest, ServerAttributes, ServerHandle, ServerStateChange, ServerProcessOutput } from './protocol';
 
 export class ServersViewTreeDataProvider implements TreeDataProvider<ServerHandle> {
 
