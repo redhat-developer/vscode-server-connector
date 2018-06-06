@@ -63,7 +63,6 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<ServerHandl
         });
     }
 
-
     addServerOutput(output: ServerProcessOutput): any {
         var channel:OutputChannel = this.serverOutputChannels.get(output.server.id);
         if(channel === undefined) {
@@ -71,6 +70,13 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<ServerHandl
             this.serverOutputChannels.set(output.server.id, channel);
         } 
         channel.append(output.text);
+    }
+
+    showOutput(server: ServerHandle): any {
+        var channel:OutputChannel = this.serverOutputChannels.get(server.id);
+        if(channel) {
+            channel.show();
+        }
     }
 
     refresh(data?): void {
