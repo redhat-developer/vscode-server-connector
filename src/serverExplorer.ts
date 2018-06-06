@@ -33,17 +33,17 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<ServerHandl
 
     insertServer(handle) {
         this.servers.push(handle);
-        this.serverStatus.set(handle.id,4);
+        this.serverStatus.set(handle.id, 4);
         this.refresh();
     }
 
-    updateServer(event:ServerStateChange) {
-        this.servers.forEach((value) => {
-            if(value.id === event.server.id) {
-                this.serverStatus.set(value.id,event.state);
+    updateServer(event: ServerStateChange) {
+        this.servers.forEach(value => {
+            if (value.id === event.server.id) {
+                this.serverStatus.set(value.id, event.state);
                 this.refresh(value);
-                var channel:OutputChannel = this.serverOutputChannels.get(value.id);
-                if(event.state == 1 && channel) {
+                const channel: OutputChannel = this.serverOutputChannels.get(value.id);
+                if (event.state === 1 && channel) {
                     channel.clear();
                 }
             }
@@ -52,11 +52,11 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<ServerHandl
 
     removeServer(handle: ServerHandle): any {
         this.servers.forEach((value, index) => {
-            if(value.id === handle.id) {
+            if (value.id === handle.id) {
                 this.servers.splice(index, 1);
                 this.serverStatus.delete(handle.id);
                 this.refresh();
-                var channel:OutputChannel = this.serverOutputChannels.get(handle.id);
+                const channel: OutputChannel = this.serverOutputChannels.get(handle.id);
                 this.serverOutputChannels.delete(handle.id);
                 channel.clear();
                 channel.dispose();
@@ -65,20 +65,20 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<ServerHandl
     }
 
     addServerOutput(output: ServerProcessOutput): any {
-        var channel:OutputChannel = this.serverOutputChannels.get(output.server.id);
-        if(channel === undefined) {
+        let channel: OutputChannel = this.serverOutputChannels.get(output.server.id);
+        if (channel === undefined) {
             channel = window.createOutputChannel(`Server: ${output.server.id}`);
             this.serverOutputChannels.set(output.server.id, channel);
-        } 
+        }
         channel.append(output.text);
-        if(workspace.getConfiguration('vscodeAdapters').get<boolean>('showChannelOnServerOutput')) {
+        if (workspace.getConfiguration('vscodeAdapters').get<boolean>('showChannelOnServerOutput')) {
             channel.show();
         }
     }
 
     showOutput(server: ServerHandle): any {
-        var channel:OutputChannel = this.serverOutputChannels.get(server.id);
-        if(channel) {
+        const channel: OutputChannel = this.serverOutputChannels.get(server.id);
+        if (channel) {
             channel.show();
         }
     }
@@ -98,8 +98,8 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<ServerHandl
         }).then(serverBeans => {
             if (serverBeans.length > 0) {
                 // Prompt for server name
-                var options: InputBoxOptions = {
-                    prompt: "Server Name", validateInput: (value) => {
+                const options: InputBoxOptions = {
+                    prompt: 'Server Name', validateInput: value => {
                         // search for servers with the same name
                         return null;
                     }
@@ -109,11 +109,11 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<ServerHandl
                 });
             }
         }).then(data => {
-            var serverAttributes: ServerAttributes = {
+            const serverAttributes: ServerAttributes = {
                 id: `${data.name}:${data.bean.specificType}`,
                 serverType: data.bean.serverAdapterTypeId,
                 attributes: {
-                    "server.home.dir": data.bean.location
+                    'server.home.dir': data.bean.location
                 }
             };
             return this.connection.sendRequest(CreateServerRequest.type, serverAttributes);
@@ -123,8 +123,8 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<ServerHandl
     }
 
     getTreeItem(server: ServerHandle): TreeItem | Thenable<TreeItem> {
-        var status:number = this.serverStatus.get(server.id);
-        var item:TreeItem = new TreeItem(server.id + ' (' + this.serverStatusEnum.get(status) + ')');
+        const status: number = this.serverStatus.get(server.id);
+        const item: TreeItem = new TreeItem(`${server.id}(${this.serverStatusEnum.get(status)})`);
         item.contextValue =  this.serverStatusEnum.get(status);
         return item;
     }
