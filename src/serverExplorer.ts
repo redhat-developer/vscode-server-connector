@@ -57,7 +57,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<ServerHandl
                 this.refresh();
                 var channel:OutputChannel = this.serverOutputChannels.get(handle.id);
                 this.serverOutputChannels.delete(handle.id);
-                channel.hide();
+                channel.clear();
                 channel.dispose();
             }
         });
