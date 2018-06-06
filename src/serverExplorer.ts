@@ -6,7 +6,8 @@ import {
     OpenDialogOptions,
     InputBoxOptions,
     EventEmitter,
-    OutputChannel
+    OutputChannel,
+    workspace
 } from 'vscode';
 import { MessageConnection } from 'vscode-jsonrpc';
 import { FindServerBeansRequest, CreateServerRequest, ServerAttributes, GetServerHandlersRequest, ServerHandle, ServerStateChange, ServerProcessOutput } from './protocol';
@@ -70,6 +71,9 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<ServerHandl
             this.serverOutputChannels.set(output.server.id, channel);
         } 
         channel.append(output.text);
+        if(workspace.getConfiguration('vscodeAdapters').get<boolean>('showChannelOnServerOutput')) {
+            channel.show();
+        }
     }
 
     showOutput(server: ServerHandle): any {
