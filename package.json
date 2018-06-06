@@ -1,5 +1,5 @@
 {
-    "name": "adapters-extension",
+    "name": "adapters-vscode",
     "displayName": "atlas",
     "description": "Connects vscode with different server adapters",
     "version": "0.0.1",
@@ -75,6 +75,17 @@
                     "group": "c"
                 }
             ]
+        },
+        "configuration": {
+            "type": "object",
+            "title": "Servers View configuration",
+            "properties": {
+                "vscodeAdapters.showChannelOnServerOutput": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Show Server's output channel when new text added to output stream."
+                }
+            }
         }
     },
     "scripts": {
