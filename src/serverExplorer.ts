@@ -110,7 +110,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<ServerHandl
             }
         }).then(data => {
             var serverAttributes: ServerAttributes = {
-                id: `${data.bean.specificType}${data.name}`,
+                id: `${data.name}:${data.bean.specificType}`,
                 serverType: data.bean.serverAdapterTypeId,
                 attributes: {
                     "server.home.dir": data.bean.location
