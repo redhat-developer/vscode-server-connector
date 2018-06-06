@@ -58,11 +58,11 @@ export function activate(context: vscode.ExtensionContext) {
             serversData.addServerOutput(event);
         });
 
-
-
         const serversData = new ServersViewTreeDataProvider(connection);
         vscode.window.registerTreeDataProvider('servers', serversData);
-        vscode.commands.registerCommand('servers.addLocation', () => serversData.addLocation());
+        vscode.commands.registerCommand('servers.addLocation', () => {
+            serversData.addLocation();
+        });
         vscode.commands.registerCommand('server.start', (context) => {
             connection.sendNotification(StartServerAsyncNotification.type, {id: context.id, mode: 'run'});
         });
@@ -72,7 +72,9 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand('server.remove', (context) => {
             connection.sendNotification(DeleteServerNotification.type, {id: context.id, type: context.type});
         }); 
-        vscode.commands.registerCommand('server.output', () => vscode.window.showInformationMessage('Server Output'));
+        vscode.commands.registerCommand('server.output', (context) => {
+            serversData.showOutput(context);
+        });
 
         context.subscriptions.push(connection);
     });
