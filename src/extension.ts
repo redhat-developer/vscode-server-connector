@@ -39,10 +39,7 @@ export function activate(context: vscode.ExtensionContext) {
         connection.listen();
 
         connection.onNotification(ServerAddedNotification.type, handle => {
-            serversData.insertServer(handle);
-        });
-
-        connection.onNotification(ServerAddedNotification.type, handle => {
+            handle.specificType = 'Wildfly';
             serversData.insertServer(handle);
         });
 
