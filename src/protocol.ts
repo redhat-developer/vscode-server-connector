@@ -10,12 +10,6 @@ export interface CreateServerAttributes {
     attributes: { [index: string]: CreateServerAttribute };
 }
 
-export interface CreateServerAttribute {
-    type: string;
-    description: string;
-    defaultVal: any;
-}
-
 export interface DiscoveryPath {
     filepath: string;
 }
@@ -36,19 +30,9 @@ export interface ServerBean {
     serverAdapterTypeId: string;
 }
 
-export interface ServerHandle {
-    id: string;
-    type: string;
-}
-
 export interface ServerProcess {
     server: ServerHandle;
     processId: string;
-}
-
-export interface ServerHandle {
-    id: string;
-    type: string;
 }
 
 export interface ServerProcessOutput {
@@ -56,11 +40,6 @@ export interface ServerProcessOutput {
     processId: string;
     streamType: number;
     text: string;
-}
-
-export interface ServerHandle {
-    id: string;
-    type: string;
 }
 
 export interface ServerStateChange {
@@ -71,6 +50,7 @@ export interface ServerStateChange {
 export interface ServerHandle {
     id: string;
     type: string;
+    specificType: string;
 }
 
 export interface ServerType {

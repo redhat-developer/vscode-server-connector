@@ -99,18 +99,26 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<ServerHandl
             if (serverBeans.length > 0) {
                 // Prompt for server name
                 const options: InputBoxOptions = {
-                    prompt: 'Server Name', validateInput: value => {
-                        // search for servers with the same name
+                    prompt: `Please provide the server name`,
+                    placeHolder: `Server name`,
+                    validateInput: (value: string) => {
+                        if (!value || value.trim().length === 0) {
+                            return 'Cannot set empty server name';
+                        }
+                        if (this.servers.some(server => server.id === value)) {
+                            return 'Cannot set duplicate server name';
+                        }
                         return null;
                     }
                 };
+
                 return window.showInputBox(options).then(value => {
                     return { name: value, bean: serverBeans[0] };
                 });
             }
         }).then(data => {
             const serverAttributes: ServerAttributes = {
-                id: `${data.name}:${data.bean.specificType}`,
+                id: data.name,
                 serverType: data.bean.serverAdapterTypeId,
                 attributes: {
                     'server.home.dir': data.bean.location
@@ -124,7 +132,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<ServerHandl
 
     getTreeItem(server: ServerHandle): TreeItem | Thenable<TreeItem> {
         const status: number = this.serverStatus.get(server.id);
-        const item: TreeItem = new TreeItem(`${server.id}(${this.serverStatusEnum.get(status)})`);
+        const item: TreeItem = new TreeItem(`${server.id}:${server.specificType}(${this.serverStatusEnum.get(status)})`);
         item.contextValue =  this.serverStatusEnum.get(status);
         return item;
     }
@@ -133,9 +141,5 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<ServerHandl
         if (element === undefined) {
             return this.servers;
         }
-    }
-
-    sreverChanged(serverChangeEvent): void {
-       this.refresh();
     }
 }
