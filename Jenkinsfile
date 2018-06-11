@@ -24,6 +24,10 @@ node('rhel7'){
 	}
 
 	stage('Package') {
+		sh "curl -O http://download.jboss.org/jbosstools/adapters/snapshots/org.jboss.tools.ssp.distribution-0.0.9-SNAPSHOT.zip"
+		def files = findFiles(glob: '*.zip')
+		sh "mkdir ./server"
+		sh "unzip ${files[0].path} -d ./server"
 		try {
 			def packageJson = readJSON file: 'package.json'
 			sh "vsce package -o adapters-${packageJson.version}-${env.BUILD_NUMBER}.vsix"
