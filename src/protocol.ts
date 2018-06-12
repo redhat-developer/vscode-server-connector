@@ -1,17 +1,35 @@
 import { NotificationType, RequestType0, RequestType1 } from 'vscode-jsonrpc';
+/* tslint:disable */
+// Generated using typescript-generator version 2.2.413 on 2018-06-11 23:06:18.
 
-export interface CreateServerAttribute {
+export interface Attribute {
     type: string;
     description: string;
     defaultVal: any;
 }
 
-export interface CreateServerAttributes {
-    attributes: { [index: string]: CreateServerAttribute };
+export interface Attributes {
+    attributes: { [index: string]: Attribute };
+}
+
+export interface CommandLineDetails {
+    cmdLine: string[];
+    workingDir: string;
+    envp: string[];
 }
 
 export interface DiscoveryPath {
     filepath: string;
+}
+
+export interface LaunchAttributesRequest {
+    id: string;
+    mode: string;
+}
+
+export interface LaunchParameters {
+    mode: string;
+    params: ServerAttributes;
 }
 
 export interface ServerAttributes {
@@ -30,6 +48,11 @@ export interface ServerBean {
     serverAdapterTypeId: string;
 }
 
+export interface ServerHandle {
+    id: string;
+    type: ServerType;
+}
+
 export interface ServerProcess {
     server: ServerHandle;
     processId: string;
@@ -42,24 +65,20 @@ export interface ServerProcessOutput {
     text: string;
 }
 
+export interface ServerStartingAttributes {
+    initiatePolling: boolean;
+    request: LaunchParameters;
+}
+
 export interface ServerStateChange {
     server: ServerHandle;
     state: number;
 }
 
-export interface ServerHandle {
-    id: string;
-    type: string;
-    specificType: string;
-}
-
 export interface ServerType {
     id: string;
-}
-
-export interface StartServerAttributes {
-    id: string;
-    mode: string;
+    visibleName: string;
+    description: string;
 }
 
 export interface Status {
@@ -111,15 +130,15 @@ export namespace FindServerBeansRequest {
 }
 
 export namespace CreateServerRequest {
-    export const type = new RequestType1<CreateServerAttributes, Status, void, void>('server/createServer');
+    export const type = new RequestType1<ServerAttributes, Status, void, void>('server/createServer');
 }
 
 export namespace GetRequiredAttributesRequest {
-    export const type = new RequestType1<ServerType, CreateServerAttributes, void, void>('server/getRequiredAttributes');
+    export const type = new RequestType1<ServerType, ServerAttributes, void, void>('server/getRequiredAttributes');
 }
 
 export namespace GetOptionalAttributesRequest {
-    export const type = new RequestType1<ServerType, CreateServerAttributes, void, void>('server/getOptionalAttributes');
+    export const type = new RequestType1<ServerType, ServerAttributes, void, void>('server/getOptionalAttributes');
 }
 
 export namespace GetServerHandlersRequest {
@@ -131,7 +150,7 @@ export namespace DeleteServerNotification {
 }
 
 export namespace StartServerAsyncNotification {
-    export const type = new NotificationType<StartServerAttributes, void>('server/startServerAsync');
+    export const type = new NotificationType<LaunchParameters, void>('server/startServerAsync');
 }
 
 export namespace StopServerAsyncNotification {

@@ -60,8 +60,15 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand('servers.addLocation', () => {
             serversData.addLocation();
         });
-        vscode.commands.registerCommand('server.start', context => {
-            connection.sendNotification(StartServerAsyncNotification.type, {id: context.id, mode: 'run'});
+        vscode.commands.registerCommand('server.start', (context) => {
+            connection.sendNotification(StartServerAsyncNotification.type, {
+                params: {
+                    serverType: context.type.id,
+                    id: context.id,
+                    attributes: new Map<string, any>()
+                }, 
+                mode: 'run'}
+            );
         });
         vscode.commands.registerCommand('server.stop', context => {
             connection.sendNotification(StopServerAsyncNotification.type, {id: context.id, force: true});
