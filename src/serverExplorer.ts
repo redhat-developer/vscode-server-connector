@@ -132,7 +132,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<ServerHandl
 
     getTreeItem(server: ServerHandle): TreeItem | Thenable<TreeItem> {
         const status: number = this.serverStatus.get(server.id);
-        const item: TreeItem = new TreeItem(`${server.id}:${server.specificType}(${this.serverStatusEnum.get(status)})`);
+        const item: TreeItem = new TreeItem(`${server.id}:${server.type.visibleName}(${this.serverStatusEnum.get(status)})`);
         item.contextValue =  this.serverStatusEnum.get(status);
         return item;
     }
