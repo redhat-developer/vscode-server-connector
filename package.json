@@ -1,9 +1,11 @@
 {
     "name": "adapters-vscode",
-    "displayName": "atlas",
+    "displayName": "Server Explorer",
     "description": "Connects vscode with different server adapters",
     "version": "0.0.1",
     "publisher": "mohitsuman",
+    "license": "EPL-1.0",
+    "bugs": "https://github.com/mohitsuman/adapters-vscode/issues",
     "repository": {
         "type": "git",
         "url": "https://github.com/mohitsuman/adapters-vscode.git"

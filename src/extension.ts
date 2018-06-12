@@ -39,7 +39,6 @@ export function activate(context: vscode.ExtensionContext) {
         connection.listen();
 
         connection.onNotification(ServerAddedNotification.type, handle => {
-            handle.specificType = 'Wildfly';
             serversData.insertServer(handle);
         });
 
@@ -60,13 +59,13 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand('servers.addLocation', () => {
             serversData.addLocation();
         });
-        vscode.commands.registerCommand('server.start', (context) => {
+        vscode.commands.registerCommand('server.start', context => {
             connection.sendNotification(StartServerAsyncNotification.type, {
                 params: {
                     serverType: context.type.id,
                     id: context.id,
                     attributes: new Map<string, any>()
-                }, 
+                },
                 mode: 'run'}
             );
         });
