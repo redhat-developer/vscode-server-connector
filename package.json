@@ -1,143 +1,139 @@
 {
-    "name": "adapters-vscode",
-    "displayName": "Server Explorer",
-    "description": "Connects vscode with different server adapters",
-    "version": "0.0.1",
-    "publisher": "mohitsuman",
-    "license": "EPL-1.0",
-    "bugs": "https://github.com/mohitsuman/adapters-vscode/issues",
-    "repository": {
-      "type": "git",
-      "url": "https://github.com/mohitsuman/adapters-vscode.git"
-    },
-    "engines": {
-      "vscode": "^1.23.0"
-    },
-    "categories": [
-      "Other"
+  "name": "adapters-vscode",
+  "displayName": "atlas",
+  "description": "Connects vscode with different server adapters",
+  "version": "0.0.1",
+  "publisher": "mohitsuman",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mohitsuman/adapters-vscode.git"
+  },
+  "engines": {
+    "vscode": "^1.23.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:extension.sayHello",
+    "onView:servers"
+  ],
+  "main": "./out/extension",
+  "contributes": {
+    "commands": [
+      {
+        "command": "servers.addLocation",
+        "title": "Add Server Location ...",
+        "icon": "resources/dark/add-location.svg"
+      },
+      {
+        "command": "server.start",
+        "title": "Start"
+      },
+      {
+        "command": "server.stop",
+        "title": "Stop"
+      },
+      {
+        "command": "server.remove",
+        "title": "Remove"
+      },
+      {
+        "command": "server.output",
+        "title": "Show Output"
+      }
     ],
-    "activationEvents": [
-      "onCommand:extension.sayHello",
-      "onView:servers"
-    ],
-    "main": "./out/extension",
-    "contributes": {
-      "commands": [
+    "views": {
+      "explorer": [
+        {
+          "id": "servers",
+          "name": "Servers"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
         {
           "command": "servers.addLocation",
-          "title": "Add Server Location ...",
-          "icon": "resources/dark/add-location.svg"
-        },
+          "when": "view == servers",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
         {
           "command": "server.start",
-          "title": "Start"
+          "when": "view == servers && viewItem == 'Stopped'",
+          "group": "a@1"
         },
         {
           "command": "server.stop",
-          "title": "Stop"
+          "when": "view == servers && viewItem == 'Started'",
+          "group": "a@2"
         },
         {
           "command": "server.remove",
-          "title": "Remove"
+          "when": "view == servers && viewItem == 'Stopped'",
+          "group": "b"
         },
         {
           "command": "server.output",
-          "title": "Show Output"
+          "when": "view == servers && viewItem == 'Started'",
+          "group": "c"
+        },
+        {
+          "command": "server.output",
+          "when": "view == servers && viewItem == 'Stopped'",
+          "group": "c"
+        },
+        {
+          "command": "server.output",
+          "when": "view == servers && viewItem == 'Starting'",
+          "group": "c"
+        },
+        {
+          "command": "server.output",
+          "when": "view == servers && viewItem == 'Stopping'",
+          "group": "c"
         }
-      ],
-      "views": {
-        "explorer": [
-          {
-            "id": "servers",
-            "name": "Servers"
-          }
-        ]
-      },
-      "menus": {
-        "view/title": [
-          {
-            "command": "servers.addLocation",
-            "when": "view == servers",
-            "group": "navigation"
-          }
-        ],
-        "view/item/context": [
-          {
-            "command": "server.start",
-            "when": "view == servers && viewItem == 'Stopped'",
-            "group": "a@1"
-          },
-          {
-            "command": "server.stop",
-            "when": "view == servers && viewItem == 'Started'",
-            "group": "a@2"
-          },
-          {
-            "command": "server.remove",
-            "when": "view == servers && viewItem == 'Stopped'",
-            "group": "b"
-          },
-          {
-            "command": "server.output",
-            "when": "view == servers && viewItem == 'Started'",
-            "group": "c"
-          },
-          {
-            "command": "server.output",
-            "when": "view == servers && viewItem == 'Stopped'",
-            "group": "c"
-          },
-          {
-            "command": "server.output",
-            "when": "view == servers && viewItem == 'Starting'",
-            "group": "c"
-          },
-          {
-            "command": "server.output",
-            "when": "view == servers && viewItem == 'Stopping'",
-            "group": "c"
-          }
-        ]
-      },
-      "configuration": {
-        "type": "object",
-        "title": "Servers View configuration",
-        "properties": {
-          "vscodeAdapters.showChannelOnServerOutput": {
-            "type": "boolean",
-            "default": false,
-            "description": "Show Server's output channel when new text added to output stream."
-          }
+      ]
+    },
+    "configuration": {
+      "type": "object",
+      "title": "Servers View configuration",
+      "properties": {
+        "vscodeAdapters.showChannelOnServerOutput": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show Server's output channel when new text added to output stream."
         }
       }
-    },
-    "scripts": {
-      "package": "node ./build/package.js",
-      "vscode:prepublish": "npm run compile",
-      "compile": "tsc -p ./",
-      "watch": "tsc -watch -p ./",
-      "postinstall": "node ./node_modules/vscode/bin/install",
-      "test": "npm run compile && node ./node_modules/vscode/bin/test"
-    },
-    "devDependencies": {
-      "typescript": "^2.6.1",
-      "vscode": "^1.1.6",
-      "tslint": "^5.8.0",
-      "@types/node": "^7.0.43",
-      "@types/mocha": "^2.2.42"
-    },
-    "dependencies": {
-      "download": "^7.0.0",
-      "fs-extra": "5.0.0",
-      "fstream": "^1.0.11",
-      "mkdirp": "0.5.1",
-      "npm": "^6.1.0",
-      "path": "0.12.7",
-      "pify": "3.0.0",
-      "unzip": "^0.1.11",
-      "unzip-stream": "0.3.0",
-      "vscode-jsonrpc": "^3.6.2",
-      "vscode-languageclient": "^4.1.4"
     }
+  },
+  "scripts": {
+    "package": "node ./build/package.js",
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "postinstall": "node ./node_modules/vscode/bin/install",
+    "test": "npm run compile && node ./node_modules/vscode/bin/test"
+  },
+  "devDependencies": {
+    "typescript": "^2.6.1",
+    "vscode": "^1.1.6",
+    "tslint": "^5.8.0",
+    "@types/node": "^7.0.43",
+    "@types/mocha": "^2.2.42"
+  },
+  "dependencies": {
+    "decompress": "^4.2.0",
+    "download": "^7.0.0",
+    "fs-extra": "5.0.0",
+    "fstream": "^1.0.11",
+    "mkdirp": "0.5.1",
+    "npm": "^6.1.0",
+    "path": "0.12.7",
+    "pify": "3.0.0",
+    "vscode-jsonrpc": "^3.6.2",
+    "vscode-languageclient": "^4.1.4"
   }
-  
+}
