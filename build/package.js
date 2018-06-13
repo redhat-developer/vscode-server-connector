@@ -1,62 +1,21 @@
-const child_process = require('child_process');
-const pify = require('pify');
-let unzip = require('unzip-stream');
-let fs = require('fs-extra');
-let path = require('path');
-let mkdirp = require('mkdirp');
+const fs = require('fs-extra');
+const path = require('path');
 const download = require('download');
+const decompress = require('decompress');
 
+const SSP_SERVER_JAR_NAME = 'org.jboss.tools.ssp.distribution-0.0.9-SNAPSHOT.zip';
+const SSP_SERVER_JAR_URL = 'http://download.jboss.org/jbosstools/adapters/snapshots/org.jboss.tools.ssp.distribution-0.0.9-SNAPSHOT.zip';
 
-
-let Downloadssp = function() {
-    return new Promise((resolve, reject)=>{
-        return download('http://download.jboss.org/jbosstools/adapters/snapshots/org.jboss.tools.ssp.distribution-0.0.9-SNAPSHOT.zip', './').then(()=>{
-            resolve(true);
-          }).catch(()=>{
-            resolve(false);
-          });
-    });
+function clean() {
+    return Promise.resolve()
+        .then(()=>fs.remove('server'))
+        .then(()=>fs.pathExists(SSP_SERVER_JAR_NAME))
+        .then((exists)=>(exists?fs.unlink(SSP_SERVER_JAR_NAME):undefined));
 }
 
-let Unzip = function(zipFile, extractTo, prefix) {
-    return new Promise((resolve, reject) => {
-        fs.createReadStream(zipFile).pipe(unzip.Parse())
-            .on('entry', (entry)=> {
-                try {
-                var fileName = entry.path;
-                let f = fileName.substring(fileName.indexOf('/'));
-                let dest = path.join(extractTo, ...f.split('/'));
-                if (entry.type ) {
-                    mkdirp.sync(dest);
-                    entry.pipe(fs.createWriteStream(dest));
-                } else {
-                    mkdirp.sync(dest);
-                    entry.autodrain();
-                }
-                } catch(err) {
-                    reject(err);
-                }
-            }).on('error', (error) => {
-                reject(error);
-            }).on('close', () => {
-                resolve();
-            });
-    });
-}
-
-
-let Unzipfile = function() {
-    return new Promise((resolve, reject)=>{
-        Unzip('./org.jboss.tools.ssp.distribution-0.0.9-SNAPSHOT.zip', './server').then(()=>{
-            resolve();
-        });
-    }).catch(()=>{
-        resolve(false);        
-    });
-}
-
-Downloadssp()
-.then(()=>{
-    return Unzipfile();
-});
+Promise.resolve()
+    .then(clean)
+    .then(()=> download(SSP_SERVER_JAR_URL, './'))
+    .then(()=> decompress(SSP_SERVER_JAR_NAME, './server', { strip: 1 }))
+    .catch((err)=>{ throw err; });
 
