@@ -69,7 +69,7 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     vscode.commands.registerCommand('servers.addLocation', () => {
-        if(serversData) {
+        if (serversData) {
             serversData.addLocation();
         } else {
             vscode.window.showInformationMessage('Stack Protocol Server is starting, please try again later!');
