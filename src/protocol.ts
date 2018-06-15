@@ -1,6 +1,8 @@
 import { NotificationType, RequestType0, RequestType1 } from 'vscode-jsonrpc';
 /* tslint:disable */
 // Generated using typescript-generator version 2.2.413 on 2018-06-11 23:06:18.
+/* tslint:disable */
+// Generated using typescript-generator version 2.2.413 on 2018-06-13 15:30:13.
 
 export interface Attribute {
     type: string;
@@ -16,6 +18,7 @@ export interface CommandLineDetails {
     cmdLine: string[];
     workingDir: string;
     envp: string[];
+    properties: { [index: string]: string };
 }
 
 export interface DiscoveryPath {
@@ -53,6 +56,11 @@ export interface ServerHandle {
     type: ServerType;
 }
 
+export interface ServerLaunchMode {
+    mode: string;
+    desc: string;
+}
+
 export interface ServerProcess {
     server: ServerHandle;
     processId: string;
@@ -81,13 +89,18 @@ export interface ServerType {
     description: string;
 }
 
+export interface StartServerResponse {
+    status: Status;
+    details: CommandLineDetails;
+}
+
 export interface Status {
     severity: number;
     code: number;
     message: string;
     trace: string;
-    plugin: string;
     ok: boolean;
+    plugin: string;
 }
 
 export interface StopServerAttributes {
@@ -99,6 +112,10 @@ export interface VMDescription {
     id: string;
     installLocation: string;
     version: string;
+}
+
+export interface VMHandle {
+    id: string;
 }
 
 export interface VMHandle {
@@ -149,12 +166,12 @@ export namespace DeleteServerNotification {
     export const type = new NotificationType<ServerHandle, void>('server/deleteServer');
 }
 
-export namespace StartServerAsyncNotification {
-    export const type = new NotificationType<LaunchParameters, void>('server/startServerAsync');
+export namespace StartServerAsyncRequest {
+    export const type = new RequestType1<LaunchParameters, StartServerResponse, void, void>('server/startServerAsync');
 }
 
-export namespace StopServerAsyncNotification {
-    export const type = new NotificationType<StopServerAttributes, void>('server/stopServerAsync');
+export namespace StopServerAsyncRequest {
+    export const type = new RequestType1<StopServerAttributes, Status, void, void>('server/stopServerAsync');
 }
 
 export namespace ServerStateChangeNotification {

@@ -8,3 +8,4 @@ tsconfig.json
 vsc-extension-quickstart.md
 tslint.json
 org.jboss.tools.ssp.distribution-0.0.9-SNAPSHOT.zip
+*.vsix
