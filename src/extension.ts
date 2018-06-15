@@ -13,7 +13,7 @@ import * as server from './server';
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
     let serversData;
-    let serverPromise = server.start().then(connectionInfo => {
+    server.start().then(connectionInfo => {
         return new Promise((resolve, reject) => {
             const socket = net.connect(connectionInfo).on('connect', async () => {
                 const connection = rpc.createMessageConnection(
