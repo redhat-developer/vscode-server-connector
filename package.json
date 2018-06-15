@@ -136,6 +136,7 @@
     "path": "0.12.7",
     "pify": "3.0.0",
     "vscode-jsonrpc": "^3.6.2",
-    "vscode-languageclient": "^4.1.4"
+    "vscode-languageclient": "^4.1.4",
+    "wait-on": "^2.1.0"
   }
 }
