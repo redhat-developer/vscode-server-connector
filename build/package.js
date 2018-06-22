@@ -1,5 +1,4 @@
 const fs = require('fs-extra');
-const path = require('path');
 const download = require('download');
 const decompress = require('decompress');
 
