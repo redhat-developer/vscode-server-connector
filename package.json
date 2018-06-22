@@ -132,7 +132,6 @@
     "fs-extra": "5.0.0",
     "fstream": "^1.0.11",
     "mkdirp": "0.5.1",
-    "npm": "^6.1.0",
     "path": "0.12.7",
     "pify": "3.0.0",
     "vscode-jsonrpc": "^3.6.2",
