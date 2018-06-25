@@ -1,5 +1,6 @@
 
 import { OutputChannel } from 'vscode';
+const util = require('util');
 
 export class XLog {
     private static _outputPanel;
@@ -29,7 +30,6 @@ export class XLog {
             return;
         }
         this._outputPanel.show();
-        const util = require('util');
         const time = TimeUtils.getTime();
         if (!log || !log.split) return;
         this._outputPanel.appendLine(util.format('[ssp-server %s][%s]\t %s', time, type, log));
@@ -38,6 +38,7 @@ export class XLog {
 
 export class TimeUtils {
     public static getTime(): String {
-        return new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '').split(' ')[1];
+        const date = new Date();
+        return new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString().replace(/T/, ' ').replace(/\..+/, '').split(' ')[1];
     }
 }
