@@ -17,9 +17,7 @@ export function start(): Promise<ConnectionInfo> {
                 const serverLocation = path.resolve(__dirname, '..', 'server');
                 const felix = path.join(serverLocation, 'bin', 'felix.jar');
                 const java = path.join(home, 'bin', 'java');
-                console.log('Servers java location ' + java);
-                console.log('Servers felix location ' + felix);
-                cp.spawn(java, ['-jar', felix], { cwd: serverLocation });
+                const sspserver = cp.spawn(java, ['-jar', felix], { cwd: serverLocation });
                 waitOn({
                     resources: ['tcp:localhost:27511']
                 }, () => {
@@ -27,6 +25,9 @@ export function start(): Promise<ConnectionInfo> {
                         port: 27511,
                         host: 'localhost'
                     });
+                });
+                sspserver.stdout.on('data', data => {
+                    return `${data}`;
                 });
             }
         });
