@@ -2,7 +2,6 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import { XLog } from './tool';
 import { ServersViewTreeDataProvider } from './serverExplorer';
 // import { LanguageClient, LanguageClientOptions, RevealOutputChannelOn, StreamInfo} from 'vscode-languageclient';
 import * as net from 'net';
@@ -14,12 +13,7 @@ import * as server from './server';
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
     let serversData;
-    const outputPanel = vscode.window.createOutputChannel('ssp-server');
-    XLog.registerOutputPanel(outputPanel);
-    // Add the auto completion
-    XLog.info('out');
-    context.subscriptions.push(outputPanel);
-    server.start().then(connectionInfo => {
+    server.start(context).then(connectionInfo => {
         return new Promise((resolve, reject) => {
             const socket = net.connect(connectionInfo).on('connect', async () => {
                 const connection = rpc.createMessageConnection(

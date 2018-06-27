@@ -118,11 +118,11 @@
     "update-deps": "node_modules/.bin/ncu --upgrade --loglevel verbose --packageFile package.json && npm update"
   },
   "devDependencies": {
-    "typescript": "^2.6.1",
-    "vscode": "^1.1.6",
+    "@types/mocha": "^5.2.3",
+    "@types/node": "^10.5.1",
     "tslint": "^5.8.0",
-    "@types/node": "^10.3.4",
-    "@types/mocha": "^5.2.3"
+    "typescript": "^2.9.2",
+    "vscode": "^1.1.18"
   },
   "dependencies": {
     "child_process": "^1.0.2",
@@ -135,7 +135,7 @@
     "path": "0.12.7",
     "pify": "3.0.0",
     "vscode-jsonrpc": "^3.6.2",
-    "vscode-languageclient": "^4.1.4",
+    "vscode-languageclient": "^4.2.1",
     "wait-on": "^2.1.0"
   }
 }
