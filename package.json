@@ -23,8 +23,9 @@
     "commands": [
       {
         "command": "servers.addLocation",
-        "title": "Add Server Location ...",
-        "icon": "resources/dark/add-location.svg"
+        "title": "Add Server Location",
+        "icon": "resources/dark/add-location.svg",
+        "category": "Adapters"
       },
       {
         "command": "server.start",
@@ -63,37 +64,37 @@
         {
           "command": "server.start",
           "when": "view == servers && viewItem == 'Stopped'",
-          "group": "a@1"
+          "group": "server-command@1"
         },
         {
           "command": "server.stop",
           "when": "view == servers && viewItem == 'Started'",
-          "group": "a@2"
+          "group": "server-command@2"
         },
         {
           "command": "server.remove",
           "when": "view == servers && viewItem == 'Stopped'",
-          "group": "b"
+          "group": "server-remove"
         },
         {
           "command": "server.output",
           "when": "view == servers && viewItem == 'Started'",
-          "group": "c"
+          "group": "server-status"
         },
         {
           "command": "server.output",
           "when": "view == servers && viewItem == 'Stopped'",
-          "group": "c"
+          "group": "server-status"
         },
         {
           "command": "server.output",
           "when": "view == servers && viewItem == 'Starting'",
-          "group": "c"
+          "group": "server-status"
         },
         {
           "command": "server.output",
           "when": "view == servers && viewItem == 'Stopping'",
-          "group": "c"
+          "group": "server-status"
         }
       ]
     },
