@@ -9,7 +9,7 @@ export interface ConnectionInfo {
     port: number;
 }
 
-export function start(context): Promise<ConnectionInfo> {
+export function start(context: vscode.ExtensionContext): Promise<ConnectionInfo> {
     return new Promise((resolve, reject) => {
         findJava((err, home) => {
             if (err) {
