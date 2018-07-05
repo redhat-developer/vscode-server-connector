@@ -15,7 +15,8 @@
     "Other"
   ],
   "activationEvents": [
-    "onView:servers"
+    "onView:servers",
+    "onLanguage:plaintext"
   ],
   "main": "./out/extension",
   "contributes": {
