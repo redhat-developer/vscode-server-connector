@@ -2,7 +2,7 @@
   "name": "adapters-vscode",
   "displayName": "atlas",
   "description": "Connects vscode with different server adapters",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "mohitsuman",
   "repository": {
     "type": "git",
