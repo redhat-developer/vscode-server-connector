@@ -10,6 +10,11 @@ This extension supports a number of commands for interacting with server adapter
 
    * `Add Server Location` - Selects the path of the server location and display in the SERVERS Explorer stack.
 
+### Servers Supported
+   * Wildfly [8/9/10/11/12/13]
+   * EAP
+   * Minishift Binary
+
 ## Extension Settings
 
 Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
@@ -23,7 +28,7 @@ This extension contributes the following settings:
 -----------------------------------------------------------------------------------------------------------
 Contributing
 ===============
-This is an open source project open to anyone. This project welcomes contributions and suggestions !!
+This is an open source project open to anyone. This project welcomes contributions and suggestions!!
 
 Download the most recent `adapters-<version>.vsix` file and install it by following the instructions [here](https://code.visualstudio.com/docs/editor/extension-gallery#_install-from-a-vsix). 
 
@@ -36,6 +41,4 @@ Feedback
 
 License
 ===============
-EPL 1.0, See [LICENSE](LICENSE) for more information.
-
-**Enjoy!**
+EPL 2.0, See [LICENSE](LICENSE) for more information.
