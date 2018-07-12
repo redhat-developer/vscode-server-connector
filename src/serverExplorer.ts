@@ -94,9 +94,11 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<ServerHandl
             canSelectFolders: true,
             openLabel: 'Select server location'
         }).then(folders => {
-            return this.connection.sendRequest(FindServerBeansRequest.type, { filepath: folders[0].fsPath });
+            if(folders && folders.length == 1) {
+                return this.connection.sendRequest(FindServerBeansRequest.type, { filepath: folders[0].fsPath });
+            }
         }).then(serverBeans => {
-            if (serverBeans.length > 0) {
+            if (serverBeans && serverBeans.length > 0) {
                 // Prompt for server name
                 const options: InputBoxOptions = {
                     prompt: `Please provide the server name`,
@@ -117,16 +119,20 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<ServerHandl
                 });
             }
         }).then(data => {
-            const serverAttributes: ServerAttributes = {
-                id: data.name,
-                serverType: data.bean.serverAdapterTypeId,
-                attributes: {
-                    'server.home.dir': data.bean.location
-                }
-            };
-            return this.connection.sendRequest(CreateServerRequest.type, serverAttributes);
+            if(data && data.name) {
+                const serverAttributes: ServerAttributes = {
+                    id: data.name,
+                    serverType: data.bean.serverAdapterTypeId,
+                    attributes: {
+                        'server.home.dir': data.bean.location
+                    }
+                };
+                return this.connection.sendRequest(CreateServerRequest.type, serverAttributes);
+            }
         }).then(status => {
-            console.log(status);
+            if(status) {
+                console.log(status);
+            }
         });
     }
 
