@@ -120,8 +120,8 @@
     "update-deps": "node_modules/.bin/ncu --upgrade --loglevel verbose --packageFile package.json && npm update"
   },
   "devDependencies": {
-    "@types/mocha": "^5.2.3",
-    "@types/node": "^10.5.1",
+    "@types/mocha": "^5.2.4",
+    "@types/node": "^10.5.2",
     "tslint": "^5.8.0",
     "typescript": "^2.9.2",
     "vscode": "^1.1.18"
