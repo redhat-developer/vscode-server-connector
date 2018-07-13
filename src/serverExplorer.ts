@@ -94,7 +94,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<ServerHandl
             canSelectFolders: true,
             openLabel: 'Select server location'
         }).then(folders => {
-            if(folders && folders.length == 1) {
+            if (folders && folders.length === 1) {
                 return this.connection.sendRequest(FindServerBeansRequest.type, { filepath: folders[0].fsPath });
             }
         }).then(serverBeans => {
@@ -119,7 +119,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<ServerHandl
                 });
             }
         }).then(data => {
-            if(data && data.name) {
+            if (data && data.name) {
                 const serverAttributes: ServerAttributes = {
                     id: data.name,
                     serverType: data.bean.serverAdapterTypeId,
@@ -130,7 +130,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<ServerHandl
                 return this.connection.sendRequest(CreateServerRequest.type, serverAttributes);
             }
         }).then(status => {
-            if(status) {
+            if (status) {
                 console.log(status);
             }
         });
