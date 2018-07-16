@@ -13,7 +13,7 @@ const client = new SSPClient('localhost', 27511);
 export function activate(context: vscode.ExtensionContext) {
     let serversData;
     server.start(context).then(connectionInfo => {
-        return new Promise(async (resolve, reject) => {
+        return async () => {
             await client.connect();
             client.onServerAdded(handle => {
                 serversData.insertServer(handle);
@@ -57,11 +57,7 @@ export function activate(context: vscode.ExtensionContext) {
 
             // context.subscriptions.push(client);
             // Needs to add dispose:any to sspclient [Issue #2]
-            resolve();
-        })
-    .catch(err => {
-        console.log(err);
-    });
+        }
 });
 
 vscode.commands.registerCommand('servers.addLocation', () => {
