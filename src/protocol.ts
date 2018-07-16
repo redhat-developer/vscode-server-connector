@@ -1,3 +1,5 @@
+// Needs to be removed as Protocol is used from SSPCLient
+
 import { NotificationType, RequestType0, RequestType1 } from 'vscode-jsonrpc';
 /* tslint:disable */
 // Generated using typescript-generator version 2.2.413 on 2018-06-11 23:06:18.
