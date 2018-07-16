@@ -14,7 +14,7 @@ import * as server from './server';
 export function activate(context: vscode.ExtensionContext) {
     let serversData;
     server.start(context).then(connectionInfo => {
-        return new Promise((resolve, reject) => {
+        return new Promise( resolve => {
             const socket = net.connect(connectionInfo).on('connect', async () => {
                 const connection = rpc.createMessageConnection(
                     new rpc.StreamMessageReader(socket),
