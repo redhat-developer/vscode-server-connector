@@ -9,21 +9,21 @@ import {
     OutputChannel,
     workspace
 } from 'vscode';
-import { MessageConnection } from 'vscode-jsonrpc';
-import { FindServerBeansRequest, CreateServerRequest, ServerAttributes, ServerHandle, ServerStateChange, ServerProcessOutput } from './protocol';
 
-export class ServersViewTreeDataProvider implements TreeDataProvider<ServerHandle> {
+import { SSPClient, Protocol, ServerState } from 'ssp-client';
 
-    private _onDidChangeTreeData: EventEmitter<ServerHandle | undefined> = new EventEmitter<ServerHandle | undefined>();
-    readonly onDidChangeTreeData: Event<ServerHandle | undefined> = this._onDidChangeTreeData.event;
-    private connection: MessageConnection;
-    private servers: ServerHandle[] = new Array<ServerHandle>();
+export class ServersViewTreeDataProvider implements TreeDataProvider<Protocol.ServerHandle> {
+
+    private _onDidChangeTreeData: EventEmitter<Protocol.ServerHandle | undefined> = new EventEmitter<Protocol.ServerHandle | undefined>();
+    readonly onDidChangeTreeData: Event<Protocol.ServerHandle | undefined> = this._onDidChangeTreeData.event;
+    private client: SSPClient;
+    private servers: Protocol.ServerHandle[] = new Array<Protocol.ServerHandle>();
     private serverStatus: Map<string, number> = new Map<string, number>();
     private serverOutputChannels: Map<string, OutputChannel> = new Map<string, OutputChannel>();
     private serverStatusEnum: Map<number, string> = new Map<number, string>();
 
-    constructor(connection: MessageConnection) {
-        this.connection = connection;
+    constructor(client: SSPClient) {
+        this.client = client;
         this.serverStatusEnum.set(0, 'Unknown');
         this.serverStatusEnum.set(1, 'Starting');
         this.serverStatusEnum.set(2, 'Started');
@@ -33,24 +33,24 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<ServerHandl
 
     insertServer(handle) {
         this.servers.push(handle);
-        this.serverStatus.set(handle.id, 4);
+        this.serverStatus.set(handle.id, ServerState.STOPPED);
         this.refresh();
     }
 
-    updateServer(event: ServerStateChange) {
+    updateServer(event: Protocol.ServerStateChange) {
         this.servers.forEach(value => {
             if (value.id === event.server.id) {
                 this.serverStatus.set(value.id, event.state);
                 this.refresh(value);
                 const channel: OutputChannel = this.serverOutputChannels.get(value.id);
-                if (event.state === 1 && channel) {
+                if (event.state === ServerState.STARTING && channel) {
                     channel.clear();
                 }
             }
         });
     }
 
-    removeServer(handle: ServerHandle): any {
+    removeServer(handle: Protocol.ServerHandle): any {
         this.servers.forEach((value, index) => {
             if (value.id === handle.id) {
                 this.servers.splice(index, 1);
@@ -64,7 +64,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<ServerHandl
         });
     }
 
-    addServerOutput(output: ServerProcessOutput): any {
+    addServerOutput(output: Protocol.ServerProcessOutput): any {
         let channel: OutputChannel = this.serverOutputChannels.get(output.server.id);
         if (channel === undefined) {
             channel = window.createOutputChannel(`Server: ${output.server.id}`);
@@ -76,7 +76,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<ServerHandl
         }
     }
 
-    showOutput(server: ServerHandle): any {
+    showOutput(server: Protocol.ServerHandle): any {
         const channel: OutputChannel = this.serverOutputChannels.get(server.id);
         if (channel) {
             channel.show();
@@ -92,10 +92,10 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<ServerHandl
             canSelectFiles: false,
             canSelectMany: false,
             canSelectFolders: true,
-            openLabel: 'Select server location'
+            openLabel: 'Select desired server location'
         }).then(folders => {
             if (folders && folders.length === 1) {
-                return this.connection.sendRequest(FindServerBeansRequest.type, { filepath: folders[0].fsPath });
+                return this.client.findServerBeans( folders[0].fsPath );
             }
         }).then(serverBeans => {
             if (serverBeans && serverBeans.length > 0) {
@@ -120,14 +120,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<ServerHandl
             }
         }).then(data => {
             if (data && data.name) {
-                const serverAttributes: ServerAttributes = {
-                    id: data.name,
-                    serverType: data.bean.serverAdapterTypeId,
-                    attributes: {
-                        'server.home.dir': data.bean.location
-                    }
-                };
-                return this.connection.sendRequest(CreateServerRequest.type, serverAttributes);
+                return this.client.createServerAsync(data.bean, data.name);
             }
         }).then(status => {
             if (status) {
@@ -136,14 +129,14 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<ServerHandl
         });
     }
 
-    getTreeItem(server: ServerHandle): TreeItem | Thenable<TreeItem> {
+    getTreeItem(server: Protocol.ServerHandle): TreeItem | Thenable<TreeItem> {
         const status: number = this.serverStatus.get(server.id);
         const item: TreeItem = new TreeItem(`${server.id}:${server.type.visibleName}(${this.serverStatusEnum.get(status)})`);
         item.contextValue =  this.serverStatusEnum.get(status);
         return item;
     }
 
-    getChildren(element?: ServerHandle | undefined): ServerHandle[] | Thenable<ServerHandle[] | null | undefined> | null | undefined {
+    getChildren(element?: Protocol.ServerHandle | undefined): Protocol.ServerHandle[] | Thenable<Protocol.ServerHandle[] | null | undefined> | null | undefined {
         if (element === undefined) {
             return this.servers;
         }

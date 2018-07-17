@@ -136,6 +136,7 @@
     "mkdirp": "0.5.1",
     "path": "0.12.7",
     "pify": "3.0.0",
+    "ssp-client": "0.0.2",
     "vscode-jsonrpc": "^3.6.2",
     "vscode-languageclient": "^4.2.1",
     "wait-on": "^2.1.0"
