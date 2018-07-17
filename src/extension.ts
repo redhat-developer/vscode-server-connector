@@ -11,56 +11,54 @@ const client = new SSPClient('localhost', 27511);
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-    let serversData;
-    server.start(context).then(connectionInfo => {
-        return async () => {
-            await client.connect();
-            client.onServerAdded(handle => {
-                serversData.insertServer(handle);
+    let serversData: ServersViewTreeDataProvider;
+    server.start(context).then(async () => {
+        await client.connect();
+        client.onServerAdded(handle => {
+            serversData.insertServer(handle);
+        });
+
+        client.onServerRemoved(handle => {
+            serversData.removeServer(handle);
+        });
+
+        client.onServerStateChange(event => {
+            serversData.updateServer(event);
+        });
+
+        client.onServerOutputAppended(event => {
+            serversData.addServerOutput(event);
+        });
+
+        serversData = new ServersViewTreeDataProvider(client);
+        vscode.window.registerTreeDataProvider('servers', serversData);
+        vscode.commands.registerCommand('server.start', context => {
+            client.startServerAsync({
+                params: {
+                    serverType: context.type.id,
+                    id: context.id,
+                    attributes: new Map<string, any>()
+                },
+                mode: 'run'});
             });
 
-            client.onServerRemoved(handle => {
-                serversData.removeServer(handle);
-            });
+        vscode.commands.registerCommand('server.stop', context => {
+            client.stopServerAsync({id: context.id, force: true})
+        });
 
-            client.onServerStateChange(event => {
-                serversData.updateServer(event);
-            });
+        vscode.commands.registerCommand('server.remove', context => {
+            client.deleteServerAsync({id: context.id, type: context.type})
+        });
 
-            client.onServerOutputAppended(event => {
-                serversData.addServerOutput(event);
-            });
+        vscode.commands.registerCommand('server.output', context => {
+            serversData.showOutput(context);
+        });
 
-            serversData = new ServersViewTreeDataProvider(client);
-            vscode.window.registerTreeDataProvider('servers', serversData);
-            vscode.commands.registerCommand('server.start', context => {
-                client.startServerAsync({
-                    params: {
-                        serverType: context.type.id,
-                        id: context.id,
-                        attributes: new Map<string, any>()
-                    },
-                    mode: 'run'});
-                });
+        // context.subscriptions.push(client);
+        // Needs to add dispose:any to sspclient [Issue #2]
+    });
 
-            vscode.commands.registerCommand('server.stop', context => {
-                client.stopServerAsync({id: context.id, force: true})
-            });
-
-            vscode.commands.registerCommand('server.remove', context => {
-                client.deleteServerAsync({id: context.id, type: context.type})
-            });
-
-            vscode.commands.registerCommand('server.output', context => {
-                serversData.showOutput(context);
-            });
-
-            // context.subscriptions.push(client);
-            // Needs to add dispose:any to sspclient [Issue #2]
-        }
-});
-
-vscode.commands.registerCommand('servers.addLocation', () => {
+    vscode.commands.registerCommand('servers.addLocation', () => {
         if (serversData) {
             serversData.addLocation();
         } else {
