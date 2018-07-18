@@ -98,7 +98,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<Protocol.Se
                 return this.client.findServerBeans( folders[0].fsPath );
             }
         }).then(serverBeans => {
-            if (serverBeans && serverBeans.length > 0) {
+            if (serverBeans && serverBeans.length > 0 && serverBeans[0].typeCategory && serverBeans[0].typeCategory !== 'UNKNOWN') {
                 // Prompt for server name
                 const options: InputBoxOptions = {
                     prompt: `Please provide the server name`,
@@ -117,6 +117,8 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<Protocol.Se
                 return window.showInputBox(options).then(value => {
                     return { name: value, bean: serverBeans[0] };
                 });
+            } else {
+                window.showInformationMessage('Cannot detect server in selected location!');
             }
         }).then(data => {
             if (data && data.name) {
