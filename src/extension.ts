@@ -102,6 +102,14 @@ export function activate(context: vscode.ExtensionContext) {
                 vscode.window.showInformationMessage('Stack Protocol Server is starting, please try again later!');
             }
         });
+        
+
+        context.subscriptions.push(
+            // user commands
+            vscode.commands.registerCommand('adapter.restartserver', () => {
+                serversData.restartServer(client);
+            })
+        );
 
         return connInfo;
     });

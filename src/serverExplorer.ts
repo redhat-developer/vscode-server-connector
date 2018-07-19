@@ -37,6 +37,32 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<Protocol.Se
         this.refresh();
     }
 
+    restartServer(client, timeout: number = 6000) {
+        this.servers.forEach(async (value) => {
+            const status: number = this.serverStatus.get(value.id);
+            const serverstatus =  this.serverStatusEnum.get(status);
+            const params: Protocol.LaunchParameters = {
+                mode: 'run',
+                params: {
+                    id: value.id,
+                    serverType: value.type.id,
+                    attributes: new Map<string, any>()
+                }
+            };
+            if (serverstatus === 'Stopped') {
+                await client.startServerAsync(params);
+            } else {
+                Promise.resolve().then(()=> {
+                    client.stopServerAsync({ id: value.id, force: true });
+                }).then(()=>{
+                    setTimeout(() => {
+                        client.startServerAsync(params);
+                    }, timeout);
+                })
+            }
+        });
+    }
+
     updateServer(event: Protocol.ServerStateChange) {
         const value = this.servers.get(event.server.id)
         this.serverStatus.set(value.id, event.state);
