@@ -4,7 +4,7 @@
 import * as vscode from 'vscode';
 import { ServersViewTreeDataProvider } from './serverExplorer';
 import * as server from './server';
-import { ExtensionAPI ,IServer } from './extension.api';
+import { ExtensionAPI } from './extension.api';
 import { SSPClient } from 'ssp-client';
 
 const client = new SSPClient('localhost', 27511);
