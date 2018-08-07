@@ -5,6 +5,7 @@ import * as vscode from 'vscode';
 import { ServersViewTreeDataProvider } from './serverExplorer';
 import * as server from './server';
 import { SSPClient } from 'ssp-client';
+import { LanguageClient, ServerOptions, TransportKind, LanguageClientOptions } from 'vscode-languageclient';
 
 const client = new SSPClient('localhost', 27511);
 
@@ -43,11 +44,11 @@ export function activate(context: vscode.ExtensionContext) {
             });
 
         vscode.commands.registerCommand('server.stop', context => {
-            client.stopServerAsync({id: context.id, force: true})
+            client.stopServerAsync({id: context.id, force: true});
         });
 
         vscode.commands.registerCommand('server.remove', context => {
-            client.deleteServerAsync({id: context.id, type: context.type})
+            client.deleteServerAsync({id: context.id, type: context.type});
         });
 
         vscode.commands.registerCommand('server.output', context => {
@@ -65,6 +66,24 @@ export function activate(context: vscode.ExtensionContext) {
             vscode.window.showInformationMessage('Stack Protocol Server is starting, please try again later!');
         }
     });
+    let debugOptions = { execArgv: ['--nolazy', '--inspect=6009'] };
+    let serverOptions: ServerOptions = {
+		run: { module: undefined, transport: TransportKind.ipc },
+		debug: {
+			module: undefined,
+			transport: TransportKind.ipc,
+			options: debugOptions
+		}
+    };
+    let clientOptions: LanguageClientOptions = {
+		// Register the server for plain text documents
+		documentSelector: [{ scheme: 'file', language: 'plaintext' }],
+	};
+    let sspclient = new LanguageClient('SSP Server (stdout)', serverOptions, clientOptions);
+    context.subscriptions.push(
+        // user commands
+        vscode.commands.registerCommand('adapters.showOutputChannel', () => { sspclient.outputChannel.show(); }),
+    );
 }
 
 // this method is called when your extension is deactivated

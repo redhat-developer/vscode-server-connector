@@ -42,6 +42,11 @@
       {
         "command": "server.output",
         "title": "Show Output"
+      },
+      {
+        "title": "Show output",
+        "category": "Adapters",
+        "command": "adapters.showOutputChannel"
       }
     ],
     "views": {
