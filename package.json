@@ -25,10 +25,11 @@
     "adapters"
   ],
   "activationEvents": [
+    "onCommand:servers.addLocation",
     "onView:servers",
     "onLanguage:plaintext"
   ],
-  "main": "./out/extension",
+  "main": "./out/src/extension",
   "contributes": {
     "commands": [
       {
@@ -141,15 +142,20 @@
     "vscode": "^1.1.18"
   },
   "dependencies": {
+    "@types/glob": "^5.0.35",
     "child_process": "^1.0.2",
+    "decache": "^4.4.0",
     "decompress": "^4.2.0",
     "download": "^7.0.0",
     "find-java-home": "^0.2.0",
     "fs-extra": "6.0.1",
     "fstream": "^1.0.11",
+    "glob": "^7.1.2",
+    "istanbul": "^0.4.5",
     "mkdirp": "0.5.1",
     "path": "0.12.7",
     "pify": "3.0.0",
+    "remap-istanbul": "^0.11.1",
     "ssp-client": "0.0.2",
     "vscode-jsonrpc": "^3.6.2",
     "vscode-languageclient": "^4.2.1",
