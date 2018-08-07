@@ -19,7 +19,7 @@ export function start(context: vscode.ExtensionContext): Promise<ConnectionInfo>
                 const sspserverstderr = vscode.window.createOutputChannel('SSP Server (stderr)');
                 context.subscriptions.push(sspserverstdout);
                 context.subscriptions.push(sspserverstderr);
-                const serverLocation = path.resolve(__dirname, '..', 'server');
+                const serverLocation = path.resolve(__dirname, '..', '..', 'server');
                 const felix = path.join(serverLocation, 'bin', 'felix.jar');
                 const java = path.join(home, 'bin', 'java');
                 const sspserver = cp.spawn(java, ['-jar', felix], { cwd: serverLocation });
