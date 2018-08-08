@@ -4,7 +4,8 @@
   "description": "Connects vscode with different server adapters and runtimes",
   "version": "0.0.3",
   "license": "SEE LICENSE IN LICENSE",
-  "publisher": "mohitsuman",
+  "publisher": "RedHat",
+  "author": "Red Hat",  
   "preview": true,
   "repository": {
     "type": "git",
