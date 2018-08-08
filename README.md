@@ -1,6 +1,6 @@
 # Visual Studio Code Adapters Tools
 
-A Visual Studio Code extension for interacting with different server adapters.
+A Visual Studio Code extension for interacting with different server adapters and runtimes.
 
 ## Features
 
@@ -36,7 +36,7 @@ Stable releases are archived under http://download.jboss.org/jbosstools/adapters
 
 Feedback
 ===============
-* File a bug in [GitHub Issues](https://github.com/mohitsuman/adapters-vscode/issues),
+* File a bug in [GitHub Issues](https://github.com/redhat-developer/vscode-adapters/issues),
 * Chat with us on [Mattermost](https://chat.openshift.io/developers/channels/adapters),
 
 License

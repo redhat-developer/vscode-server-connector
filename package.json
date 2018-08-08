@@ -1,9 +1,11 @@
 {
-  "name": "adapters-vscode",
-  "displayName": "atlas",
-  "description": "Connects vscode with different server adapters",
-  "version": "0.0.2",
+  "name": "vscode-adapters",
+  "displayName": "Runtime and Server Adapters",
+  "description": "Connects vscode with different server adapters and runtimes",
+  "version": "0.0.3",
+  "license": "SEE LICENSE IN LICENSE",
   "publisher": "mohitsuman",
+  "preview": true,
   "repository": {
     "type": "git",
     "url": "https://github.com/mohitsuman/adapters-vscode.git"
@@ -13,6 +15,13 @@
   },
   "categories": [
     "Other"
+  ],
+  "keywords": [
+    "servers",
+    "runtimes",
+    "middleware",
+    "minishift",
+    "adapters"
   ],
   "activationEvents": [
     "onView:servers",
