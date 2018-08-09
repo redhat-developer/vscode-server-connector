@@ -3,7 +3,7 @@
 node('rhel7'){
 	stage('Checkout repo') {
 		deleteDir()
-		git url: 'https://github.com/mohitsuman/adapters-vscode.git'
+		git url: 'https://github.com/redhat-developer/vscode-adapters.git'
 	}
 
 	stage('Install requirements') {
