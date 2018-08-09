@@ -4,13 +4,14 @@
 import * as vscode from 'vscode';
 import { ServersViewTreeDataProvider } from './serverExplorer';
 import * as server from './server';
+import { ExtensionAPI } from './extension.api';
 import { SSPClient } from 'ssp-client';
 
 const client = new SSPClient('localhost', 27511);
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
+export async function activate(context: vscode.ExtensionContext):  Promise<ExtensionAPI>  {
     let serversData: ServersViewTreeDataProvider;
     server.start(context).then(async () => {
         await client.connect();
@@ -43,11 +44,11 @@ export function activate(context: vscode.ExtensionContext) {
             });
 
         vscode.commands.registerCommand('server.stop', context => {
-            client.stopServerAsync({id: context.id, force: true})
+            client.stopServerAsync({id: context.id, force: true});
         });
 
         vscode.commands.registerCommand('server.remove', context => {
-            client.deleteServerAsync({id: context.id, type: context.type})
+            client.deleteServerAsync({id: context.id, type: context.type});
         });
 
         vscode.commands.registerCommand('server.output', context => {
@@ -65,6 +66,16 @@ export function activate(context: vscode.ExtensionContext) {
             vscode.window.showInformationMessage('Stack Protocol Server is starting, please try again later!');
         }
     });
+
+    return {
+        apiVersion: '0.1',
+        server: {
+            on(status: string, callback: Function) {
+                // not impemented yet
+            }
+        },
+        treeDataProvider: serversData
+    };
 }
 
 // this method is called when your extension is deactivated
