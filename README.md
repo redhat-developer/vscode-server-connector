@@ -1,5 +1,7 @@
 # Visual Studio Code Adapters Tools
 
+[![Build Status](https://travis-ci.org/redhat-developer/vscode-adapters.svg?branch=master)](https://travis-ci.org/redhat-developer/vscode-adapters)
+
 A Visual Studio Code extension for interacting with different server adapters and runtimes.
 
 ## Features
