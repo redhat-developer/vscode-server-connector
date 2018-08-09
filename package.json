@@ -5,7 +5,7 @@
   "version": "0.0.3",
   "license": "SEE LICENSE IN LICENSE",
   "publisher": "redhat",
-  "author": "Red Hat",  
+  "author": "Red Hat",
   "preview": true,
   "repository": {
     "type": "git",
@@ -18,7 +18,7 @@
     "Other"
   ],
   "keywords": [
-    "servers",
+    "server",
     "runtimes",
     "middleware",
     "minishift",
@@ -39,19 +39,23 @@
       },
       {
         "command": "server.start",
-        "title": "Start"
+        "title": "Start Server",
+        "category": "Adapters"
       },
       {
         "command": "server.stop",
-        "title": "Stop"
+        "title": "Stop Server",
+        "category": "Adapters"
       },
       {
         "command": "server.remove",
-        "title": "Remove"
+        "title": "Remove Server",
+        "category": "Adapters"
       },
       {
         "command": "server.output",
-        "title": "Show Output"
+        "title": "Open Output Channel",
+        "category": "Adapters"
       }
     ],
     "views": {
