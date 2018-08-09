@@ -42,20 +42,35 @@ export function activate(context: vscode.ExtensionContext) {
                 mode: 'run'});
             });
 
-        vscode.commands.registerCommand('server.stop', context => {
-            client.stopServerAsync({id: context.id, force: true})
+        vscode.commands.registerCommand('server.stop', async context => {
+            if (context === undefined) {
+                const serverId: any = await vscode.window.showQuickPick(serversData.servers.map((server: any) => ({label: server.id})), {placeHolder: 'Select runtime/server to Stop'});
+                if (serversData.serverStatus.get(serverId.label) === 2) {
+                    client.stopServerAsync({id: serverId.label, force: true});
+                } else {
+                    vscode.window.showInformationMessage('The server is already in stopped state !!');
+                }
+            } else {
+                client.stopServerAsync({id: context.id, force: true});
+            }
         });
 
-        vscode.commands.registerCommand('server.remove', context => {
-            client.deleteServerAsync({id: context.id, type: context.type})
+        vscode.commands.registerCommand('server.remove', async context => {
+            if (context === undefined) {
+                const serverId: any = await vscode.window.showQuickPick(serversData.servers.map((server: any) => ({label: server.id})), {placeHolder: 'Select runtime/server to Remove'});
+                if (serversData.serverStatus.get(serverId.label) === 4) {
+                    client.deleteServerAsync({id: serverId.label, type: serverId.type});
+                } else {
+                    vscode.window.showInformationMessage('Please stop the server and then remove it !!');
+                }
+            } else {
+                client.deleteServerAsync({id: context.id, type: context.type});
+            }
         });
 
-        vscode.commands.registerCommand('server.output', context => {
+        vscode.commands.registerCommand('server.output', async context => {
             serversData.showOutput(context);
         });
-
-        // context.subscriptions.push(client);
-        // Needs to add dispose:any to sspclient [Issue #2]
     });
 
     vscode.commands.registerCommand('servers.addLocation', () => {

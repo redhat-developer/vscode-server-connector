@@ -17,10 +17,10 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<Protocol.Se
     private _onDidChangeTreeData: EventEmitter<Protocol.ServerHandle | undefined> = new EventEmitter<Protocol.ServerHandle | undefined>();
     readonly onDidChangeTreeData: Event<Protocol.ServerHandle | undefined> = this._onDidChangeTreeData.event;
     private client: SSPClient;
-    private servers: Protocol.ServerHandle[] = new Array<Protocol.ServerHandle>();
-    private serverStatus: Map<string, number> = new Map<string, number>();
+    public servers: Protocol.ServerHandle[] = new Array<Protocol.ServerHandle>();
+    public serverStatus: Map<string, number> = new Map<string, number>();
     private serverOutputChannels: Map<string, OutputChannel> = new Map<string, OutputChannel>();
-    private serverStatusEnum: Map<number, string> = new Map<number, string>();
+    public serverStatusEnum: Map<number, string> = new Map<number, string>();
 
     constructor(client: SSPClient) {
         this.client = client;
