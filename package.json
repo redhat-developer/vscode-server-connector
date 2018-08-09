@@ -4,11 +4,12 @@
   "description": "Connects vscode with different server adapters and runtimes",
   "version": "0.0.3",
   "license": "SEE LICENSE IN LICENSE",
-  "publisher": "mohitsuman",
+  "publisher": "redhat",
+  "author": "Red Hat",  
   "preview": true,
   "repository": {
     "type": "git",
-    "url": "https://github.com/mohitsuman/adapters-vscode.git"
+    "url": "https://github.com/redhat-developer/vscode-adapters.git"
   },
   "engines": {
     "vscode": "^1.23.0"
