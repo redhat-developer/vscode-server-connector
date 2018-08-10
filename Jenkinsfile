@@ -38,7 +38,7 @@ node('rhel7'){
 		}
 	}
 	if(params.UPLOAD_LOCATION) {
-		stage('Snapshot') when  {
+		stage('Snapshot') {
 			def filesToPush = findFiles(glob: '**.vsix')
 			sh "rsync -Pzrlt --rsh=ssh --protocol=28 ${filesToPush[0].path} ${UPLOAD_LOCATION}/snapshots/"
 		}
