@@ -135,14 +135,16 @@
     "update-deps": "node_modules/.bin/ncu --upgrade --loglevel verbose --packageFile package.json && npm update"
   },
   "devDependencies": {
+    "@types/glob": "^5.0.35",
     "@types/mocha": "^5.2.4",
     "@types/node": "^10.5.2",
+    "mocha": "^5.2.0",
+    "mocha-jenkins-reporter": "^0.3.12",
     "tslint": "^5.8.0",
     "typescript": "^2.9.2",
     "vscode": "^1.1.18"
   },
   "dependencies": {
-    "@types/glob": "^5.0.35",
     "child_process": "^1.0.2",
     "decache": "^4.4.0",
     "decompress": "^4.2.0",
