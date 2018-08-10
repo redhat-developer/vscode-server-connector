@@ -12,7 +12,7 @@ const client = new SSPClient('localhost', 27511);
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
     let serversData: ServersViewTreeDataProvider;
-    const startPromise = server.start(context).then(async (connInfo) => {
+    const startPromise = server.start(context).then(async connInfo => {
 
         await client.connect();
         client.onServerAdded(handle => {
