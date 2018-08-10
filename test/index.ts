@@ -20,13 +20,18 @@ if (!tty.getWindowSize) {
         return [80, 75];
     };
 }
-
-let mocha = new Mocha({
+const config = {
     reporter: 'mocha-jenkins-reporter',
     ui: 'tdd',
     useColors: true,
     timeout: 15000
-});
+};
+
+if(process.env.BUILD_ID && process.env.BUILD_NUMBER) {
+    config.reporter = 'mocha-jenkins-reporter';
+}
+
+let mocha = new Mocha(config);
 
 function configure(mochaOpts: any): void {
     mocha = new Mocha(mochaOpts);
