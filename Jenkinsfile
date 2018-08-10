@@ -18,10 +18,14 @@ node('rhel7'){
 		sh "npm run vscode:prepublish"
 	}
 
-	stage('Test') {
-		wrap([$class: 'Xvnc']) {
-			sh "npm test --silent"
-		}
+	withEnv(['JUNIT_REPORT_PATH=report.xml', 'CODE_TESTS_WORKSPACE=c:/unknown']) {
+        stage('Test') {
+    		wrap([$class: 'Xvnc']) {
+    			sh "npm test --silent"
+    			//cobertura coberturaReportFile: 'coverage/cobertura-coverage.xml'
+    			junit 'report.xml'
+    		}
+        }
 	}
 
 	stage('Package') {
@@ -33,9 +37,10 @@ node('rhel7'){
 			archiveArtifacts artifacts: '*.vsix'
 		}
 	}
-
-	stage('Snapshot') {
-		def filesToPush = findFiles(glob: '**.vsix')
-		sh "rsync -Pzrlt --rsh=ssh --protocol=28 ${filesToPush[0].path} ${UPLOAD_LOCATION}/snapshots/"
+	if(params.UPLOAD_LOCATION) {
+		stage('Snapshot') when  {
+			def filesToPush = findFiles(glob: '**.vsix')
+			sh "rsync -Pzrlt --rsh=ssh --protocol=28 ${filesToPush[0].path} ${UPLOAD_LOCATION}/snapshots/"
+		}
 	}
 }
