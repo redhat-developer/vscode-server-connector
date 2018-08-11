@@ -11,6 +11,10 @@ This extension supports a number of commands for interacting with server adapter
 ### General commands
 
    * `Add Server Location` - Selects the path of the server location and display in the SERVERS Explorer stack.
+   * `Start` - From the list of servers present, select the server to start.
+   * `Stop` - From the list of servers present, select the server to stop.
+   * `Remove` - From the list of servers present, select the server to be removed.
+   * `Show Output Channel` - Select a particular server from the list to show its ouput channel in the editor.
 
 ### Servers Supported
    * Wildfly [8/9/10/11/12/13]
@@ -38,8 +42,8 @@ Stable releases are archived under http://download.jboss.org/jbosstools/adapters
 
 Feedback
 ===============
-* File a bug in [GitHub Issues](https://github.com/redhat-developer/vscode-adapters/issues),
-* Chat with us on [Mattermost](https://chat.openshift.io/developers/channels/adapters),
+* File a bug in [GitHub Issues](https://github.com/redhat-developer/vscode-adapters/issues)
+* Chat with us on [Mattermost](https://chat.openshift.io/developers/channels/adapters)
 
 License
 ===============
