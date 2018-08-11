@@ -36,27 +36,27 @@
         "command": "servers.addLocation",
         "title": "Add Server Location",
         "icon": "resources/dark/add-location.svg",
-        "category": "Adapters"
+        "category": "Servers"
       },
       {
         "command": "server.start",
-        "title": "Start Server",
-        "category": "Adapters"
+        "title": "Start",
+        "category": "Servers"
       },
       {
         "command": "server.stop",
-        "title": "Stop Server",
-        "category": "Adapters"
+        "title": "Stop",
+        "category": "Servers"
       },
       {
         "command": "server.remove",
-        "title": "Remove Server",
-        "category": "Adapters"
+        "title": "Remove",
+        "category": "Servers"
       },
       {
         "command": "server.output",
-        "title": "Open Output Channel",
-        "category": "Adapters"
+        "title": "Show Output Channel",
+        "category": "Servers"
       }
     ],
     "views": {
