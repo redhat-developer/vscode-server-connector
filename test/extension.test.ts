@@ -8,7 +8,7 @@ import * as vscode from 'vscode';
 // import * as myExtension from '../extension';
 
 // Defines a Mocha test suite to group tests of similar kind together
-suite('Extension Tests', function () {
+suite('Extension Tests', function() {
     let connection;
     suiteSetup(function(done) {
         setTimeout(function() {
