@@ -12,7 +12,9 @@ const client = new SSPClient('localhost', 27511);
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
     let serversData: ServersViewTreeDataProvider;
-    const startPromise = server.start(context).then(async (connInfo) => {
+    let selectedServerType: any;
+    let selectedServerId: string;
+    const startPromise = server.start(context).then(async connInfo => {
 
         await client.connect();
         client.onServerAdded(handle => {
@@ -33,19 +35,33 @@ export function activate(context: vscode.ExtensionContext) {
 
         serversData = new ServersViewTreeDataProvider(client);
         vscode.window.registerTreeDataProvider('servers', serversData);
-        vscode.commands.registerCommand('server.start', context => {
+        vscode.commands.registerCommand('server.start', async context => {
+            if (context === undefined) {
+                const serverId: any = await vscode.window.showQuickPick(serversData.servers.map((server: any) => ({label: server.id})), {placeHolder: 'Select runtime/server to start'});
+                if (serversData.serverStatus.get(serverId.label) === 4) {
+                    selectedServerType = serversData.servers.find(s => s.id === serverId.label).type;
+                    selectedServerId = serverId.label;
+                } else {
+                    vscode.window.showInformationMessage('The server has to be in stopped state to start it!!');
+                }
+            } else {
+                selectedServerType = context.type;
+                selectedServerId = context.id;
+            }
+
             client.startServerAsync({
                 params: {
-                    serverType: context.type.id,
-                    id: context.id,
+                    serverType: selectedServerType.id,
+                    id: selectedServerId,
                     attributes: new Map<string, any>()
                 },
-                mode: 'run'});
+                mode: 'run'
             });
+        });
 
         vscode.commands.registerCommand('server.stop', async context => {
             if (context === undefined) {
-                const serverId: any = await vscode.window.showQuickPick(serversData.servers.map((server: any) => ({label: server.id})), {placeHolder: 'Select runtime/server to Stop'});
+                const serverId: any = await vscode.window.showQuickPick(serversData.servers.map((server: any) => ({label: server.id})), {placeHolder: 'Select runtime/server to stop'});
                 if (serversData.serverStatus.get(serverId.label) === 2) {
                     client.stopServerAsync({id: serverId.label, force: true});
                 } else {
@@ -58,9 +74,10 @@ export function activate(context: vscode.ExtensionContext) {
 
         vscode.commands.registerCommand('server.remove', async context => {
             if (context === undefined) {
-                const serverId: any = await vscode.window.showQuickPick(serversData.servers.map((server: any) => ({label: server.id})), {placeHolder: 'Select runtime/server to Remove'});
+                const serverId: any = await vscode.window.showQuickPick(serversData.servers.map((server: any) => ({label: server.id})), {placeHolder: 'Select runtime/server to remove'});
                 if (serversData.serverStatus.get(serverId.label) === 4) {
-                    client.deleteServerAsync({id: serverId.label, type: serverId.type});
+                    selectedServerType = serversData.servers.find(s => s.id === serverId.label).type;
+                    client.deleteServerAsync({id: serverId.label, type: selectedServerType});
                 } else {
                     vscode.window.showInformationMessage('Please stop the server and then remove it !!');
                 }
@@ -70,7 +87,12 @@ export function activate(context: vscode.ExtensionContext) {
         });
 
         vscode.commands.registerCommand('server.output', async context => {
-            serversData.showOutput(context);
+            if (context === undefined) {
+                const serverId: any = await vscode.window.showQuickPick(serversData.servers.map((server: any) => ({label: server.id})), {placeHolder: 'Select runtime/server to show ouput channel'});
+                serversData.showOutput(serversData.servers.find(s => s.id === serverId.label));
+            } else {
+                serversData.showOutput(context);
+            }
         });
 
         vscode.commands.registerCommand('servers.addLocation', () => {
@@ -81,8 +103,6 @@ export function activate(context: vscode.ExtensionContext) {
             }
         });
 
-        // context.subscriptions.push(client);
-        // Needs to add dispose:any to sspclient [Issue #2]
         return connInfo;
     });
 

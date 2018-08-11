@@ -95,13 +95,13 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<Protocol.Se
             openLabel: 'Select desired server location'
         }).then(folders => {
             if (folders && folders.length === 1) {
-                return this.client.findServerBeans( folders[0].fsPath );
+                return this.client.findServerBeans(folders[0].fsPath);
             }
         }).then(serverBeans => {
             if (serverBeans && serverBeans.length > 0 && serverBeans[0].typeCategory && serverBeans[0].typeCategory !== 'UNKNOWN') {
                 // Prompt for server name
                 const options: InputBoxOptions = {
-                    prompt: `Please provide the server name`,
+                    prompt: `Provide the server name`,
                     placeHolder: `Server name`,
                     validateInput: (value: string) => {
                         if (!value || value.trim().length === 0) {
