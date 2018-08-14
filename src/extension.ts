@@ -4,7 +4,7 @@
 import * as vscode from 'vscode';
 import { ServersViewTreeDataProvider } from './serverExplorer';
 import * as server from './server';
-import { SSPClient } from 'ssp-client';
+import { SSPClient, Protocol } from 'ssp-client';
 
 const client = new SSPClient('localhost', 27511);
 
@@ -12,7 +12,7 @@ const client = new SSPClient('localhost', 27511);
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
     let serversData: ServersViewTreeDataProvider;
-    let selectedServerType: any;
+    let selectedServerType: Protocol.ServerType;
     let selectedServerId: string;
     const startPromise = server.start(context).then(async connInfo => {
 
@@ -37,10 +37,10 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.window.registerTreeDataProvider('servers', serversData);
         vscode.commands.registerCommand('server.start', async context => {
             if (context === undefined) {
-                const serverId: any = await vscode.window.showQuickPick(serversData.servers.map((server: any) => ({label: server.id})), {placeHolder: 'Select runtime/server to start'});
-                if (serversData.serverStatus.get(serverId.label) === 4) {
-                    selectedServerType = serversData.servers.find(s => s.id === serverId.label).type;
-                    selectedServerId = serverId.label;
+                const serverId: string = await vscode.window.showQuickPick(Array.from(serversData.servers.keys()), {placeHolder: 'Select runtime/server to start'});
+                if (serversData.serverStatus.get(serverId) === 4) {
+                    selectedServerType = serversData.servers.get(serverId).type;
+                    selectedServerId = serverId;
                 } else {
                     vscode.window.showInformationMessage('The server has to be in stopped state to start it!!');
                 }
@@ -61,9 +61,9 @@ export function activate(context: vscode.ExtensionContext) {
 
         vscode.commands.registerCommand('server.stop', async context => {
             if (context === undefined) {
-                const serverId: any = await vscode.window.showQuickPick(serversData.servers.map((server: any) => ({label: server.id})), {placeHolder: 'Select runtime/server to stop'});
-                if (serversData.serverStatus.get(serverId.label) === 2) {
-                    client.stopServerAsync({id: serverId.label, force: true});
+                const serverId: string = await vscode.window.showQuickPick(Array.from(serversData.servers.keys()), {placeHolder: 'Select runtime/server to stop'});
+                if (serversData.serverStatus.get(serverId) === 2) {
+                    client.stopServerAsync({id: serverId, force: true});
                 } else {
                     vscode.window.showInformationMessage('The server is already in stopped state !!');
                 }
@@ -74,10 +74,10 @@ export function activate(context: vscode.ExtensionContext) {
 
         vscode.commands.registerCommand('server.remove', async context => {
             if (context === undefined) {
-                const serverId: any = await vscode.window.showQuickPick(serversData.servers.map((server: any) => ({label: server.id})), {placeHolder: 'Select runtime/server to remove'});
-                if (serversData.serverStatus.get(serverId.label) === 4) {
-                    selectedServerType = serversData.servers.find(s => s.id === serverId.label).type;
-                    client.deleteServerAsync({id: serverId.label, type: selectedServerType});
+                const serverId: string = await vscode.window.showQuickPick(Array.from(serversData.servers.keys()), {placeHolder: 'Select runtime/server to remove'});
+                if (serversData.serverStatus.get(serverId) === 4) {
+                    selectedServerType = serversData.servers.get(serverId).type;
+                    client.deleteServerAsync({id: serverId, type: selectedServerType});
                 } else {
                     vscode.window.showInformationMessage('Please stop the server and then remove it !!');
                 }
@@ -88,8 +88,8 @@ export function activate(context: vscode.ExtensionContext) {
 
         vscode.commands.registerCommand('server.output', async context => {
             if (context === undefined) {
-                const serverId: any = await vscode.window.showQuickPick(serversData.servers.map((server: any) => ({label: server.id})), {placeHolder: 'Select runtime/server to show ouput channel'});
-                serversData.showOutput(serversData.servers.find(s => s.id === serverId.label));
+                const serverId: string = await vscode.window.showQuickPick(Array.from(serversData.servers.keys()), {placeHolder: 'Select runtime/server to show ouput channel'});
+                serversData.showOutput(serversData.servers.get(serverId));
             } else {
                 serversData.showOutput(context);
             }
