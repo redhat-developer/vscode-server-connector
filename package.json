@@ -2,7 +2,7 @@
   "name": "vscode-adapters",
   "displayName": "Runtime and Server Adapters",
   "description": "Connects vscode with different server adapters and runtimes",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "license": "SEE LICENSE IN LICENSE",
   "publisher": "redhat",
   "author": "Red Hat",
@@ -146,13 +146,13 @@
   },
   "devDependencies": {
     "@types/glob": "^5.0.35",
-    "@types/mocha": "^5.2.4",
-    "@types/node": "^10.5.2",
+    "@types/mocha": "^5.2.5",
+    "@types/node": "^10.7.1",
     "mocha": "^5.2.0",
-    "mocha-jenkins-reporter": "^0.3.12",
+    "mocha-jenkins-reporter": "^0.4.0",
     "tslint": "^5.11.0",
-    "typescript": "^2.9.2",
-    "vscode": "^1.1.18"
+    "typescript": "^3.0.1",
+    "vscode": "^1.1.21"
   },
   "dependencies": {
     "child_process": "^1.0.2",
@@ -166,11 +166,11 @@
     "istanbul": "^0.4.5",
     "mkdirp": "0.5.1",
     "path": "0.12.7",
-    "pify": "3.0.0",
+    "pify": "4.0.0",
     "remap-istanbul": "^0.11.1",
-    "ssp-client": "0.0.2",
+    "rsp-client": "0.0.3",
     "vscode-jsonrpc": "^3.6.2",
-    "vscode-languageclient": "^4.3.0",
+    "vscode-languageclient": "^5.0.0",
     "wait-on": "^2.1.0"
   }
 }
