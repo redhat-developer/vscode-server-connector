@@ -44,6 +44,11 @@
         "category": "Servers"
       },
       {
+        "command": "server.debug",
+        "title": "Debug",
+        "category": "Servers"
+      },
+      {
         "command": "server.stop",
         "title": "Stop",
         "category": "Servers"
@@ -87,9 +92,19 @@
           "group": "server-command@1"
         },
         {
+          "command": "server.debug",
+          "when": "view == servers && viewItem == 'Stopped'",
+          "group": "server-command@2"
+        },
+        {
           "command": "server.stop",
           "when": "view == servers && viewItem == 'Started'",
-          "group": "server-command@2"
+          "group": "server-command@3"
+        },
+        {
+          "command": "server.restart",
+          "when": "view == servers && viewItem == 'Started'",
+          "group": "server-command@4"
         },
         {
           "command": "server.remove",
@@ -115,11 +130,6 @@
           "command": "server.output",
           "when": "view == servers && viewItem == 'Stopping'",
           "group": "server-status"
-        },
-        {
-          "command": "server.restart",
-          "when": "view == servers && viewItem == 'Started'",
-          "group": "server-command@3"
         }
       ]
     },
