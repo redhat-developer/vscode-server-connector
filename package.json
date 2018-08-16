@@ -39,9 +39,9 @@
         "category": "Servers"
       },
       {
-        "title": "Restart server",
-        "category": "Adapters",
-        "command": "adapter.restartserver"
+        "title": "Restart",
+        "category": "Servers",
+        "command": "server.restart"
       },
       {
         "command": "server.start",
@@ -51,6 +51,11 @@
       {
         "command": "server.stop",
         "title": "Stop",
+        "category": "Servers"
+      },
+      {
+        "command": "server.restart",
+        "title": "Restart",
         "category": "Servers"
       },
       {
@@ -115,6 +120,11 @@
           "command": "server.output",
           "when": "view == servers && viewItem == 'Stopping'",
           "group": "server-status"
+        },
+        {
+          "command": "server.restart",
+          "when": "view == servers && viewItem == 'Started'",
+          "group": "server-command@3"
         }
       ]
     },

@@ -4,7 +4,7 @@
 import * as vscode from 'vscode';
 import { ServersViewTreeDataProvider } from './serverExplorer';
 import * as server from './server';
-import { SSPClient, Protocol } from 'ssp-client';
+import { SSPClient, Protocol, ServerState } from 'ssp-client';
 
 const client = new SSPClient('localhost', 27511);
 
@@ -102,14 +102,27 @@ export function activate(context: vscode.ExtensionContext) {
                 vscode.window.showInformationMessage('Stack Protocol Server is starting, please try again later!');
             }
         });
-        
 
-        context.subscriptions.push(
-            // user commands
-            vscode.commands.registerCommand('adapter.restartserver', () => {
-                serversData.restartServer(client);
-            })
-        );
+        vscode.commands.registerCommand('server.restart', async context => {
+            if (context === undefined) {
+                const serverId: string = await vscode.window.showQuickPick(Array.from(serversData.servers.keys()).filter(item => serversData.serverStatus.get(item) === ServerState.STARTED), {placeHolder: 'Select runtime/server to restart'});
+                context = serversData.servers.get(serverId);
+            }
+
+            const params: Protocol.LaunchParameters = {
+                mode: 'run',
+                params: {
+                    id: context.id,
+                    serverType: context.type.id,
+                    attributes: new Map<string, any>()
+                }
+            };
+
+            await client.stopServerSync({ id: context.id, force: true });
+            await client.startServerAsync(params);
+        });
+
+        context.subscriptions.push();
 
         return connInfo;
     });
