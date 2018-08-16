@@ -36,30 +36,34 @@ export function activate(context: vscode.ExtensionContext) {
         serversData = new ServersViewTreeDataProvider(client);
         vscode.window.registerTreeDataProvider('servers', serversData);
 
-        const subscriptions = [
-            vscode.commands.registerCommand('server.start', async context => {
-                if (context === undefined) {
-                    const serverId: string = await vscode.window.showQuickPick(Array.from(serversData.servers.keys()), {placeHolder: 'Select runtime/server to start'});
-                    if (serversData.serverStatus.get(serverId) === 4) {
-                        selectedServerType = serversData.servers.get(serverId).type;
-                        selectedServerId = serverId;
-                    } else {
-                        vscode.window.showInformationMessage('The server has to be in stopped state to start it!!');
-                    }
+        const start = async function(mode, context) {
+            if (context === undefined) {
+                const serverId: string = await vscode.window.showQuickPick(Array.from(serversData.servers.keys()), {placeHolder: 'Select runtime/server to start'});
+                if (serversData.serverStatus.get(serverId) === 4) {
+                    selectedServerType = serversData.servers.get(serverId).type;
+                    selectedServerId = serverId;
                 } else {
-                    selectedServerType = context.type;
-                    selectedServerId = context.id;
+                    vscode.window.showInformationMessage('The server has to be in stopped state to start it!!');
                 }
+            } else {
+                selectedServerType = context.type;
+                selectedServerId = context.id;
+            }
 
-                client.startServerAsync({
-                    params: {
-                        serverType: selectedServerType.id,
-                        id: selectedServerId,
-                        attributes: new Map<string, any>()
-                    },
-                    mode: 'run'
-                });
-            }),
+            client.startServerAsync({
+                params: {
+                    serverType: selectedServerType.id,
+                    id: selectedServerId,
+                    attributes: new Map<string, any>()
+                },
+                mode: mode
+            });
+        };
+
+        const subscriptions = [
+            vscode.commands.registerCommand('server.start', await start.bind(this, 'run')),
+
+            vscode.commands.registerCommand('server.debug', await start.bind(this, 'debug')),
 
             vscode.commands.registerCommand('server.stop', async context => {
                 if (context === undefined) {
