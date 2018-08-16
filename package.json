@@ -49,6 +49,11 @@
         "category": "Servers"
       },
       {
+        "command": "server.restart",
+        "title": "Restart",
+        "category": "Servers"
+      },
+      {
         "command": "server.remove",
         "title": "Remove",
         "category": "Servers"
@@ -110,6 +115,11 @@
           "command": "server.output",
           "when": "view == servers && viewItem == 'Stopping'",
           "group": "server-status"
+        },
+        {
+          "command": "server.restart",
+          "when": "view == servers && viewItem == 'Started'",
+          "group": "server-command@3"
         }
       ]
     },
@@ -140,7 +150,7 @@
     "@types/node": "^10.5.2",
     "mocha": "^5.2.0",
     "mocha-jenkins-reporter": "^0.3.12",
-    "tslint": "^5.8.0",
+    "tslint": "^5.11.0",
     "typescript": "^2.9.2",
     "vscode": "^1.1.18"
   },
@@ -148,9 +158,9 @@
     "child_process": "^1.0.2",
     "decache": "^4.4.0",
     "decompress": "^4.2.0",
-    "download": "^7.0.0",
+    "download": "^7.1.0",
     "find-java-home": "^0.2.0",
-    "fs-extra": "6.0.1",
+    "fs-extra": "7.0.0",
     "fstream": "^1.0.11",
     "glob": "^7.1.2",
     "istanbul": "^0.4.5",
@@ -160,7 +170,7 @@
     "remap-istanbul": "^0.11.1",
     "ssp-client": "0.0.2",
     "vscode-jsonrpc": "^3.6.2",
-    "vscode-languageclient": "^4.2.1",
+    "vscode-languageclient": "^4.3.0",
     "wait-on": "^2.1.0"
   }
 }
