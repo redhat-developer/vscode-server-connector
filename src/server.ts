@@ -15,14 +15,14 @@ export function start(context: vscode.ExtensionContext): Promise<ConnectionInfo>
             if (err) {
                 reject(err);
             } else {
-                const sspserverstdout = vscode.window.createOutputChannel('SSP Server (stdout)');
-                const sspserverstderr = vscode.window.createOutputChannel('SSP Server (stderr)');
-                context.subscriptions.push(sspserverstdout);
-                context.subscriptions.push(sspserverstderr);
+                const rspserverstdout = vscode.window.createOutputChannel('RSP Server (stdout)');
+                const rspserverstderr = vscode.window.createOutputChannel('RSP Server (stderr)');
+                context.subscriptions.push(rspserverstdout);
+                context.subscriptions.push(rspserverstderr);
                 const serverLocation = path.resolve(__dirname, '..', '..', 'server');
                 const felix = path.join(serverLocation, 'bin', 'felix.jar');
                 const java = path.join(home, 'bin', 'java');
-                const sspserver = cp.spawn(java, ['-jar', felix], { cwd: serverLocation });
+                const rspserver = cp.spawn(java, ['-jar', felix], { cwd: serverLocation });
                 waitOn({
                     resources: ['tcp:localhost:27511']
                 }, () => {
@@ -31,11 +31,11 @@ export function start(context: vscode.ExtensionContext): Promise<ConnectionInfo>
                         host: 'localhost'
                     });
                 });
-                sspserver.stdout.on('data', data => {
-                    displayLog(sspserverstdout, data.toString());
+                rspserver.stdout.on('data', data => {
+                    displayLog(rspserverstdout, data.toString());
                 });
-                sspserver.stderr.on('data', data => {
-                    displayLog(sspserverstderr, data.toString());
+                rspserver.stderr.on('data', data => {
+                    displayLog(rspserverstderr, data.toString());
                 });
             }
         });
