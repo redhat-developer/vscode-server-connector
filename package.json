@@ -39,11 +39,6 @@
         "category": "Servers"
       },
       {
-        "title": "Restart",
-        "category": "Servers",
-        "command": "server.restart"
-      },
-      {
         "command": "server.start",
         "title": "Start",
         "category": "Servers"
