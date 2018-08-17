@@ -178,7 +178,7 @@
     "path": "0.12.7",
     "pify": "3.0.0",
     "remap-istanbul": "^0.11.1",
-    "ssp-client": "0.0.2",
+    "rsp-client": "0.0.3",
     "vscode-jsonrpc": "^3.6.2",
     "vscode-languageclient": "^4.3.0",
     "wait-on": "^2.1.0"

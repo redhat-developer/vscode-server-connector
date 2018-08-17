@@ -4,9 +4,9 @@
 import * as vscode from 'vscode';
 import { ServersViewTreeDataProvider } from './serverExplorer';
 import * as server from './server';
-import { SSPClient, Protocol, ServerState } from 'ssp-client';
+import { RSPClient, Protocol, ServerState } from 'rsp-client';
 
-const client = new SSPClient('localhost', 27511);
+const client = new RSPClient('localhost', 27511);
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed

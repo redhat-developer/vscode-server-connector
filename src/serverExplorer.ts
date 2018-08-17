@@ -10,19 +10,19 @@ import {
     workspace
 } from 'vscode';
 
-import { SSPClient, Protocol, ServerState } from 'ssp-client';
+import { RSPClient, Protocol, ServerState } from 'rsp-client';
 
 export class ServersViewTreeDataProvider implements TreeDataProvider<Protocol.ServerHandle> {
 
     private _onDidChangeTreeData: EventEmitter<Protocol.ServerHandle | undefined> = new EventEmitter<Protocol.ServerHandle | undefined>();
     readonly onDidChangeTreeData: Event<Protocol.ServerHandle | undefined> = this._onDidChangeTreeData.event;
-    private client: SSPClient;
+    private client: RSPClient;
     public servers: Map<string, Protocol.ServerHandle> = new Map<string, Protocol.ServerHandle>();
     public serverStatus: Map<string, number> = new Map<string, number>();
     private serverOutputChannels: Map<string, OutputChannel> = new Map<string, OutputChannel>();
     public serverStatusEnum: Map<number, string> = new Map<number, string>();
 
-    constructor(client: SSPClient) {
+    constructor(client: RSPClient) {
         this.client = client;
         this.serverStatusEnum.set(0, 'Unknown');
         this.serverStatusEnum.set(1, 'Starting');
