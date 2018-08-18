@@ -8,7 +8,7 @@ A Visual Studio Code extension for interacting with different server adapters an
 
 This extension supports a number of commands for interacting with server adapters; these are accessible via the command menu (`Cmd+Shift+P` on macOS or `Ctrl+Shift+P` on Windows and Linux) and may be bound to keys in the normal way.
 
-### General commands
+### General Commands
 
    * `Add Server Location` - Selects the path of the server location and display in the SERVERS Explorer stack.
    * `Start` - From the list of servers present, select the server to start.
@@ -16,7 +16,7 @@ This extension supports a number of commands for interacting with server adapter
    * `Remove` - From the list of servers present, select the server to be removed.
    * `Show Output Channel` - Select a particular server from the list to show its ouput channel in the editor.
 
-### Servers Supported
+### Supported Servers
    * Wildfly [8/9/10/11/12/13]
    * EAP
    * Minishift Binary
