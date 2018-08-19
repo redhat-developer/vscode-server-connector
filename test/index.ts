@@ -27,7 +27,7 @@ const config = {
     timeout: 15000
 };
 
-if(process.env.BUILD_ID && process.env.BUILD_NUMBER) {
+if (process.env.BUILD_ID && process.env.BUILD_NUMBER) {
     config.reporter = 'mocha-jenkins-reporter';
 }
 
