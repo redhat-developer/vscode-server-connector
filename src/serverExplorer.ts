@@ -38,14 +38,14 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<Protocol.Se
     }
 
     updateServer(event: Protocol.ServerStateChange) {
-        const value = this.servers.get(event.server.id)
+        const value = this.servers.get(event.server.id);
         this.serverStatus.set(value.id, event.state);
         this.refresh(value);
         const channel: OutputChannel = this.serverOutputChannels.get(value.id);
         if (event.state === ServerState.STARTING && channel) {
             channel.clear();
         }
-}
+    }
 
     removeServer(handle: Protocol.ServerHandle): any {
         this.servers.delete(handle.id);
