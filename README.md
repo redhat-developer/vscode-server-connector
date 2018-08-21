@@ -14,6 +14,7 @@ This extension supports a number of commands for interacting with server adapter
    * `Start` - From the list of servers present, select the server to start.
    * `Stop` - From the list of servers present, select the server to stop.
    * `Remove` - From the list of servers present, select the server to be removed.
+   * `Debug` - From the list of servers present, select the server to run in Debug mode.
    * `Show Output Channel` - Select a particular server from the list to show its ouput channel in the editor.
 
 ### Supported Servers
