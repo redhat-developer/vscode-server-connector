@@ -96,7 +96,7 @@ interface ITestRunnerOptions {
 
 class CoverageRunner {
 
-    private coverageVar: string = '$$cov_' + new Date().getTime() + '$$';
+    private coverageVar: string = `$$cov_${new Date().getTime()}$$`;
     private transformer: any = undefined;
     private matchFn: any = undefined;
     private instrumenter: any = undefined;
@@ -116,13 +116,13 @@ class CoverageRunner {
         // Glob source files
         const srcFiles = glob.sync('**/**.js', {
             cwd: sourceRoot,
-            ignore: self.options.ignorePatterns,
+            ignore: self.options.ignorePatterns
         });
 
         // Create a match function - taken from the run-with-cover.js in istanbul.
         const decache = require('decache');
         const fileMap: any = {};
-        srcFiles.forEach((file) => {
+        srcFiles.forEach(file => {
             const fullPath = paths.join(sourceRoot, file);
             fileMap[fullPath] = true;
 
@@ -187,7 +187,7 @@ class CoverageRunner {
             // When instrumenting the code, istanbul will give each FunctionDeclaration a value of 1 in coverState.s,
             // presumably to compensate for function hoisting. We need to reset this, as the function was not hoisted,
             // as it was never loaded.
-            Object.keys(self.instrumenter.coverState.s).forEach((key) => {
+            Object.keys(self.instrumenter.coverState.s).forEach(key => {
                 self.instrumenter.coverState.s[key] = 0;
             });
 
@@ -198,7 +198,7 @@ class CoverageRunner {
         const reportingDir = paths.join(self.testsRoot, self.options.relativeCoverageDir);
         const includePid = self.options.includePid;
         const pidExt = includePid ? ('-' + process.pid) : '';
-        const coverageFile = paths.resolve(reportingDir, 'coverage' + pidExt + '.json');
+        const coverageFile = paths.resolve(reportingDir, `coverage${pidExt}.json`);
 
         // yes, do this again since some test runners could clean the dir initially created
         _mkDirIfExists(reportingDir);
