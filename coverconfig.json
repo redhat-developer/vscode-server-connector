@@ -9,7 +9,8 @@
     "reports": [
         "html",
         "text",
-        "cobertura"
+        "cobertura",
+        "json"
     ],
     "verbose": false
 }
