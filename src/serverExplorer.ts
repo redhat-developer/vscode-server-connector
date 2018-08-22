@@ -10,7 +10,11 @@ import {
     workspace
 } from 'vscode';
 
-import { RSPClient, Protocol, ServerState } from 'rsp-client';
+import { 
+    RSPClient,
+    Protocol,
+    ServerState
+} from 'rsp-client';
 
 export class ServersViewTreeDataProvider implements TreeDataProvider<Protocol.ServerHandle> {
 
