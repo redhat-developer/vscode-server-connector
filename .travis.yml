@@ -25,3 +25,4 @@ install:
 
 script:
 - npm test --silent
+- npm run coverage:upload
