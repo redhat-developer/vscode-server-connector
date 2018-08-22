@@ -8,7 +8,7 @@
     "includePid": false,
     "reports": [
         "html",
-        "text-summary",
+        "text",
         "cobertura"
     ],
     "verbose": false
