@@ -14,8 +14,15 @@ export function activate(context: vscode.ExtensionContext) {
     let serversData: ServersViewTreeDataProvider;
     let selectedServerType: Protocol.ServerType;
     let selectedServerId: string;
-    const startPromise = server.start(context).then(async connInfo => {
-
+    const startPromise = server.start().then(async serverInfo => {
+        const rspserverstdout = vscode.window.createOutputChannel('RSP Server (stdout)');
+        const rspserverstderr = vscode.window.createOutputChannel('RSP Server (stderr)');
+        serverInfo.process.stdout.on('data', data => {
+            displayLog(rspserverstdout, data.toString());
+        });
+        serverInfo.process.stderr.on('data', data => {
+            displayLog(rspserverstderr, data.toString());
+        });
         await client.connect();
         client.onServerAdded(handle => {
             serversData.insertServer(handle);
@@ -126,13 +133,15 @@ export function activate(context: vscode.ExtensionContext) {
 
                 await client.stopServerSync({ id: context.id, force: true });
                 await client.startServerAsync(params);
-            })];
+            }),
+            rspserverstdout,
+            rspserverstderr];
 
         subscriptions.forEach(element => {
             context.subscriptions.push(element);
         }, this);
 
-        return connInfo;
+        return serverInfo;
     });
 
     return {
@@ -143,4 +152,9 @@ export function activate(context: vscode.ExtensionContext) {
 
 // this method is called when your extension is deactivated
 export function deactivate() {
+}
+
+function displayLog(outputPanel: vscode.OutputChannel, message: string, show: boolean = true) {
+    if(show) outputPanel.show();
+    outputPanel.appendLine(message);
 }
