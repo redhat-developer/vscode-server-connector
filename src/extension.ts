@@ -5,13 +5,14 @@ import * as server from './server';
 import { RSPClient } from 'rsp-client';
 import { ExtensionAPI, CommandHandler } from './extensionApi';
 
-const client = new RSPClient('localhost', 27511);
+let client;
 
 export function activate(context: vscode.ExtensionContext): Promise<ExtensionAPI> {
     let serversData: ServersViewTreeDataProvider;
     let commandHandler: CommandHandler;
 
     return server.start().then(async serverInfo => {
+        client = new RSPClient('localhost', serverInfo.port);
         const rspserverstdout = vscode.window.createOutputChannel('RSP Server (stdout)');
         const rspserverstderr = vscode.window.createOutputChannel('RSP Server (stderr)');
 
