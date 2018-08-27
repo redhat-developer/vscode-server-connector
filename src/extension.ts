@@ -6,8 +6,6 @@ import { ServersViewTreeDataProvider } from './serverExplorer';
 import * as server from './server';
 import { RSPClient, Protocol, ServerState } from 'rsp-client';
 
-const client = new RSPClient('localhost', 27511);
-
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
@@ -15,6 +13,7 @@ export function activate(context: vscode.ExtensionContext) {
     let selectedServerType: Protocol.ServerType;
     let selectedServerId: string;
     const startPromise = server.start().then(async serverInfo => {
+        const client = new RSPClient('localhost', serverInfo.port);
         const rspserverstdout = vscode.window.createOutputChannel('RSP Server (stdout)');
         const rspserverstderr = vscode.window.createOutputChannel('RSP Server (stderr)');
         serverInfo.process.stdout.on('data', data => {
