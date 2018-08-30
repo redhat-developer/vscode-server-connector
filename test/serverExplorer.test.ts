@@ -2,17 +2,21 @@ import * as chai from 'chai';
 import * as sinon from 'sinon';
 import * as sinonChai from 'sinon-chai';
 import { ServersViewTreeDataProvider } from '../src/serverExplorer';
-import * as vscode from 'vscode';
-import { RSPClient, Protocol, ServerState} from 'rsp-client';
+// import * as vscode from 'vscode';
+import { RSPClient, Protocol} from 'rsp-client';
 
 const expect = chai.expect;
 chai.use(sinonChai);
 
-describe('Server explorer', () => {
+suite('Server explorer', () => {
     let sandbox: sinon.SinonSandbox;
     let clientStub: sinon.SinonStubbedInstance<RSPClient>;
     let serverExplorer: ServersViewTreeDataProvider;
-    let OutputChannelStub: sinon.SinonStubbedInstance<vscode.OutputChannel>;
+    // let OutputChannelStub: sinon.SinonStubbedInstance<vscode.OutputChannel>
+
+    // const fakeConnection = {
+    //     set: () => {}
+    // };
 
     const serverType: Protocol.ServerType = {
         description: 'a type',
@@ -24,19 +28,14 @@ describe('Server explorer', () => {
         id: 'id',
         type: serverType
     };
-    
-    beforeEach(() => {
-        serverExplorer = new ServersViewTreeDataProvider(clientStub);
-        sandbox = sinon.createSandbox();
-    });
 
-    afterEach(() => {
-        sandbox.restore();
-    });
-
-    describe('removeServer', () => {
-        it('should able to remove the server', async () => {
-            const result = await serverExplorer.removeServer(serverHandle);
+    suite('insertServer', () => {
+        test('should able to insert the server', async () => {
+            serverExplorer = new ServersViewTreeDataProvider(clientStub);
+            sandbox = sinon.createSandbox();
+            const refreshStub = sandbox.stub(serverExplorer, 'refresh').returns(null);
+            serverExplorer.insertServer(serverHandle);
+            expect(refreshStub).calledOnce;
         });
     });
 
