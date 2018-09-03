@@ -23,6 +23,11 @@ suite('Server explorer', () => {
         type: serverType
     };
 
+    const stateChange: Protocol.ServerStateChange = {
+        server: serverHandle,
+        state: 0
+    };
+
     test('should able to insert the server', async () => {
         serverExplorer = new ServersViewTreeDataProvider(clientStub);
         sandbox = sinon.createSandbox();
@@ -33,12 +38,26 @@ suite('Server explorer', () => {
 
     test('should able to removeServer the server ', async () => {
         serverExplorer = new ServersViewTreeDataProvider(clientStub);
-        const disposeSpy = sinon.stub(serverExplorer.serverOutputChannels, 'get').returns({
+        const disposeStub = sinon.stub(serverExplorer.serverOutputChannels, 'get').returns({
             clear: () => {},
             dispose: () => {}
         });
         sandbox.stub(serverExplorer, 'refresh')
         serverExplorer.removeServer(serverHandle);
-        expect(disposeSpy).calledOnce;
-    })
+        expect(disposeStub).calledOnce;
+    });
+
+    test('should able to updateServer the server ', async () => {
+        serverExplorer = new ServersViewTreeDataProvider(clientStub);
+        const serviceStub = sinon.stub(serverExplorer.servers, 'get').returns({
+            stateChange
+        });
+        const disposeStub = sinon.stub(serverExplorer.serverOutputChannels, 'get').returns({
+            clear: () => {},
+        });
+        sandbox.stub(serverExplorer, 'refresh')
+        serverExplorer.updateServer(stateChange);
+        expect(serviceStub).calledOnce;
+        expect(disposeStub).calledOnce;
+    });
 });
