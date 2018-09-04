@@ -3,6 +3,7 @@ import * as sinon from 'sinon';
 import * as sinonChai from 'sinon-chai';
 import { ServersViewTreeDataProvider } from '../src/serverExplorer';
 import { RSPClient, Protocol} from 'rsp-client';
+import { EventEmitter } from 'vscode';
 
 const expect = chai.expect;
 chai.use(sinonChai);
@@ -26,6 +27,13 @@ suite('Server explorer', () => {
     const stateChange: Protocol.ServerStateChange = {
         server: serverHandle,
         state: 0
+    };
+
+    const ProcessOutput: Protocol.ServerProcessOutput = {
+        processId: "process id",
+        server: serverHandle,
+        streamType: 0,
+        text: "the type"
     };
 
     test('should able to insert the server', () => {
@@ -84,5 +92,20 @@ suite('Server explorer', () => {
         const clearStub = sinon.stub(serverExplorer.servers, 'values').returns([]);
         const getChildren = serverExplorer.getChildren(undefined);
         expect(getChildren).deep.equals(Array.from(clearStub));
+    });
+
+    test('should able to getTreeItem of the server', () => {
+        serverExplorer = new ServersViewTreeDataProvider(clientStub);
+        const clearStub = sinon.stub(serverExplorer.serverOutputChannels, 'get').returns(undefined);
+        serverExplorer.addServerOutput(ProcessOutput);
+        expect(clearStub).calledOnce;
+    });
+
+    test('should able to refresh of the server', () => {
+        serverExplorer = new ServersViewTreeDataProvider(clientStub);
+        const clearStub = sinon.stub(EventEmitter.prototype, 'fire');
+        serverExplorer.refresh(serverHandle);
+        expect(clearStub).calledOnce;
+        expect(clearStub).calledOnceWith(serverHandle);
     });
 });
