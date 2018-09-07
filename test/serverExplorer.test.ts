@@ -36,6 +36,24 @@ suite('Server explorer', () => {
         text: "the type"
     };
 
+    const findServerBeans = {
+        length: 1,
+        fullVersion: "version",
+        location: "path",
+        name: "EAP",
+        serverAdapterTypeId: "org.jboss",
+        specificType: "EAP",
+        typeCategory: "EAP",
+        version: "7.1"
+    }
+
+    const status = {
+        code: 0,
+        message: "ok",
+        pluginId: "unknown",
+        severity: 0
+    }
+
     test('should able to insert the server', () => {
         serverExplorer = new ServersViewTreeDataProvider(clientStub);
         sandbox = sinon.createSandbox();
@@ -110,19 +128,13 @@ suite('Server explorer', () => {
     });
 
     test('should able to addLocation for the server', async () => {
-        sinon.stub(clientStub, 'findServerBeans').resolves({
-            length: 1,
-            fullVersion:"7.1.0.GA",
-            location:"c:\\Users\\sverma\\EAP-7.1.0",
-            name:"EAP-7.1.0",
-            serverAdapterTypeId:"org.jboss.ide.eclipse.as.eap.71",
-            specificType:"EAP",
-            typeCategory:"EAP",
-            version:"7.1"
-        });
+        const findServerStub = sinon.stub(clientStub, 'findServerBeans').resolves([findServerBeans]);
         serverExplorer = new ServersViewTreeDataProvider(clientStub);
-        sinon.stub(window, 'showOpenDialog').resolves([{fsPath: 'path/path'}]);
+        const showOpenDialogStub = sinon.stub(window, 'showOpenDialog').resolves([{fsPath: 'path/path'}]);
+        sinon.stub(window, 'showInputBox').resolves('eap');
+        sinon.stub(clientStub, 'createServerAsync').resolves(status);
         await serverExplorer.addLocation();
-        // expect(findServerbeansStub).calledOnceWith(addlocation);
+        expect(findServerStub).calledOnce;
+        expect(showOpenDialogStub).calledOnce;
     });
 });
