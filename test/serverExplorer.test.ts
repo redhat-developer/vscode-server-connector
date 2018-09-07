@@ -3,14 +3,14 @@ import * as sinon from 'sinon';
 import * as sinonChai from 'sinon-chai';
 import { ServersViewTreeDataProvider } from '../src/serverExplorer';
 import { RSPClient, Protocol} from 'rsp-client';
-import { EventEmitter } from 'vscode';
+import { EventEmitter, window } from 'vscode';
 
 const expect = chai.expect;
 chai.use(sinonChai);
 
 suite('Server explorer', () => {
     let sandbox: sinon.SinonSandbox;
-    let clientStub: sinon.SinonStubbedInstance<RSPClient>;
+    let clientStub: sinon.SinonStubbedInstance<RSPClient> = new RSPClient('somehost', 8080);;
     let serverExplorer: ServersViewTreeDataProvider;
 
     const serverType: Protocol.ServerType = {
@@ -107,5 +107,22 @@ suite('Server explorer', () => {
         serverExplorer.refresh(serverHandle);
         expect(clearStub).calledOnce;
         expect(clearStub).calledOnceWith(serverHandle);
+    });
+
+    test('should able to addLocation for the server', async () => {
+        sinon.stub(clientStub, 'findServerBeans').resolves({
+            length: 1,
+            fullVersion:"7.1.0.GA",
+            location:"c:\\Users\\sverma\\EAP-7.1.0",
+            name:"EAP-7.1.0",
+            serverAdapterTypeId:"org.jboss.ide.eclipse.as.eap.71",
+            specificType:"EAP",
+            typeCategory:"EAP",
+            version:"7.1"
+        });
+        serverExplorer = new ServersViewTreeDataProvider(clientStub);
+        sinon.stub(window, 'showOpenDialog').resolves([{fsPath: 'path/path'}]);
+        await serverExplorer.addLocation();
+        // expect(findServerbeansStub).calledOnceWith(addlocation);
     });
 });
