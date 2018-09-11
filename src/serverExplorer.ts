@@ -10,7 +10,7 @@ import {
     workspace
 } from 'vscode';
 
-import { 
+import {
     RSPClient,
     Protocol,
     ServerState

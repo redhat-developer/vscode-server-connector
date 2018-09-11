@@ -2,7 +2,7 @@ import * as chai from 'chai';
 import * as sinon from 'sinon';
 import * as sinonChai from 'sinon-chai';
 import { ServersViewTreeDataProvider } from '../src/serverExplorer';
-import { RSPClient, Protocol} from 'rsp-client';
+import { RSPClient, Protocol } from 'rsp-client';
 import { EventEmitter, window } from 'vscode';
 
 const expect = chai.expect;
@@ -10,7 +10,7 @@ chai.use(sinonChai);
 
 suite('Server explorer', () => {
     let sandbox: sinon.SinonSandbox;
-    let clientStub: sinon.SinonStubbedInstance<RSPClient> = new RSPClient('somehost', 8080);;
+    const clientStub: sinon.SinonStubbedInstance<RSPClient> = new RSPClient('somehost', 8080);
     let serverExplorer: ServersViewTreeDataProvider;
 
     const serverType: Protocol.ServerType = {
@@ -26,83 +26,91 @@ suite('Server explorer', () => {
 
     const stateChange: Protocol.ServerStateChange = {
         server: serverHandle,
-        state: 0
+        state: 1
     };
 
     const ProcessOutput: Protocol.ServerProcessOutput = {
-        processId: "process id",
+        processId: 'process id',
         server: serverHandle,
         streamType: 0,
-        text: "the type"
+        text: 'the type'
     };
 
     const findServerBeans = {
         length: 1,
-        fullVersion: "version",
-        location: "path",
-        name: "EAP",
-        serverAdapterTypeId: "org.jboss",
-        specificType: "EAP",
-        typeCategory: "EAP",
-        version: "7.1"
-    }
+        fullVersion: 'version',
+        location: 'path',
+        name: 'EAP',
+        serverAdapterTypeId: 'org.jboss',
+        specificType: 'EAP',
+        typeCategory: 'EAP',
+        version: '7.1'
+    };
 
     const status = {
         code: 0,
-        message: "ok",
-        pluginId: "unknown",
+        message: 'ok',
+        pluginId: 'unknown',
         severity: 0
-    }
+    };
 
-    test('should able to insert the server', () => {
+    test('InsertServer call should add server to tree data model', () => {
         serverExplorer = new ServersViewTreeDataProvider(clientStub);
         sandbox = sinon.createSandbox();
         const refreshStub = sandbox.stub(serverExplorer, 'refresh').returns(null);
+        const getChildren = serverExplorer.getChildren(null);
         serverExplorer.insertServer(serverHandle);
         expect(refreshStub).calledOnce;
+        expect(getChildren).deep.equals(undefined);
     });
 
-    test('should able to removeServer the server ', () => {
+    test('removeServer call should remove server from tree data model', () => {
         serverExplorer = new ServersViewTreeDataProvider(clientStub);
         const disposeStub = sinon.stub(serverExplorer.serverOutputChannels, 'get').returns({
             clear: () => {},
             dispose: () => {}
         });
-        sandbox.stub(serverExplorer, 'refresh')
+        const getChildren = serverExplorer.getChildren(null);
+        sandbox.stub(serverExplorer, 'refresh');
         serverExplorer.removeServer(serverHandle);
         expect(disposeStub).calledOnce;
+        expect(getChildren).deep.equals(undefined);
     });
 
-    test('should able to updateServer the server ', () => {
+    test('serverExplorer.updateServer call should update server state to received in state change event', () => {
         serverExplorer = new ServersViewTreeDataProvider(clientStub);
         const serviceStub = sinon.stub(serverExplorer.servers, 'get').returns({
             stateChange
         });
         const clearStub = sinon.stub(serverExplorer.serverOutputChannels, 'get').returns({
-            clear: () => {},
+            clear: () => {
+                return true;
+            }
         });
-        sandbox.stub(serverExplorer, 'refresh')
-        serverExplorer.updateServer(stateChange);
+        sandbox.stub(serverExplorer, 'refresh');
+        const updateserver = serverExplorer.updateServer(stateChange);
         expect(serviceStub).calledOnce;
         expect(clearStub).calledOnce;
+        expect(clearStub).calledOnceWith(updateserver);
     });
 
-    test('should able to showOutput of the server ', () => {
+    test('serverExplorer.showOutput call should show servers output channel', () => {
         serverExplorer = new ServersViewTreeDataProvider(clientStub);
-        const clearStub = sinon.stub(serverExplorer.serverOutputChannels, 'get').returns({
+        const showStub = sinon.stub(serverExplorer.serverOutputChannels, 'get').returns({
             show: () => {}
         });
         serverExplorer.showOutput(serverHandle);
-        expect(clearStub).calledOnce;
+        expect(showStub).calledOnce;
+
     });
 
-    test('should able to getTreeItem of the server', () => {
+    test('serverExplorer.getTreeItem call should return TreeItem instance with corresponding label', () => {
         serverExplorer = new ServersViewTreeDataProvider(clientStub);
-        const clearStub = sinon.stub(serverExplorer.serverStatus, 'get').returns({
+        const serverHandleStub = sinon.stub(serverExplorer.serverStatus, 'get').resolves({
             serverHandle
         });
         serverExplorer.getTreeItem(serverHandle);
-        expect(clearStub).calledOnce;
+        expect(serverHandleStub).calledOnce;
     });
 
     test('should able to getChildren of the server', () => {
@@ -112,29 +120,66 @@ suite('Server explorer', () => {
         expect(getChildren).deep.equals(Array.from(clearStub));
     });
 
-    test('should able to getTreeItem of the server', () => {
+    test('serverExplorer.addServerOutput call should show ServerOutput', () => {
         serverExplorer = new ServersViewTreeDataProvider(clientStub);
-        const clearStub = sinon.stub(serverExplorer.serverOutputChannels, 'get').returns(undefined);
+        const getStub = sinon.stub(serverExplorer.serverOutputChannels, 'get').returns(undefined);
         serverExplorer.addServerOutput(ProcessOutput);
-        expect(clearStub).calledOnce;
+        expect(getStub).calledOnce;
     });
 
-    test('should able to refresh of the server', () => {
+    test('serverExplorer.addServerOutput call should show ServerOutput', () => {
         serverExplorer = new ServersViewTreeDataProvider(clientStub);
-        const clearStub = sinon.stub(EventEmitter.prototype, 'fire');
-        serverExplorer.refresh(serverHandle);
-        expect(clearStub).calledOnce;
-        expect(clearStub).calledOnceWith(serverHandle);
+        const getStub = sinon.stub(serverExplorer.serverOutputChannels, 'get').returns({
+            show: () => {},
+            append: () => {}
+        });
+        serverExplorer.addServerOutput(ProcessOutput);
+        expect(getStub).calledOnce;
     });
 
-    test('should able to addLocation for the server', async () => {
-        const findServerStub = sinon.stub(clientStub, 'findServerBeans').resolves([findServerBeans]);
+    test('serverExplorer.refresh call should able check server refresh', () => {
+        serverExplorer = new ServersViewTreeDataProvider(clientStub);
+        const fireStub = sinon.stub(EventEmitter.prototype, 'fire');
+        serverExplorer.refresh(serverHandle);
+        expect(fireStub).calledOnce;
+        expect(fireStub).calledOnceWith(serverHandle);
+    });
+
+    test('serverExplorer.addLocation should ask for location of the server and name if server detected in provided location', async () => {
         serverExplorer = new ServersViewTreeDataProvider(clientStub);
         const showOpenDialogStub = sinon.stub(window, 'showOpenDialog').resolves([{fsPath: 'path/path'}]);
+        await serverExplorer.addLocation();
+        expect(showOpenDialogStub).calledOnce;
+    });
+
+    test('serverExplorer.addLocation should call client.createServerAsync with detected server bean for location and name provided by user', async () => {
+        const findServerStub = sinon.stub(clientStub, 'findServerBeans').resolves([findServerBeans]);
         sinon.stub(window, 'showInputBox').resolves('eap');
+        serverExplorer = new ServersViewTreeDataProvider(clientStub);
         sinon.stub(clientStub, 'createServerAsync').resolves(status);
         await serverExplorer.addLocation();
         expect(findServerStub).calledOnce;
-        expect(showOpenDialogStub).calledOnce;
+    });
+});
+
+suite('serverExplorer.addLocation', () => {
+    const clientStub: sinon.SinonStubbedInstance<RSPClient> = new RSPClient('somehost', 8080);
+    let serverExplorer: ServersViewTreeDataProvider;
+
+    const findServerBeans = {
+        length: 1,
+        fullVersion: 'version',
+        location: 'path',
+        name: 'EAP',
+        serverAdapterTypeId: 'org.jboss',
+        specificType: 'EAP',
+        version: '7.1'
+    };
+
+    test('should show message if no server detected in provided location', async () => {
+        const findServerStub = sinon.stub(clientStub, 'findServerBeans').resolves([findServerBeans]);
+        serverExplorer = new ServersViewTreeDataProvider(clientStub);
+        await serverExplorer.addLocation();
+        expect(findServerStub).calledOnce;
     });
 });
