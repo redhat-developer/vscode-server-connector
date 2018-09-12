@@ -9,9 +9,19 @@ const expect = chai.expect;
 chai.use(sinonChai);
 
 suite('Server explorer', () => {
+
     let sandbox: sinon.SinonSandbox;
     const clientStub: sinon.SinonStubbedInstance<RSPClient> = new RSPClient('somehost', 8080);
     let serverExplorer: ServersViewTreeDataProvider;
+
+    setup(() => {
+        serverExplorer = new ServersViewTreeDataProvider(clientStub);
+        sandbox = sinon.createSandbox();
+    });
+
+    teardown(() => {
+        sandbox.restore();
+    });
 
     const serverType: Protocol.ServerType = {
         description: 'a type',
@@ -55,8 +65,6 @@ suite('Server explorer', () => {
     };
 
     test('InsertServer call should add server to tree data model', () => {
-        serverExplorer = new ServersViewTreeDataProvider(clientStub);
-        sandbox = sinon.createSandbox();
         const refreshStub = sandbox.stub(serverExplorer, 'refresh').returns(null);
         const getChildren = serverExplorer.getChildren(null);
         serverExplorer.insertServer(serverHandle);
@@ -65,8 +73,7 @@ suite('Server explorer', () => {
     });
 
     test('removeServer call should remove server from tree data model', () => {
-        serverExplorer = new ServersViewTreeDataProvider(clientStub);
-        const disposeStub = sinon.stub(serverExplorer.serverOutputChannels, 'get').returns({
+        const disposeStub = sandbox.stub(serverExplorer.serverOutputChannels, 'get').returns({
             clear: () => {},
             dispose: () => {}
         });
@@ -78,11 +85,10 @@ suite('Server explorer', () => {
     });
 
     test('serverExplorer.updateServer call should update server state to received in state change event', () => {
-        serverExplorer = new ServersViewTreeDataProvider(clientStub);
-        const serviceStub = sinon.stub(serverExplorer.servers, 'get').returns({
+        const serviceStub = sandbox.stub(serverExplorer.servers, 'get').returns({
             stateChange
         });
-        const clearStub = sinon.stub(serverExplorer.serverOutputChannels, 'get').returns({
+        const clearStub = sandbox.stub(serverExplorer.serverOutputChannels, 'get').returns({
             clear: () => {
                 return true;
             }
@@ -95,8 +101,7 @@ suite('Server explorer', () => {
     });
 
     test('serverExplorer.showOutput call should show servers output channel', () => {
-        serverExplorer = new ServersViewTreeDataProvider(clientStub);
-        const showStub = sinon.stub(serverExplorer.serverOutputChannels, 'get').returns({
+        const showStub = sandbox.stub(serverExplorer.serverOutputChannels, 'get').returns({
             show: () => {}
         });
         serverExplorer.showOutput(serverHandle);
@@ -105,8 +110,7 @@ suite('Server explorer', () => {
     });
 
     test('serverExplorer.getTreeItem call should return TreeItem instance with corresponding label', () => {
-        serverExplorer = new ServersViewTreeDataProvider(clientStub);
-        const serverHandleStub = sinon.stub(serverExplorer.serverStatus, 'get').resolves({
+        const serverHandleStub = sandbox.stub(serverExplorer.serverStatus, 'get').resolves({
             serverHandle
         });
         serverExplorer.getTreeItem(serverHandle);
@@ -114,22 +118,19 @@ suite('Server explorer', () => {
     });
 
     test('should able to getChildren of the server', () => {
-        serverExplorer = new ServersViewTreeDataProvider(clientStub);
-        const clearStub = sinon.stub(serverExplorer.servers, 'values').returns([]);
+        const clearStub = sandbox.stub(serverExplorer.servers, 'values').returns([]);
         const getChildren = serverExplorer.getChildren(undefined);
         expect(getChildren).deep.equals(Array.from(clearStub));
     });
 
     test('serverExplorer.addServerOutput call should show ServerOutput', () => {
-        serverExplorer = new ServersViewTreeDataProvider(clientStub);
-        const getStub = sinon.stub(serverExplorer.serverOutputChannels, 'get').returns(undefined);
+        const getStub = sandbox.stub(serverExplorer.serverOutputChannels, 'get').returns(undefined);
         serverExplorer.addServerOutput(ProcessOutput);
         expect(getStub).calledOnce;
     });
 
     test('serverExplorer.addServerOutput call should show ServerOutput', () => {
-        serverExplorer = new ServersViewTreeDataProvider(clientStub);
-        const getStub = sinon.stub(serverExplorer.serverOutputChannels, 'get').returns({
+        const getStub = sandbox.stub(serverExplorer.serverOutputChannels, 'get').returns({
             show: () => {},
             append: () => {}
         });
@@ -138,31 +139,30 @@ suite('Server explorer', () => {
     });
 
     test('serverExplorer.refresh call should able check server refresh', () => {
-        serverExplorer = new ServersViewTreeDataProvider(clientStub);
-        const fireStub = sinon.stub(EventEmitter.prototype, 'fire');
+        const fireStub = sandbox.stub(EventEmitter.prototype, 'fire');
         serverExplorer.refresh(serverHandle);
         expect(fireStub).calledOnce;
         expect(fireStub).calledOnceWith(serverHandle);
     });
 
     test('serverExplorer.addLocation should ask for location of the server and name if server detected in provided location', async () => {
-        serverExplorer = new ServersViewTreeDataProvider(clientStub);
         const showOpenDialogStub = sinon.stub(window, 'showOpenDialog').resolves([{fsPath: 'path/path'}]);
         await serverExplorer.addLocation();
         expect(showOpenDialogStub).calledOnce;
     });
 
     test('serverExplorer.addLocation should call client.createServerAsync with detected server bean for location and name provided by user', async () => {
-        const findServerStub = sinon.stub(clientStub, 'findServerBeans').resolves([findServerBeans]);
-        sinon.stub(window, 'showInputBox').resolves('eap');
-        serverExplorer = new ServersViewTreeDataProvider(clientStub);
-        sinon.stub(clientStub, 'createServerAsync').resolves(status);
+        const findServerStub = sandbox.stub(clientStub, 'findServerBeans').resolves([findServerBeans]);
+        sandbox.stub(window, 'showInputBox').resolves('eap');
+        sandbox.stub(clientStub, 'createServerAsync').resolves(status);
         await serverExplorer.addLocation();
         expect(findServerStub).calledOnce;
     });
 });
 
 suite('serverExplorer.addLocation', () => {
+
+    let sandbox: sinon.SinonSandbox;
     const clientStub: sinon.SinonStubbedInstance<RSPClient> = new RSPClient('somehost', 8080);
     let serverExplorer: ServersViewTreeDataProvider;
 
@@ -176,9 +176,17 @@ suite('serverExplorer.addLocation', () => {
         version: '7.1'
     };
 
-    test('should show message if no server detected in provided location', async () => {
-        const findServerStub = sinon.stub(clientStub, 'findServerBeans').resolves([findServerBeans]);
+    setup(() => {
         serverExplorer = new ServersViewTreeDataProvider(clientStub);
+        sandbox = sinon.createSandbox();
+    });
+
+    teardown(() => {
+        sandbox.restore();
+    });
+
+    test('should show message if no server detected in provided location', async () => {
+        const findServerStub = sandbox.stub(clientStub, 'findServerBeans').resolves([findServerBeans]);
         await serverExplorer.addLocation();
         expect(findServerStub).calledOnce;
     });
