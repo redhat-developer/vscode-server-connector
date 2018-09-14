@@ -57,8 +57,10 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<Protocol.Se
         this.refresh();
         const channel: OutputChannel = this.serverOutputChannels.get(handle.id);
         this.serverOutputChannels.delete(handle.id);
-        channel.clear();
-        channel.dispose();
+        if(channel) {
+            channel.clear();
+            channel.dispose();
+        }
     }
 
     addServerOutput(output: Protocol.ServerProcessOutput): any {
