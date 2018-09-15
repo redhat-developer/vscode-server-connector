@@ -43,9 +43,8 @@ suite('Server explorer', () => {
 
     test('insertServer call should add server to tree data model', () => {
         const refreshStub = sandbox.stub(serverExplorer, 'refresh');
-        sandbox.stub(serverExplorer.servers, 'values').returns(Array.from([serverHandle]));
-        const getChildren = serverExplorer.getChildren(undefined);
         serverExplorer.insertServer(serverHandle);
+        const getChildren = serverExplorer.getChildren(undefined);
         expect(refreshStub).calledOnce;
         expect(getChildren).deep.equals(Array.from([serverHandle]));
     });
@@ -55,9 +54,9 @@ suite('Server explorer', () => {
             clear: () => {},
             dispose: () => {}
         });
-        sandbox.stub(serverExplorer.servers, 'values').returns(Array.from([]));
         const getChildren = serverExplorer.getChildren(undefined);
         sandbox.stub(serverExplorer, 'refresh');
+        serverExplorer.insertServer(serverHandle);
         serverExplorer.removeServer(serverHandle);
         expect(disposeStub).calledOnce;
         expect(getChildren).deep.equals(Array.from([]));
@@ -69,7 +68,6 @@ suite('Server explorer', () => {
         });
         serverExplorer.showOutput(serverHandle);
         expect(showStub).calledOnce;
-
     });
 
     test('serverExplorer.addServerOutput call should able to show ServerOutput channel', () => {
@@ -127,43 +125,19 @@ suite('serverExplorer.updateServer', () => {
         contextValue: 'Started'
     };
 
-    const serverStopping = {
-        collapsibleState: 0,
-        label: 'id:the type(Stopping)',
-        contextValue: 'Stopping'
-    };
-
-    const serverStarting = {
-        collapsibleState: 0,
-        label: 'id:the type(Starting)',
-        contextValue: 'Starting'
-    };
-
     const serverUnknown = {
         collapsibleState: 0,
         label: 'id:the type(Unknown)',
         contextValue: 'Unknown'
     };
 
-    const stateChange: Protocol.ServerStateChange = {
-        server: serverHandle,
-        state: 1
-    };
-
     setup(() => {
         serverExplorer = new ServersViewTreeDataProvider(clientStub);
         sandbox = sinon.createSandbox();
-        serviceStub = sandbox.stub(serverExplorer.servers, 'get').returns({
-            stateChange
-        });
-        serverStatusStub = sandbox.stub(serverExplorer.serverStatus, 'set').returns({
-            stateChange
-        });
         getStub = sandbox.stub(serverExplorer.serverOutputChannels, 'get').returns({
             clear: () => {}
         });
         sandbox.stub(serverExplorer.servers, 'values').returns(Array.from([serverHandle]));
-        sandbox.stub(serverExplorer, 'refresh');
     });
 
     teardown(() => {
@@ -171,63 +145,75 @@ suite('serverExplorer.updateServer', () => {
     });
 
     test('call should update server state to received in state change event (Stopped)', () => {
+        const stateChangeStopping: Protocol.ServerStateChange = {
+            server: serverHandle,
+            state: 3
+        };
+        serviceStub = sandbox.stub(serverExplorer.servers, 'get').returns({
+            stateChangeStopping
+        });
+        serverStatusStub = sandbox.stub(serverExplorer.serverStatus, 'set');
         sandbox.stub(serverExplorer.serverStatusEnum, 'get').returns('Stopped');
+        const stateChangeStopped: Protocol.ServerStateChange = {
+            server: serverHandle,
+            state: 4
+        };
         const getChildren = serverExplorer.getChildren(undefined);
         const getTreeItem = serverExplorer.getTreeItem(serverHandle);
-        serverExplorer.updateServer(stateChange);
-        expect(serviceStub).calledOnce;
-        expect(serverStatusStub).calledOnce;
-        expect(getStub).calledOnce;
+        serverExplorer.updateServer(stateChangeStopping);
+        serverExplorer.refresh();
+        serverExplorer.updateServer(stateChangeStopped);
+        expect(serviceStub).calledTwice;
+        expect(serverStatusStub).calledTwice;
+        expect(getStub).calledTwice;
         expect(getChildren).deep.equals(Array.from([serverHandle]));
         expect(getTreeItem).deep.equals(serverStop);
     });
 
     test('call should update server state to received in state change event (Started)', () => {
+        const stateChangeStarting: Protocol.ServerStateChange = {
+            server: serverHandle,
+            state: 1
+        };
+        serviceStub = sandbox.stub(serverExplorer.servers, 'get').returns({
+            stateChangeStarting
+        });
+        serverStatusStub = sandbox.stub(serverExplorer.serverStatus, 'set');
         sandbox.stub(serverExplorer.serverStatusEnum, 'get').returns('Started');
+        const stateChangeStarted: Protocol.ServerStateChange = {
+            server: serverHandle,
+            state: 2
+        };
         const getChildren = serverExplorer.getChildren(undefined);
         const getTreeItem = serverExplorer.getTreeItem(serverHandle);
-        serverExplorer.updateServer(stateChange);
-        expect(serviceStub).calledOnce;
-        expect(serverStatusStub).calledOnce;
-        expect(getStub).calledOnce;
+        serverExplorer.updateServer(stateChangeStarting);
+        serverExplorer.refresh();
+        serverExplorer.updateServer(stateChangeStarted);
+        expect(serviceStub).calledTwice;
+        expect(serverStatusStub).calledTwice;
+        expect(getStub).calledTwice;
         expect(getChildren).deep.equals(Array.from([serverHandle]));
         expect(getTreeItem).deep.equals(serverStart);
     });
 
-    test('call should update server state to received in state change event (Starting)', () => {
-        sandbox.stub(serverExplorer.serverStatusEnum, 'get').returns('Starting');
-        const getChildren = serverExplorer.getChildren(undefined);
-        const getTreeItem = serverExplorer.getTreeItem(serverHandle);
-        serverExplorer.updateServer(stateChange);
-        expect(serviceStub).calledOnce;
-        expect(serverStatusStub).calledOnce;
-        expect(getStub).calledOnce;
-        expect(getChildren).deep.equals(Array.from([serverHandle]));
-        expect(getTreeItem).deep.equals(serverStarting);
-    });
-
     test('call should update server state to received in state change event (Unknown)', () => {
+        const stateChangeUnknown: Protocol.ServerStateChange = {
+            server: serverHandle,
+            state: 0
+        };
+        serviceStub = sandbox.stub(serverExplorer.servers, 'get').returns({
+            stateChangeUnknown
+        });
+        serverStatusStub = sandbox.stub(serverExplorer.serverStatus, 'set');
         sandbox.stub(serverExplorer.serverStatusEnum, 'get').returns('Unknown');
         const getChildren = serverExplorer.getChildren(undefined);
         const getTreeItem = serverExplorer.getTreeItem(serverHandle);
-        serverExplorer.updateServer(stateChange);
+        serverExplorer.updateServer(stateChangeUnknown);
         expect(serviceStub).calledOnce;
         expect(serverStatusStub).calledOnce;
         expect(getStub).calledOnce;
         expect(getChildren).deep.equals(Array.from([serverHandle]));
         expect(getTreeItem).deep.equals(serverUnknown);
-    });
-
-    test('call should update server state to received in state change event (Stopping)', () => {
-        sandbox.stub(serverExplorer.serverStatusEnum, 'get').returns('Stopping');
-        const getChildren = serverExplorer.getChildren(undefined);
-        const getTreeItem = serverExplorer.getTreeItem(serverHandle);
-        serverExplorer.updateServer(stateChange);
-        expect(serviceStub).calledOnce;
-        expect(serverStatusStub).calledOnce;
-        expect(getStub).calledOnce;
-        expect(getChildren).deep.equals(Array.from([serverHandle]));
-        expect(getTreeItem).deep.equals(serverStopping);
     });
 });
 
@@ -286,15 +272,16 @@ suite('serverExplorer.addLocation', () => {
     });
 
     test('serverExplorer.addLocation should call client.createServerAsync with detected server bean for location and name provided by user', async () => {
-        const findServerStub = sandbox.stub(clientStub, 'findServerBeans').resolves([findServerBeans]);
+        const findServerStub = sandbox.stub(clientStub, 'findServerBeans').resolves([ServerBeans]);
         sandbox.stub(window, 'showInputBox').resolves('eap');
-        sandbox.stub(clientStub, 'createServerAsync').resolves(status);
+        sandbox.stub(clientStub, 'createServerAsync');
         await serverExplorer.addLocation();
         expect(findServerStub).calledOnce;
     });
 
     test('should show message if no server detected in provided location', async () => {
         const findServerStub = sandbox.stub(clientStub, 'findServerBeans').resolves([findServerBeans]);
+        sandbox.stub(window, 'showInformationMessage')
         await serverExplorer.addLocation();
         expect(findServerStub).calledOnce;
     });
