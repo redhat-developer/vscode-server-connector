@@ -7,8 +7,10 @@ import {
     InputBoxOptions,
     EventEmitter,
     OutputChannel,
-    workspace
+    workspace,
+    Uri
 } from 'vscode';
+import * as path from 'path';
 
 import { 
     RSPClient,
@@ -131,6 +133,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<Protocol.Se
     getTreeItem(server: Protocol.ServerHandle): TreeItem | Thenable<TreeItem> {
         const status: number = this.serverStatus.get(server.id);
         const item: TreeItem = new TreeItem(`${server.id}:${server.type.visibleName}(${this.serverStatusEnum.get(status)})`);
+        item.iconPath = Uri.file(path.join(__dirname, '../../images/server-light.png'));
         item.contextValue =  this.serverStatusEnum.get(status);
         return item;
     }
