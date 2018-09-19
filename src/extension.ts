@@ -155,6 +155,6 @@ export function deactivate() {
 }
 
 function displayLog(outputPanel: vscode.OutputChannel, message: string, show: boolean = true) {
-    if(show) outputPanel.show();
+    if (show) outputPanel.show();
     outputPanel.appendLine(message);
 }

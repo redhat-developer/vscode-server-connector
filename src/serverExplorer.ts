@@ -12,7 +12,7 @@ import {
 } from 'vscode';
 import * as path from 'path';
 
-import { 
+import {
     RSPClient,
     Protocol,
     ServerState
@@ -25,7 +25,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<Protocol.Se
     private client: RSPClient;
     public servers: Map<string, Protocol.ServerHandle> = new Map<string, Protocol.ServerHandle>();
     public serverStatus: Map<string, number> = new Map<string, number>();
-    private serverOutputChannels: Map<string, OutputChannel> = new Map<string, OutputChannel>();
+    public serverOutputChannels: Map<string, OutputChannel> = new Map<string, OutputChannel>();
     public serverStatusEnum: Map<number, string> = new Map<number, string>();
 
     constructor(client: RSPClient) {
