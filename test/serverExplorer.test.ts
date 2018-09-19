@@ -3,7 +3,8 @@ import * as sinon from 'sinon';
 import * as sinonChai from 'sinon-chai';
 import { ServersViewTreeDataProvider } from '../src/serverExplorer';
 import { RSPClient, Protocol } from 'rsp-client';
-import { EventEmitter, window } from 'vscode';
+import { EventEmitter, window, Uri } from 'vscode';
+import * as path from 'path';
 
 const expect = chai.expect;
 chai.use(sinonChai);
@@ -116,19 +117,22 @@ suite('serverExplorer.updateServer', () => {
     const serverStop = {
         collapsibleState: 0,
         label: `id:the type(Stopped)`,
-        contextValue: 'Stopped'
+        contextValue: 'Stopped',
+        iconPath: Uri.file(path.join(__dirname, '../../images/server-light.png'))
     };
 
     const serverStart = {
         collapsibleState: 0,
         label: 'id:the type(Started)',
-        contextValue: 'Started'
+        contextValue: 'Started',
+        iconPath: Uri.file(path.join(__dirname, '../../images/server-light.png'))
     };
 
     const serverUnknown = {
         collapsibleState: 0,
         label: 'id:the type(Unknown)',
-        contextValue: 'Unknown'
+        contextValue: 'Unknown',
+        iconPath: Uri.file(path.join(__dirname, '../../images/server-light.png'))
     };
 
     setup(() => {
