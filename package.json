@@ -26,6 +26,12 @@
   ],
   "activationEvents": [
     "onCommand:servers.addLocation",
+    "onCommand:server.start",
+    "onCommand:server.debug",
+    "onCommand:server.stop",
+    "onCommand:server.restart",
+    "onCommand:server.remove",
+    "onCommand:server.output",
     "onView:servers",
     "onLanguage:plaintext"
   ],
