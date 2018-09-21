@@ -89,7 +89,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<Protocol.Se
     }
 
     addLocation(): any {
-        window.showOpenDialog(<OpenDialogOptions>{
+        return window.showOpenDialog(<OpenDialogOptions>{
             canSelectFiles: false,
             canSelectMany: false,
             canSelectFolders: true,
