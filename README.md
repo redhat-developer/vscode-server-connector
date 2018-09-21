@@ -18,7 +18,7 @@ This extension supports a number of commands for interacting with server adapter
    * `Show Output Channel` - Select a particular server from the list to show its ouput channel in the editor.
 
 ### Supported Servers
-   * Wildfly [8/9/10/11/12/13]
+   * Wildfly [8/9/10/11/12/13/14]
    * EAP
    * Minishift Binary
 
