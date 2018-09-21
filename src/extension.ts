@@ -152,6 +152,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 // this method is called when your extension is deactivated
 export function deactivate() {
+    client.shutdownServer();
 }
 
 function displayLog(outputPanel: vscode.OutputChannel, message: string, show: boolean = true) {
