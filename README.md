@@ -39,7 +39,7 @@ This is an open source project open to anyone. This project welcomes contributio
 
 Download the most recent `adapters-<version>.vsix` file and install it by following the instructions [here](https://code.visualstudio.com/docs/editor/extension-gallery#_install-from-a-vsix). 
 
-Stable releases are archived under http://download.jboss.org/jbosstools/adapters/snapshots/
+Stable releases are archived under http://download.jboss.org/jbosstools/adapters/snapshots/vscode-middleware-tools
 
 Feedback
 ===============
