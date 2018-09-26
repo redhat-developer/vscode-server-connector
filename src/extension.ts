@@ -1,156 +1,54 @@
 'use strict';
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import { ServersViewTreeDataProvider } from './serverExplorer';
 import * as server from './server';
-import { RSPClient, Protocol, ServerState } from 'rsp-client';
+import { RSPClient } from 'rsp-client';
+import { ExtensionAPI, CommandHandler } from './extensionApi';
 
 const client = new RSPClient('localhost', 27511);
 
-// this method is called when your extension is activated
-// your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
+export function activate(context: vscode.ExtensionContext): Promise<ExtensionAPI> {
     let serversData: ServersViewTreeDataProvider;
-    let selectedServerType: Protocol.ServerType;
-    let selectedServerId: string;
-    const startPromise = server.start().then(async serverInfo => {
+    let commandHandler: CommandHandler;
+
+    return server.start().then(async serverInfo => {
         const rspserverstdout = vscode.window.createOutputChannel('RSP Server (stdout)');
         const rspserverstderr = vscode.window.createOutputChannel('RSP Server (stderr)');
+
         serverInfo.process.stdout.on('data', data => {
             displayLog(rspserverstdout, data.toString());
         });
+
         serverInfo.process.stderr.on('data', data => {
             displayLog(rspserverstderr, data.toString());
-        });
-        await client.connect();
-        client.onServerAdded(handle => {
-            serversData.insertServer(handle);
-        });
-
-        client.onServerRemoved(handle => {
-            serversData.removeServer(handle);
-        });
-
-        client.onServerStateChange(event => {
-            serversData.updateServer(event);
-        });
-
-        client.onServerOutputAppended(event => {
-            serversData.addServerOutput(event);
         });
 
         serversData = new ServersViewTreeDataProvider(client);
         vscode.window.registerTreeDataProvider('servers', serversData);
 
-        const start = async function(mode, context) {
-            if (context === undefined) {
-                const serverId: string = await vscode.window.showQuickPick(Array.from(serversData.servers.keys()), {placeHolder: 'Select runtime/server to start'});
-                if (serversData.serverStatus.get(serverId) === 4) {
-                    selectedServerType = serversData.servers.get(serverId).type;
-                    selectedServerId = serverId;
-                } else {
-                    vscode.window.showInformationMessage('The server has to be in stopped state to start it!!');
-                }
-            } else {
-                selectedServerType = context.type;
-                selectedServerId = context.id;
-            }
-
-            client.startServerAsync({
-                params: {
-                    serverType: selectedServerType.id,
-                    id: selectedServerId,
-                    attributes: new Map<string, any>()
-                },
-                mode: mode
-            });
-        };
+        commandHandler = new CommandHandler(serversData, client);
+        await commandHandler.activate();
 
         const subscriptions = [
-            vscode.commands.registerCommand('server.start', await start.bind(this, 'run')),
-
-            vscode.commands.registerCommand('server.debug', await start.bind(this, 'debug')),
-
-            vscode.commands.registerCommand('server.stop', async context => {
-                if (context === undefined) {
-                    const serverId: string = await vscode.window.showQuickPick(Array.from(serversData.servers.keys()), {placeHolder: 'Select runtime/server to stop'});
-                    if (serversData.serverStatus.get(serverId) === 2) {
-                        client.stopServerAsync({id: serverId, force: true});
-                    } else {
-                        vscode.window.showInformationMessage('The server is already in stopped state !!');
-                    }
-                } else {
-                    client.stopServerAsync({id: context.id, force: true});
-                }
-            }),
-
-            vscode.commands.registerCommand('server.remove', async context => {
-                if (context === undefined) {
-                    const serverId: string = await vscode.window.showQuickPick(Array.from(serversData.servers.keys()), {placeHolder: 'Select runtime/server to remove'});
-                    if (serversData.serverStatus.get(serverId) === 4) {
-                        selectedServerType = serversData.servers.get(serverId).type;
-                        client.deleteServerAsync({id: serverId, type: selectedServerType});
-                    } else {
-                        vscode.window.showInformationMessage('Please stop the server and then remove it !!');
-                    }
-                } else {
-                    client.deleteServerAsync({id: context.id, type: context.type});
-                }
-            }),
-
-            vscode.commands.registerCommand('server.output', async context => {
-                if (context === undefined) {
-                    const serverId: string = await vscode.window.showQuickPick(Array.from(serversData.servers.keys()), {placeHolder: 'Select runtime/server to show ouput channel'});
-                    serversData.showOutput(serversData.servers.get(serverId));
-                } else {
-                    serversData.showOutput(context);
-                }
-            }),
-
-            vscode.commands.registerCommand('servers.addLocation', () => {
-                if (serversData) {
-                    serversData.addLocation();
-                } else {
-                    vscode.window.showInformationMessage('Stack Protocol Server is starting, please try again later!');
-                }
-            }),
-
-            vscode.commands.registerCommand('server.restart', async context => {
-                if (context === undefined) {
-                    const serverId: string = await vscode.window.showQuickPick(Array.from(serversData.servers.keys()).filter(item => serversData.serverStatus.get(item) === ServerState.STARTED), {placeHolder: 'Select runtime/server to restart'});
-                    context = serversData.servers.get(serverId);
-                }
-
-                const params: Protocol.LaunchParameters = {
-                    mode: 'run',
-                    params: {
-                        id: context.id,
-                        serverType: context.type.id,
-                        attributes: new Map<string, any>()
-                    }
-                };
-
-                await client.stopServerSync({ id: context.id, force: true });
-                await client.startServerAsync(params);
-            }),
+            vscode.commands.registerCommand('server.start', context => executeCommand(commandHandler.startServer, commandHandler, 'run', context)),
+            vscode.commands.registerCommand('server.debug', context => executeCommand(commandHandler.startServer, commandHandler, 'debug', context)),
+            vscode.commands.registerCommand('server.stop', context => executeCommand(commandHandler.stopServer, commandHandler, context)),
+            vscode.commands.registerCommand('server.remove', context => executeCommand(commandHandler.removeServer, commandHandler, context)),
+            vscode.commands.registerCommand('server.output', context => executeCommand(commandHandler.showServerOutput, commandHandler, context)),
+            vscode.commands.registerCommand('servers.addLocation', () => executeCommand(commandHandler.addLocation, commandHandler)),
+            vscode.commands.registerCommand('server.restart', context => executeCommand(commandHandler.restartServer, commandHandler, context)),
             rspserverstdout,
-            rspserverstderr];
+            rspserverstderr
+        ];
 
         subscriptions.forEach(element => {
             context.subscriptions.push(element);
         }, this);
 
-        return serverInfo;
+        return { serverInfo };
     });
-
-    return {
-        start: startPromise,
-        server: server
-    };
 }
 
-// this method is called when your extension is deactivated
 export function deactivate() {
     client.shutdownServer();
 }
@@ -158,4 +56,10 @@ export function deactivate() {
 function displayLog(outputPanel: vscode.OutputChannel, message: string, show: boolean = true) {
     if (show) outputPanel.show();
     outputPanel.appendLine(message);
+}
+
+function executeCommand(command: (...args: any[]) => Promise<any>, thisArg: any, ...params: any[]) {
+    return command.call(thisArg, ...params).catch(err => {
+        vscode.window.showErrorMessage(err);
+    });
 }

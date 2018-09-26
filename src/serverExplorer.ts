@@ -37,13 +37,13 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<Protocol.Se
         this.serverStatusEnum.set(4, 'Stopped');
     }
 
-    insertServer(handle) {
+    insertServer(handle): void {
         this.servers.set(handle.id, handle);
         this.serverStatus.set(handle.id, ServerState.STOPPED);
         this.refresh();
     }
 
-    updateServer(event: Protocol.ServerStateChange) {
+    updateServer(event: Protocol.ServerStateChange): void {
         const value = this.servers.get(event.server.id);
         this.serverStatus.set(value.id, event.state);
         this.refresh(value);
@@ -53,19 +53,19 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<Protocol.Se
         }
     }
 
-    removeServer(handle: Protocol.ServerHandle): any {
+    removeServer(handle: Protocol.ServerHandle): void {
         this.servers.delete(handle.id);
         this.serverStatus.delete(handle.id);
         this.refresh();
         const channel: OutputChannel = this.serverOutputChannels.get(handle.id);
         this.serverOutputChannels.delete(handle.id);
-        if(channel) {
+        if (channel) {
             channel.clear();
             channel.dispose();
         }
     }
 
-    addServerOutput(output: Protocol.ServerProcessOutput): any {
+    addServerOutput(output: Protocol.ServerProcessOutput): void {
         let channel: OutputChannel = this.serverOutputChannels.get(output.server.id);
         if (channel === undefined) {
             channel = window.createOutputChannel(`Server: ${output.server.id}`);
@@ -77,7 +77,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<Protocol.Se
         }
     }
 
-    showOutput(server: Protocol.ServerHandle): any {
+    showOutput(server: Protocol.ServerHandle): void {
         const channel: OutputChannel = this.serverOutputChannels.get(server.id);
         if (channel) {
             channel.show();
@@ -88,7 +88,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<Protocol.Se
         this._onDidChangeTreeData.fire(data);
     }
 
-    addLocation(): any {
+    addLocation(): Thenable<Protocol.Status> {
         return window.showOpenDialog(<OpenDialogOptions>{
             canSelectFiles: false,
             canSelectMany: false,
@@ -119,20 +119,20 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<Protocol.Se
                     return { name: value, bean: serverBeans[0] };
                 });
             } else {
-                window.showInformationMessage('Cannot detect server in selected location!');
+                return Promise.reject('Cannot detect server in selected location!');
             }
-        }).then(data => {
+        }).then(async data => {
             if (data && data.name) {
-                return this.client.createServerAsync(data.bean, data.name);
-            }
-        }).then(status => {
-            if (status) {
-                console.log(status);
+               const status = await this.client.createServerAsync(data.bean, data.name);
+               if (status.severity > 0) {
+                   return Promise.reject(status.message);
+               }
+               return status;
             }
         });
     }
 
-    getTreeItem(server: Protocol.ServerHandle): TreeItem | Thenable<TreeItem> {
+    getTreeItem(server: Protocol.ServerHandle): TreeItem {
         const status: number = this.serverStatus.get(server.id);
         const item: TreeItem = new TreeItem(`${server.id}:${server.type.visibleName}(${this.serverStatusEnum.get(status)})`);
         item.iconPath = Uri.file(path.join(__dirname, '../../images/server-light.png'));
@@ -140,7 +140,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<Protocol.Se
         return item;
     }
 
-    getChildren(element?: Protocol.ServerHandle | undefined): Protocol.ServerHandle[] | Thenable<Protocol.ServerHandle[] | null | undefined> | null | undefined {
+    getChildren(element?: Protocol.ServerHandle): Protocol.ServerHandle[] {
         if (element === undefined) {
             return Array.from(this.servers.values());
         }
