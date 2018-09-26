@@ -238,12 +238,15 @@ suite('Server explorer', () => {
             expect(createServerStub).calledOnceWith(serverBean, 'eap');
         });
 
-        test('should show message if no server detected in provided location', async () => {
+        test('should error if no server detected in provided location', async () => {
             findServerStub.resolves(null);
-            const infoStub = sandbox.stub(window, 'showInformationMessage');
-            await serverExplorer.addLocation();
 
-            expect(infoStub).calledOnceWith('Cannot detect server in selected location!');
+            try {
+                await serverExplorer.addLocation();
+                expect.fail();
+            } catch (err) {
+                expect(err).equals('Cannot detect server in selected location!');
+            }
         });
     });
 });

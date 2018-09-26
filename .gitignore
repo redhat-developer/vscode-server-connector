@@ -2,7 +2,7 @@ out
 node_modules
 .vscode-test/
 *.vsix
-org.jboss.tools.ssp.distribution-0.0.9-SNAPSHOT.zip
+*.zip
 server
 coverage/
 
