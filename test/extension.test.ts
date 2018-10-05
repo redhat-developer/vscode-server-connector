@@ -17,6 +17,7 @@ chai.use(sinonChai);
 suite('Extension Tests', function() {
     let sandbox: sinon.SinonSandbox;
     let client: RSPClient;
+    let startStub;
 
     class DummyMemento implements vscode.Memento {
         get<T>(key: string): Promise<T|undefined> {
@@ -58,7 +59,7 @@ suite('Extension Tests', function() {
 
     setup(() => {
         sandbox = sinon.createSandbox();
-        sandbox.stub(server, 'start').resolves(serverdata);
+        startStub = sandbox.stub(server, 'start').resolves(serverdata);
         client = new RSPClient('localhost', 27155);
         sandbox.stub(client, 'connect');
     });
@@ -75,6 +76,7 @@ suite('Extension Tests', function() {
         sandbox.stub(CommandHandler.prototype, 'activate');
         const registerTreeDataProviderStub = sandbox.stub(vscode.window, 'registerTreeDataProvider');
         const result = await activate(context);
+        expect(startStub).calledOnce
         expect(result).deep.equals({serverInfo: serverdata});
         expect(registerTreeDataProviderStub).calledOnce;
     });
