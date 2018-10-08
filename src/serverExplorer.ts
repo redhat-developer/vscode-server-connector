@@ -28,6 +28,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
     public serverOutputChannels: Map<string, OutputChannel> = new Map<string, OutputChannel>();
     public runStateEnum: Map<number, string> = new Map<number, string>();
     public publishStateEnum: Map<number, string> = new Map<number, string>();
+    private serverAttributes: Map<String, {required: Protocol.Attributes; optional: Protocol.Attributes}> = new Map<String, {required: Protocol.Attributes; optional: Protocol.Attributes}>();
 
     constructor(client: RSPClient) {
         this.client = client;
@@ -141,11 +142,32 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
             canSelectMany: false,
             canSelectFolders: true,
             openLabel: 'Select desired server location'
-        }).then(folders => {
+        })
+        .then(folders => {
             if (folders && folders.length === 1) {
                 return this.client.findServerBeans(folders[0].fsPath);
             }
-        }).then(async serverBeans => {
+        })
+        .then(this.getServerName())
+        .then(value => this.getRequiredParameters(value))
+        .then(value => this.getOptionalParameters(value))
+        .then(this.createServerAsync());
+    }
+
+    private createServerAsync(): (value: { name: string; bean: Protocol.ServerBean; attributes: {}}) => Thenable<Protocol.Status> {
+        return async (data) => {
+            if (data && data.name) {
+                const status = await this.client.createServerAsync(data.bean, data.name, data.attributes);
+                if (status.severity > 0) {
+                    return Promise.reject(status.message);
+                }
+                return Promise.resolve(status);
+            }
+        };
+    }
+
+    private getServerName(): (value: Protocol.ServerBean[]) => Thenable<{ name: string; bean: Protocol.ServerBean; }> {
+        return serverBeans => {
             if (serverBeans && serverBeans.length > 0 && serverBeans[0].typeCategory && serverBeans[0].typeCategory !== 'UNKNOWN') {
                 // Prompt for server name
                 const options: InputBoxOptions = {
@@ -162,21 +184,45 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
                     }
                 };
                 return window.showInputBox(options).then(value => {
-                    return { name: value, bean: serverBeans[0] };
+                    return Promise.resolve({ name: value, bean: serverBeans[0] });
                 });
             } else {
                 if (serverBeans) {
                     return Promise.reject('Cannot detect server in selected location!');
                 }
             }
-        }).then(async data => {
-            if (data && data.name) {
-               const status = await this.client.createServerAsync(data.bean, data.name);
-               if (status.severity > 0) {
-                   return Promise.reject(status.message);
-               }
-               return status;
+        };
+    }
+
+    private getRequiredParameters(value: { name: string; bean: Protocol.ServerBean}): Thenable<{ name: string; bean: Protocol.ServerBean; attributes: {}}> {
+        let serverAttribute: Promise<{required: Protocol.Attributes; optional: Protocol.Attributes}>;
+
+        if (this.serverAttributes.has(value.bean.serverAdapterTypeId)) {
+            serverAttribute = Promise.resolve(this.serverAttributes.get(value.bean.serverAdapterTypeId));
+        } else {
+            let required: Protocol.Attributes;
+
+            serverAttribute = this.client.getServerTypeRequiredAttributes({id: value.bean.serverAdapterTypeId, visibleName: '', description: ''})
+            .then((req: Protocol.Attributes) => { required = req; return req;})
+            .then(() => this.client.getServerTypeOptionalAttributes({id: value.bean.serverAdapterTypeId, visibleName: '', description: ''})
+            .then(optional => Promise.resolve({required: required, optional: optional})))
+            .then(server => {
+                this.serverAttributes.set(value.bean.serverAdapterTypeId, server);
+                return Promise.resolve(server);
+            });
+        }
+        return serverAttribute.then(async (s) => {
+            const attributes = {};
+            for(const name in s.required.attributes) {
+                if (name !== 'server.home.dir' && name !== 'server.home.file') {
+                    const attribute = s.required.attributes[name];
+                    const value = await window.showInputBox({prompt: attribute.description, value: attribute.defaultVal});
+                    if (value) {
+                        attributes[name] = value;
+                    }
+                }
             }
+            return Promise.resolve({name: value.name, bean: value.bean, attributes: attributes});
         });
     }
 
@@ -204,6 +250,25 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
             treeItem.contextValue =  pubState;
             return treeItem;
         }
+    }
+
+    private async getOptionalParameters(value: { name: string; bean: Protocol.ServerBean, attributes: any}): Promise<{ name: string; bean: Protocol.ServerBean; attributes: {}}> {
+        const serverAttribute = this.serverAttributes.get(value.bean.serverAdapterTypeId);
+        if (serverAttribute.optional && serverAttribute.optional.attributes) {
+            const answer = await window.showQuickPick(['No', 'Yes'], {placeHolder: 'Do you want to edit optional parameters ?'});
+            if (answer === 'Yes') {
+                for(const name in serverAttribute.optional.attributes) {
+                    if (name !== 'server.home.dir' && name !== 'server.home.file') {
+                        const attribute = serverAttribute.optional.attributes[name];
+                        const val = await window.showInputBox({prompt: attribute.description, value: attribute.defaultVal});
+                        if (val) {
+                            value.attributes[name] = val;
+                        }
+                    }
+                }
+            }
+        }
+        return Promise.resolve(value);
     }
 
     getChildren(element?:  Protocol.ServerState | Protocol.DeployableState):  Protocol.ServerState[] | Protocol.DeployableState[] {
