@@ -12,6 +12,7 @@ This extension supports a number of commands for interacting with server adapter
 
    * `Add Server Location` - Selects the path of the server location and display in the SERVERS Explorer stack.
    * `Start` - From the list of servers present, select the server to start.
+   * `Restart` - From the list of servers present, select the server to restart.
    * `Stop` - From the list of servers present, select the server to stop.
    * `Remove` - From the list of servers present, select the server to be removed.
    * `Debug` - From the list of servers present, select the server to run in Debug mode.
