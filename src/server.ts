@@ -25,7 +25,7 @@ export function start(): Promise<ServerInfo> {
                 .then(serverport => {
                     const process = cp.spawn(java, [`-Drsp.server.port=${serverport}`, '-jar', felix], { cwd: serverLocation });
                     waitOn({
-                        resources: `tcp:localhost:${serverport}`
+                        resources: [`tcp:localhost:${serverport}`]
                     }, () => {
                         resolve({
                             port: serverport,
