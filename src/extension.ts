@@ -5,7 +5,7 @@ import * as server from './server';
 import { RSPClient } from 'rsp-client';
 import { ExtensionAPI, CommandHandler } from './extensionApi';
 
-let client = new RSPClient('localhost', 27511);
+let client;
 
 export function activate(context: vscode.ExtensionContext): Promise<ExtensionAPI> {
     let serversData: ServersViewTreeDataProvider;
@@ -51,7 +51,9 @@ export function activate(context: vscode.ExtensionContext): Promise<ExtensionAPI
 }
 
 export function deactivate() {
-    client.shutdownServer();
+    if (client) {
+        client.shutdownServer();
+    }
 }
 
 function displayLog(outputPanel: vscode.OutputChannel, message: string, show: boolean = true) {
