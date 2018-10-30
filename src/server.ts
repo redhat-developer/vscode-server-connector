@@ -3,6 +3,8 @@ import * as findJava from 'find-java-home';
 import * as path from 'path';
 import * as waitOn from 'wait-on';
 
+const portfinder = require('portfinder');
+
 export interface ServerInfo {
     host: string;
     port: number;
@@ -18,15 +20,22 @@ export function start(): Promise<ServerInfo> {
                 const serverLocation = path.resolve(__dirname, '..', '..', 'server');
                 const felix = path.join(serverLocation, 'bin', 'felix.jar');
                 const java = path.join(home, 'bin', 'java');
-                const process = cp.spawn(java, ['-jar', felix], { cwd: serverLocation });
-                waitOn({
-                    resources: ['tcp:localhost:27511']
-                }, () => {
-                    resolve({
-                        port: 27511,
-                        host: 'localhost',
-                        process
+                portfinder.basePort = 27511;
+                portfinder.getPortPromise()
+                .then(serverport => {
+                    const process = cp.spawn(java, [`-Drsp.server.port=${serverport}`, '-jar', felix], { cwd: serverLocation });
+                    waitOn({
+                        resources: [`tcp:localhost:${serverport}`]
+                    }, () => {
+                        resolve({
+                            port: serverport,
+                            host: 'localhost',
+                            process
+                        });
                     });
+                })
+                .catch(err => {
+                    console.log(err);
                 });
             }
         });
