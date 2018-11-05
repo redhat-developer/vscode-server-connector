@@ -55,10 +55,10 @@ suite('Command Handler', () => {
     setup(() => {
         sandbox = sinon.createSandbox();
         client = new RSPClient('localhost', 27155);
+        sandbox.stub(client, 'connect').resolves();
+        sandbox.stub(client, 'getServerHandles').resolves([]);
         serverExplorer = new ServersViewTreeDataProvider(client);
         handler = new CommandHandler(serverExplorer, client);
-
-        sandbox.stub(client, 'connect').resolves();
         sandbox.stub(serverExplorer);
     });
 

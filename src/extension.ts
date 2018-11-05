@@ -13,6 +13,7 @@ export function activate(context: vscode.ExtensionContext): Promise<ExtensionAPI
 
     return server.start().then(async serverInfo => {
         client = new RSPClient('localhost', serverInfo.port);
+        await client.connect();
         const rspserverstdout = vscode.window.createOutputChannel('RSP Server (stdout)');
         const rspserverstderr = vscode.window.createOutputChannel('RSP Server (stderr)');
 

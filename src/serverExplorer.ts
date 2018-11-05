@@ -35,6 +35,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<Protocol.Se
         this.serverStatusEnum.set(2, 'Started');
         this.serverStatusEnum.set(3, 'Stopping');
         this.serverStatusEnum.set(4, 'Stopped');
+        client.getServerHandles().then(servers => servers.forEach(server => this.insertServer(server)));
     }
 
     insertServer(handle): void {

@@ -16,7 +16,6 @@ chai.use(sinonChai);
 // Defines a Mocha test suite to group tests of similar kind together
 suite('Extension Tests', function() {
     let sandbox: sinon.SinonSandbox;
-    let client: RSPClient;
     let startStub;
 
     class DummyMemento implements vscode.Memento {
@@ -60,8 +59,8 @@ suite('Extension Tests', function() {
     setup(() => {
         sandbox = sinon.createSandbox();
         startStub = sandbox.stub(server, 'start').resolves(serverdata);
-        client = new RSPClient('localhost', 27155);
-        sandbox.stub(client, 'connect');
+        sandbox.stub(RSPClient.prototype, 'connect').resolves();
+        sandbox.stub(RSPClient.prototype, 'getServerHandles').resolves([]);
     });
 
     teardown(() => {
@@ -73,7 +72,7 @@ suite('Extension Tests', function() {
     });
 
     test('Server is started at extension activation time', async () => {
-        sandbox.stub(CommandHandler.prototype, 'activate');
+        sandbox.stub(CommandHandler.prototype, 'activate').resolves();
         const registerTreeDataProviderStub = sandbox.stub(vscode.window, 'registerTreeDataProvider');
         const result = await activate(context);
         expect(startStub).calledOnce

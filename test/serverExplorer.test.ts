@@ -18,6 +18,8 @@ suite('Server explorer', () => {
 
     setup(() => {
         sandbox = sinon.createSandbox();
+        sandbox.stub(clientStub, 'connect').resolves();
+        sandbox.stub(clientStub, 'getServerHandles').resolves([]);
         serverExplorer = new ServersViewTreeDataProvider(clientStub);
         getStub = sandbox.stub(serverExplorer.serverOutputChannels, 'get').returns(fakeChannel);
     });
