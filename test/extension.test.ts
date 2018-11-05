@@ -16,7 +16,6 @@ chai.use(sinonChai);
 // Defines a Mocha test suite to group tests of similar kind together
 suite('Extension Tests', function() {
     let sandbox: sinon.SinonSandbox;
-    let client: RSPClient;
     let startStub;
 
     class DummyMemento implements vscode.Memento {
