@@ -59,7 +59,6 @@ suite('Extension Tests', function() {
     setup(() => {
         sandbox = sinon.createSandbox();
         startStub = sandbox.stub(server, 'start').resolves(serverdata);
-        client = new RSPClient('localhost', 27155);
         sandbox.stub(RSPClient.prototype, 'connect').resolves();
         sandbox.stub(RSPClient.prototype, 'getServerHandles').resolves([]);
     });
