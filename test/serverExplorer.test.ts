@@ -22,7 +22,6 @@ suite('Server explorer', () => {
         sandbox.stub(clientStub, 'getServerHandles').resolves([]);
         serverExplorer = new ServersViewTreeDataProvider(clientStub);
         getStub = sandbox.stub(serverExplorer.serverOutputChannels, 'get').returns(fakeChannel);
-
     });
 
     teardown(() => {
