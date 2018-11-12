@@ -221,7 +221,7 @@ suite('Server explorer', () => {
         setup(() => {
             findServerStub = sandbox.stub(clientStub, 'findServerBeans').resolves([serverBean]);
             showOpenDialogStub = sandbox.stub(window, 'showOpenDialog').resolves([discoveryPath]);
-        })
+        });
 
         test('should detect the server in a given location', async () => {
             sandbox.stub(window, 'showInputBox').resolves('eap');
@@ -241,7 +241,7 @@ suite('Server explorer', () => {
         });
 
         test('should error if no server detected in provided location', async () => {
-            findServerStub.resolves(null);
+            findServerStub.resolves(serverBean);
 
             try {
                 await serverExplorer.addLocation();
