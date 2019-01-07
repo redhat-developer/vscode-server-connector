@@ -120,7 +120,9 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<Protocol.Se
                     return { name: value, bean: serverBeans[0] };
                 });
             } else {
-                return Promise.reject('Cannot detect server in selected location!');
+                if (serverBeans) {
+                    return Promise.reject('Cannot detect server in selected location!');
+                }
             }
         }).then(async data => {
             if (data && data.name) {
