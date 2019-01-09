@@ -3,7 +3,7 @@ import * as sinon from 'sinon';
 import * as sinonChai from 'sinon-chai';
 import { ServersViewTreeDataProvider } from '../src/serverExplorer';
 import { RSPClient, Protocol } from 'rsp-client';
-import { EventEmitter, window, Uri } from 'vscode';
+import { EventEmitter, window, Uri, OutputChannel } from 'vscode';
 import * as path from 'path';
 
 const expect = chai.expect;
@@ -46,11 +46,14 @@ suite('Server explorer', () => {
         text: 'the type'
     };
 
-    const fakeChannel = {
+    const fakeChannel: OutputChannel = {
         append: () => {},
         show: () => {},
         clear: () => {},
-        dispose: () => {}
+        dispose: () => {},
+        appendLine: () => {},
+        hide: () => {},
+        name: 'fake'
     };
 
     test('insertServer call should add server to tree data model', () => {
@@ -143,7 +146,7 @@ suite('Server explorer', () => {
         };
 
         setup(() => {
-            sandbox.stub(serverExplorer.servers, 'values').returns([serverHandle]);
+            serverExplorer.servers =  new Map<string, Protocol.ServerHandle>([['server', serverHandle]]);
             getServersStub = sandbox.stub(serverExplorer.servers, 'get').returns(serverHandle);
             setStatusStub = sandbox.stub(serverExplorer.serverStatus, 'set');
         });
