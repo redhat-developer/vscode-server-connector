@@ -20,7 +20,7 @@ before_install:
 
 install:
 - npm install
-- npm run buid
+- npm run build
 
 script:
 - npm test --silent
