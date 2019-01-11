@@ -103,25 +103,35 @@ suite('Server explorer', () => {
         let getServersStub: sinon.SinonStub;
         let setStatusStub: sinon.SinonStub;
 
-        const stateChangeUnknown: Protocol.ServerStateChange = {
+        const stateChangeUnknown: Protocol.ServerState = {
             server: serverHandle,
-            state: 0
+            state: 0,
+            deployableStates: [],
+            publishState: 0
         };
-        const stateChangeStarting: Protocol.ServerStateChange = {
+        const stateChangeStarting: Protocol.ServerState = {
             server: serverHandle,
-            state: 1
+            state: 1,
+            deployableStates: [],
+            publishState: 0
         };
-        const stateChangeStarted: Protocol.ServerStateChange = {
+        const stateChangeStarted: Protocol.ServerState = {
             server: serverHandle,
-            state: 2
+            state: 2,
+            deployableStates: [],
+            publishState: 0
         };
-        const stateChangeStopping: Protocol.ServerStateChange = {
+        const stateChangeStopping: Protocol.ServerState = {
             server: serverHandle,
-            state: 3
+            state: 3,
+            deployableStates: [],
+            publishState: 0
         };
-        const stateChangeStopped: Protocol.ServerStateChange = {
+        const stateChangeStopped: Protocol.ServerState = {
             server: serverHandle,
-            state: 4
+            state: 4,
+            deployableStates: [],
+            publishState: 0
         };
 
         const serverStop = {

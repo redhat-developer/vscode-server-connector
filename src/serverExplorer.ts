@@ -44,7 +44,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider<Protocol.Se
         this.refresh();
     }
 
-    updateServer(event: Protocol.ServerStateChange): void {
+    updateServer(event: Protocol.ServerState): void {
         const value = this.servers.get(event.server.id);
         this.serverStatus.set(value.id, event.state);
         this.refresh(value);
