@@ -17,7 +17,7 @@ export function start(): Promise<ServerInfo> {
             if (err) {
                 reject(err);
             } else {
-                const serverLocation = path.resolve(__dirname, '..', '..', 'server');
+                const serverLocation = process.env.RSP_SERVER_LOCATION ? process.env.RSP_SERVER_LOCATION : path.resolve(__dirname, '..', '..', 'server');
                 const felix = path.join(serverLocation, 'bin', 'felix.jar');
                 const java = path.join(home, 'bin', 'java');
                 portfinder.basePort = 27511;
