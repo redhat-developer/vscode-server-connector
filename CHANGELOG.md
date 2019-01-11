@@ -1,5 +1,6 @@
 # Change Log
 
 ## 0.0.1
-- Support for Wildfly different versions
-- Add supoort for minishift binary
+- Support for different Wildfly versions
+- Supoort for minishift
+- Request optional parameters when creating new Servers
