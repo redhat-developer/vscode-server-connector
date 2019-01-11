@@ -1,4 +1,4 @@
-# Visual Studio Code Adapters Tools
+# Server Connector
 
 [![Build Status](https://travis-ci.org/redhat-developer/vscode-adapters.svg?branch=master)](https://travis-ci.org/redhat-developer/vscode-adapters)
 
