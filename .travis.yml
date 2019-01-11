@@ -20,8 +20,7 @@ before_install:
 
 install:
 - npm install
-- npm run package
-- npm run vscode:prepublish
+- npm run build
 
 script:
 - npm test --silent

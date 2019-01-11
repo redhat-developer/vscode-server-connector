@@ -159,7 +159,8 @@
     "postinstall": "node ./node_modules/vscode/bin/install",
     "test": "npm run compile && node ./node_modules/vscode/bin/test",
     "update-deps": "node_modules/.bin/ncu --upgrade --loglevel verbose --packageFile package.json && npm update",
-    "coverage:upload": "codecov -f coverage/coverage-final.json"
+    "coverage:upload": "codecov -f coverage/coverage-final.json",
+    "build": "npm run compile && npm run package"
   },
   "devDependencies": {
     "@types/glob": "^7.1.0",

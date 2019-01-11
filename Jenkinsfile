@@ -14,8 +14,7 @@ node('rhel7'){
 
 	stage('Build') {
 		sh "npm install"
-		sh "npm run package"
-		sh "npm run vscode:prepublish"
+		sh "npm run build"
 	}
 
 	withEnv(['JUNIT_REPORT_PATH=report.xml', 'CODE_TESTS_WORKSPACE=c:/unknown']) {
