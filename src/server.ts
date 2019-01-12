@@ -8,10 +8,9 @@ const portfinder = require('portfinder');
 export interface ServerInfo {
     host: string;
     port: number;
-    process: cp.ChildProcess;
 }
 
-export function start(): Promise<ServerInfo> {
+export function start(stdoutCballback : (data: string) => void, stderrCallback: (data: string) => void ): Promise<ServerInfo> {
     return new Promise((resolve, reject) => {
         findJava((err, home) => {
             if (err) {
@@ -24,13 +23,14 @@ export function start(): Promise<ServerInfo> {
                 portfinder.getPortPromise()
                 .then(serverport => {
                     const process = cp.spawn(java, [`-Drsp.server.port=${serverport}`, '-jar', felix], { cwd: serverLocation });
+                    process.stdout.on('data', stdoutCballback);
+                    process.stderr.on('data', stderrCallback);
                     waitOn({
                         resources: [`tcp:localhost:${serverport}`]
                     }, () => {
                         resolve({
                             port: serverport,
-                            host: 'localhost',
-                            process
+                            host: 'localhost'
                         });
                     });
                 })
