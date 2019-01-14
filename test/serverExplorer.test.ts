@@ -103,25 +103,35 @@ suite('Server explorer', () => {
         let getServersStub: sinon.SinonStub;
         let setStatusStub: sinon.SinonStub;
 
-        const stateChangeUnknown: Protocol.ServerStateChange = {
+        const stateChangeUnknown: Protocol.ServerState = {
             server: serverHandle,
-            state: 0
+            state: 0,
+            publishState: 1,
+            deployableStates: []
         };
-        const stateChangeStarting: Protocol.ServerStateChange = {
+        const stateChangeStarting: Protocol.ServerState = {
             server: serverHandle,
-            state: 1
+            state: 1,
+            publishState: 1,
+            deployableStates: []
         };
-        const stateChangeStarted: Protocol.ServerStateChange = {
+        const stateChangeStarted: Protocol.ServerState = {
             server: serverHandle,
-            state: 2
+            state: 2,
+            publishState: 1,
+            deployableStates: []
         };
-        const stateChangeStopping: Protocol.ServerStateChange = {
+        const stateChangeStopping: Protocol.ServerState = {
             server: serverHandle,
-            state: 3
+            state: 3,
+            publishState: 1,
+            deployableStates: []
         };
-        const stateChangeStopped: Protocol.ServerStateChange = {
+        const stateChangeStopped: Protocol.ServerState = {
             server: serverHandle,
-            state: 4
+            state: 4,
+            publishState: 1,
+            deployableStates: []
         };
 
         const serverStop = {
@@ -146,13 +156,13 @@ suite('Server explorer', () => {
         };
 
         setup(() => {
-            serverExplorer.servers =  new Map<string, Protocol.ServerHandle>([['server', serverHandle]]);
-            getServersStub = sandbox.stub(serverExplorer.servers, 'get').returns(serverHandle);
+            serverExplorer.serverStatus =  new Map<string, Protocol.ServerHandle>([['server', serverHandle]]);
+            getServersStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverHandle);
             setStatusStub = sandbox.stub(serverExplorer.serverStatus, 'set');
         });
 
         test('call should update server state to received in state change event (Stopped)', () => {
-            sandbox.stub(serverExplorer.serverStatusEnum, 'get').returns('Stopped');
+            sandbox.stub(serverExplorer.runStateEnum, 'get').returns('Stopped');
             const children = serverExplorer.getChildren();
             const treeItem = serverExplorer.getTreeItem(serverHandle);
 
@@ -168,7 +178,7 @@ suite('Server explorer', () => {
         });
 
         test('call should update server state to received in state change event (Started)', () => {
-            sandbox.stub(serverExplorer.serverStatusEnum, 'get').returns('Started');
+            sandbox.stub(serverExplorer.runStateEnum, 'get').returns('Started');
             const children = serverExplorer.getChildren();
             const treeItem = serverExplorer.getTreeItem(serverHandle);
 
@@ -184,7 +194,7 @@ suite('Server explorer', () => {
         });
 
         test('call should update server state to received in state change event (Unknown)', () => {
-            sandbox.stub(serverExplorer.serverStatusEnum, 'get').returns('Unknown');
+            sandbox.stub(serverExplorer.runStateEnum, 'get').returns('Unknown');
             const children = serverExplorer.getChildren();
             const treeItem = serverExplorer.getTreeItem(serverHandle);
 

@@ -32,6 +32,9 @@
     "onCommand:server.restart",
     "onCommand:server.remove",
     "onCommand:server.output",
+    "onCommand:server.add",
+    "onCommand:server.remove",
+    "onCommand:server.publish",
     "onView:servers",
     "onLanguage:plaintext"
   ],
@@ -72,6 +75,21 @@
       {
         "command": "server.output",
         "title": "Show Output Channel",
+        "category": "Servers"
+      },
+      {
+        "command": "server.addDeployment",
+        "title": "Add Deployment to Server",
+        "category": "Servers"
+      },
+      {
+        "command": "server.removeDeployment",
+        "title": "Remove Deployment from Server",
+        "category": "Servers"
+      },
+      {
+        "command": "server.publishFull",
+        "title": "Publish Server (Full)",
         "category": "Servers"
       }
     ],

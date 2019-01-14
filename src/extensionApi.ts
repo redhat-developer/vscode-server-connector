@@ -22,15 +22,15 @@ export class CommandHandler {
         let selectedServerId: string;
 
         if (context === undefined) {
-            selectedServerId = await vscode.window.showQuickPick(Array.from(this.serversData.servers.keys()),
+            selectedServerId = await vscode.window.showQuickPick(Array.from(this.serversData.serverStatus.keys()),
                 { placeHolder: 'Select runtime/server to start' });
-            selectedServerType = this.serversData.servers.get(selectedServerId).type;
+            selectedServerType = this.serversData.serverStatus.get(selectedServerId).server.type;
         } else {
-            selectedServerType = context.type;
-            selectedServerId = context.id;
+            selectedServerType = context.server.type;
+            selectedServerId = context.server.id;
         }
 
-        if (this.serversData.serverStatus.get(selectedServerId) === ServerState.STOPPED) {
+        if (this.serversData.serverStatus.get(selectedServerId).state === ServerState.STOPPED) {
             const response = await this.client.startServerAsync({
                 params: {
                     serverType: selectedServerType.id,
@@ -51,13 +51,13 @@ export class CommandHandler {
     async stopServer(context?: any): Promise<Protocol.Status> {
         let serverId: string;
         if (context === undefined) {
-            serverId = await vscode.window.showQuickPick(Array.from(this.serversData.servers.keys()),
+            serverId = await vscode.window.showQuickPick(Array.from(this.serversData.serverStatus.keys()),
                 { placeHolder: 'Select runtime/server to stop' });
         } else {
             serverId = context.id;
         }
 
-        if (this.serversData.serverStatus.get(serverId) === ServerState.STARTED) {
+        if (this.serversData.serverStatus.get(serverId).state === ServerState.STARTED) {
             const status = await this.client.stopServerAsync({ id: serverId, force: true });
             if (status.severity > 0) {
                 return Promise.reject(status.message);
@@ -72,15 +72,15 @@ export class CommandHandler {
         let serverId: string;
         let selectedServerType: Protocol.ServerType;
         if (context === undefined) {
-            serverId = await vscode.window.showQuickPick(Array.from(this.serversData.servers.keys()),
+            serverId = await vscode.window.showQuickPick(Array.from(this.serversData.serverStatus.keys()),
                 { placeHolder: 'Select runtime/server to remove' });
-            selectedServerType = this.serversData.servers.get(serverId).type;
+            selectedServerType = this.serversData.serverStatus.get(serverId).server.type;
         } else {
             serverId = context.id;
             selectedServerType = context.type;
         }
 
-        if (this.serversData.serverStatus.get(serverId) === ServerState.STOPPED) {
+        if (this.serversData.serverStatus.get(serverId).state === ServerState.STOPPED) {
             const status = await this.client.deleteServerAsync({ id: serverId, type: selectedServerType });
             if (status.severity > 0) {
                 return Promise.reject(status.message);
@@ -93,9 +93,9 @@ export class CommandHandler {
 
     async showServerOutput(context?: any): Promise<void> {
         if (context === undefined) {
-            const serverId = await vscode.window.showQuickPick(Array.from(this.serversData.servers.keys()),
+            const serverId = await vscode.window.showQuickPick(Array.from(this.serversData.serverStatus.keys()),
                 { placeHolder: 'Select runtime/server to show ouput channel' });
-            context = this.serversData.servers.get(serverId);
+            context = this.serversData.serverStatus.get(serverId).server;
         }
         this.serversData.showOutput(context);
     }
@@ -103,11 +103,11 @@ export class CommandHandler {
     async restartServer(context?: any): Promise<void> {
         if (context === undefined) {
             const serverId: string = await vscode.window.showQuickPick(
-                Array.from(this.serversData.servers.keys())
-                .filter(item => this.serversData.serverStatus.get(item) === ServerState.STARTED),
+                Array.from(this.serversData.serverStatus.keys())
+                .filter(item => this.serversData.serverStatus.get(item).state === ServerState.STARTED),
                 { placeHolder: 'Select runtime/server to restart' }
             );
-            context = this.serversData.servers.get(serverId);
+            context = this.serversData.serverStatus.get(serverId).server;
         }
 
         const params: Protocol.LaunchParameters = {
@@ -123,11 +123,63 @@ export class CommandHandler {
         await this.client.startServerAsync(params);
     }
 
+    async addDeployment(context?: any): Promise<Protocol.Status> {
+        let serverId: string;
+        if (context === undefined) {
+            return Promise.reject('Please select a server from the Servers view.');
+        } else {
+            serverId = context.id;
+        }
+
+        if (this.serversData) {
+            const serverHandle: Protocol.ServerHandle = this.serversData.serverStatus.get(serverId).server;
+            return this.serversData.addDeployment(serverHandle);
+        } else {
+            return Promise.reject('Runtime Server Protocol (RSP) Server is starting, please try again later.');
+        }
+    }
+
+    async removeDeployment(context?: any): Promise<Protocol.Status> {
+        let serverId: string;
+        let deploymentId: string;
+        if (context === undefined) {
+            return Promise.reject('Please select a deployment from the Servers view.');
+        } else {
+            serverId = context.id;
+            deploymentId = context.path; // TODO this is clearly wrong?!
+        }
+
+        if (this.serversData) {
+            const serverHandle: Protocol.ServerHandle = this.serversData.serverStatus.get(serverId).server;
+            const states: Protocol.DeployableState[] = this.serversData.serverStatus.get(serverId).deployableStates;
+
+            return this.serversData.removeDeployment(serverHandle, states[0].reference); // TODO fix this
+        } else {
+            return Promise.reject('Runtime Server Protocol (RSP) Server is starting, please try again later.');
+        }
+    }
+
+    async fukllPublishServer(context?: any): Promise<Protocol.Status> {
+        let serverId: string;
+        if (context === undefined) {
+            return Promise.reject('Please select a server from the Servers view.');
+        } else {
+            serverId = context.id;
+        }
+
+        if (this.serversData) {
+            const serverHandle: Protocol.ServerHandle = this.serversData.serverStatus.get(serverId).server;
+            return this.serversData.publish(serverHandle, 2); // TODO use constant? Where is it?
+        } else {
+            return Promise.reject('Runtime Server Protocol (RSP) Server is starting, please try again later.');
+        }
+    }
+
     async addLocation(): Promise<Protocol.Status> {
         if (this.serversData) {
             return this.serversData.addLocation();
         } else {
-            return Promise.reject('Stack Protocol Server is starting, please try again later.');
+            return Promise.reject('Runtime Server Protocol (RSP) Server is starting, please try again later.');
         }
     }
 

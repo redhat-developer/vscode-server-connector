@@ -116,7 +116,7 @@ suite('Command Handler', () => {
                     id: context.id,
                     attributes: new Map<string, any>()
                 }
-            }
+            };
 
             expect(result).equals(response);
             expect(startStub).calledOnceWith(args);
@@ -124,7 +124,7 @@ suite('Command Handler', () => {
 
         test('works without injected context', async () => {
             sandbox.stub(vscode.window, 'showQuickPick').resolves('id');
-            sandbox.stub(serverExplorer.servers, 'get').returns(serverHandle);
+            sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverHandle);
 
             const result = await handler.startServer('run');
             const args: Protocol.LaunchParameters = {
@@ -134,7 +134,7 @@ suite('Command Handler', () => {
                     id: 'id',
                     attributes: new Map<string, any>()
                 }
-            }
+            };
 
             expect(result).equals(response);
             expect(startStub).calledOnceWith(args);
@@ -244,7 +244,7 @@ suite('Command Handler', () => {
         });
 
         test('works without injected context', async () => {
-            sandbox.stub(serverExplorer.servers, 'get').returns(serverHandle);
+            sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverHandle);
             const result = await handler.removeServer();
             const args: Protocol.ServerHandle = {
                 id: 'id',
@@ -310,7 +310,7 @@ suite('Command Handler', () => {
         });
 
         test('works without injected context', async () => {
-            sandbox.stub(serverExplorer.servers, 'get').returns(serverHandle);
+            sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverHandle);
             await handler.restartServer();
             const stopArgs: Protocol.StopServerAttributes = {
                 id: 'id',
