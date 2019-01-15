@@ -33,7 +33,6 @@
     "onCommand:server.remove",
     "onCommand:server.output",
     "onCommand:server.add",
-    "onCommand:server.remove",
     "onCommand:server.publish",
     "onView:servers",
     "onLanguage:plaintext"
