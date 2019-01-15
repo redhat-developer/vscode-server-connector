@@ -76,8 +76,8 @@ export class CommandHandler {
                 { placeHolder: 'Select runtime/server to remove' });
             selectedServerType = this.serversData.serverStatus.get(serverId).server.type;
         } else {
-            serverId = context.id;
-            selectedServerType = context.type;
+            serverId = context.server.id;
+            selectedServerType = context.server.type;
         }
 
         if (this.serversData.serverStatus.get(serverId).state === ServerState.STOPPED) {
