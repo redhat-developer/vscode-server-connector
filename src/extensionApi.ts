@@ -95,7 +95,7 @@ export class CommandHandler {
         if (context === undefined) {
             const serverId = await vscode.window.showQuickPick(Array.from(this.serversData.serverStatus.keys()),
                 { placeHolder: 'Select runtime/server to show ouput channel' });
-            context = this.serversData.serverStatus.get(serverId).server;
+            context = this.serversData.serverStatus.get(serverId);
         }
         this.serversData.showOutput(context);
     }
@@ -107,7 +107,7 @@ export class CommandHandler {
                 .filter(item => this.serversData.serverStatus.get(item).state === ServerState.STARTED),
                 { placeHolder: 'Select runtime/server to restart' }
             );
-            context = this.serversData.serverStatus.get(serverId).server;
+            context = this.serversData.serverStatus.get(serverId);
         }
 
         const params: Protocol.LaunchParameters = {
@@ -139,14 +139,14 @@ export class CommandHandler {
         }
     }
 
-    async removeDeployment(context?: Protocol.ServerState): Promise<Protocol.Status> {
+    async removeDeployment(context?: Protocol.DeployableState): Promise<Protocol.Status> {
         let serverId: string;
         let deploymentId: string;
         if (context === undefined) {
             return Promise.reject('Please select a deployment from the Servers view.');
         } else {
-            serverId = context.id;
-            deploymentId = context.path; // TODO this is clearly wrong?!
+            serverId = context.reference.label;
+            deploymentId = context.reference.path; // TODO this is clearly wrong?!
         }
 
         if (this.serversData) {

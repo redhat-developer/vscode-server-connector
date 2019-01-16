@@ -104,9 +104,9 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
             openLabel: 'Select Deployment'
         }).then(async file => {
             if (file && file.length === 1) {
-                const url = require('url');
-                const filePath : string = url.fileURLToPath(url)
-                const deployableRef : Protocol.DeployableReference = { label: filePath,  path: filePath};
+                // var fileUrl = require('file-url');
+                // const filePath : string = fileUrl(file[0].fsPath);
+                const deployableRef : Protocol.DeployableReference = { label: file[0].fsPath,  path: file[0].fsPath};
                 const req : Protocol.ModifyDeployableRequest = { server: server, deployable : deployableRef};
                 const status = await this.client.addDeployable(req);
                 if (status.severity > 0) {

@@ -26,6 +26,13 @@ suite('Command Handler', () => {
         type: serverType
     };
 
+    const serverState: Protocol.ServerState =  {
+        server: serverHandle,
+        deployableStates: [],
+        publishState: 0,
+        state: 0
+    }
+
     const status: Protocol.Status = {
         code: 0,
         message: 'ok',
@@ -103,12 +110,12 @@ suite('Command Handler', () => {
         };
 
         setup(() => {
-            statusStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(ServerState.STOPPED);
+            statusStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverState);
             startStub = sandbox.stub(client, 'startServerAsync').resolves(response);
         });
 
         test('works with injected context', async () => {
-            const result = await handler.startServer('run', context);
+            const result = await handler.startServer('run', serverState);
             const args: Protocol.LaunchParameters = {
                 mode: 'run',
                 params: {
@@ -124,7 +131,7 @@ suite('Command Handler', () => {
 
         test('works without injected context', async () => {
             sandbox.stub(vscode.window, 'showQuickPick').resolves('id');
-            sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverHandle);
+            sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverState);
 
             const result = await handler.startServer('run');
             const args: Protocol.LaunchParameters = {
@@ -144,7 +151,7 @@ suite('Command Handler', () => {
             statusStub.returns(ServerState.STARTED);
 
             try {
-                await handler.startServer('run', context);
+                await handler.startServer('run', serverState);
                 expect.fail();
             } catch (err) {
                 expect(err).equals('The server is already running.');
@@ -159,7 +166,7 @@ suite('Command Handler', () => {
             startStub.resolves(result);
 
             try {
-                await handler.startServer('run', context);
+                await handler.startServer('run', serverState);
                 expect.fail();
             } catch (err) {
                 expect(err).equals(errorStatus.message);
@@ -172,13 +179,13 @@ suite('Command Handler', () => {
         let stopStub: sinon.SinonStub;
 
         setup(() => {
-            statusStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(ServerState.STARTED);
+            statusStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverState);
             stopStub = sandbox.stub(client, 'stopServerAsync').resolves(status);
             sandbox.stub(vscode.window, 'showQuickPick').resolves('id');
         });
 
         test('works with injected context', async () => {
-            const result = await handler.stopServer(simpleContext);
+            const result = await handler.stopServer(serverState);
             const args: Protocol.StopServerAttributes = {
                 id: simpleContext.id,
                 force: true
@@ -203,7 +210,7 @@ suite('Command Handler', () => {
             statusStub.returns(ServerState.STOPPED);
 
             try {
-                await handler.stopServer(simpleContext);
+                await handler.stopServer(serverState);
                 expect.fail();
             } catch (err) {
                 expect(err).equals('The server is already stopped.');
@@ -214,7 +221,7 @@ suite('Command Handler', () => {
             stopStub.resolves(errorStatus);
 
             try {
-                await handler.stopServer(simpleContext);
+                await handler.stopServer(serverState);
                 expect.fail();
             } catch (err) {
                 expect(err).equals(errorStatus.message);
@@ -227,13 +234,13 @@ suite('Command Handler', () => {
         let removeStub: sinon.SinonStub;
 
         setup(() => {
-            statusStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(ServerState.STOPPED);
+            statusStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverState);
             removeStub = sandbox.stub(client, 'deleteServerAsync').resolves(status);
             sandbox.stub(vscode.window, 'showQuickPick').resolves('id');
         });
 
         test('works with injected context', async () => {
-            const result = await handler.removeServer(context);
+            const result = await handler.removeServer(serverState);
             const args: Protocol.ServerHandle = {
                 id: context.id,
                 type: context.type
@@ -244,7 +251,7 @@ suite('Command Handler', () => {
         });
 
         test('works without injected context', async () => {
-            sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverHandle);
+            sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverState);
             const result = await handler.removeServer();
             const args: Protocol.ServerHandle = {
                 id: 'id',
@@ -259,7 +266,7 @@ suite('Command Handler', () => {
             statusStub.returns(ServerState.STARTED);
 
             try {
-                await handler.removeServer(context);
+                await handler.removeServer(serverState);
                 expect.fail();
             } catch (err) {
                 expect(err).equals('Please stop the server before removing it.');
@@ -270,7 +277,7 @@ suite('Command Handler', () => {
             removeStub.resolves(errorStatus);
 
             try {
-                await handler.removeServer(context);
+                await handler.removeServer(serverState);
                 expect.fail();
             } catch (err) {
                 expect(err).equals(errorStatus.message);
@@ -283,14 +290,14 @@ suite('Command Handler', () => {
         let stopStub: sinon.SinonStub;
 
         setup(() => {
-            sandbox.stub(serverExplorer.serverStatus, 'get').returns(ServerState.STARTED);
+            sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverState);
             startStub = sandbox.stub(client, 'startServerAsync').resolves(status);
             stopStub = sandbox.stub(client, 'stopServerSync').resolves(status);
             sandbox.stub(vscode.window, 'showQuickPick').resolves('id');
         });
 
         test('works with injected context', async () => {
-            await handler.restartServer(context);
+            await handler.restartServer(serverState);
             const stopArgs: Protocol.StopServerAttributes = {
                 id: context.id,
                 force: true
@@ -310,7 +317,7 @@ suite('Command Handler', () => {
         });
 
         test('works without injected context', async () => {
-            sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverHandle);
+            sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverState);
             await handler.restartServer();
             const stopArgs: Protocol.StopServerAttributes = {
                 id: 'id',
