@@ -44,10 +44,12 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
         this.publishStateEnum.set(5, 'Removed');
         this.publishStateEnum.set(6, 'Unknown');
 
-        client.getServerHandles().then(servers => servers.forEach(server => this.insertServer(server)));
+        client.getServerHandles().then(servers => servers.forEach(async server => this.insertServer(server)));
     }
 
-    insertServer(handle): void {
+    async insertServer(event: Protocol.ServerHandle) {
+        const state = await this.client.getServerState(event);
+        this.serverStatus.set(state.server.id, state);
         this.refresh();
     }
 
