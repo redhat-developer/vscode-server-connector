@@ -39,6 +39,13 @@ suite('Server explorer', () => {
         type: serverType
     };
 
+    const serverState: Protocol.ServerState =  {
+        server: serverHandle,
+        deployableStates: [],
+        publishState: 0,
+        state: 0
+    }
+
     const ProcessOutput: Protocol.ServerProcessOutput = {
         processId: 'process id',
         server: serverHandle,
@@ -77,7 +84,7 @@ suite('Server explorer', () => {
 
     test('showOutput call should show servers output channel', () => {
         const spy = sandbox.spy(fakeChannel, 'show');
-        serverExplorer.showOutput(serverHandle);
+        serverExplorer.showOutput(serverState);
 
         expect(getStub).calledOnce;
         expect(spy).calledOnce;
@@ -93,7 +100,7 @@ suite('Server explorer', () => {
 
     test('refresh should trigger getChildren call for root node', () => {
         const fireStub = sandbox.stub(EventEmitter.prototype, 'fire');
-        serverExplorer.refresh(serverHandle);
+        serverExplorer.refresh(serverState);
 
         expect(fireStub).calledOnceWith(serverHandle);
     });
@@ -156,15 +163,15 @@ suite('Server explorer', () => {
         };
 
         setup(() => {
-            serverExplorer.serverStatus =  new Map<string, Protocol.ServerHandle>([['server', serverHandle]]);
-            getServersStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverHandle);
+            serverExplorer.serverStatus =  new Map<string, Protocol.ServerState>([['server', serverState]]);
+            getServersStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverState);
             setStatusStub = sandbox.stub(serverExplorer.serverStatus, 'set');
         });
 
         test('call should update server state to received in state change event (Stopped)', () => {
             sandbox.stub(serverExplorer.runStateEnum, 'get').returns('Stopped');
             const children = serverExplorer.getChildren();
-            const treeItem = serverExplorer.getTreeItem(serverHandle);
+            const treeItem = serverExplorer.getTreeItem(serverState);
 
             serverExplorer.updateServer(stateChangeStopping);
             serverExplorer.refresh();
@@ -180,7 +187,7 @@ suite('Server explorer', () => {
         test('call should update server state to received in state change event (Started)', () => {
             sandbox.stub(serverExplorer.runStateEnum, 'get').returns('Started');
             const children = serverExplorer.getChildren();
-            const treeItem = serverExplorer.getTreeItem(serverHandle);
+            const treeItem = serverExplorer.getTreeItem(serverState);
 
             serverExplorer.updateServer(stateChangeStarting);
             serverExplorer.refresh();
@@ -196,7 +203,7 @@ suite('Server explorer', () => {
         test('call should update server state to received in state change event (Unknown)', () => {
             sandbox.stub(serverExplorer.runStateEnum, 'get').returns('Unknown');
             const children = serverExplorer.getChildren();
-            const treeItem = serverExplorer.getTreeItem(serverHandle);
+            const treeItem = serverExplorer.getTreeItem(serverState);
 
             serverExplorer.updateServer(stateChangeUnknown);
 
