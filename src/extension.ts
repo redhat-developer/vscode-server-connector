@@ -33,7 +33,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Extens
 
         vscode.commands.registerCommand('server.addDeployment', context => executeCommand(commandHandler.addDeployment, commandHandler, context)),
         vscode.commands.registerCommand('server.removeDeployment', context => executeCommand(commandHandler.removeDeployment, commandHandler, context)),
-        vscode.commands.registerCommand('server.publishFull', context => executeCommand(commandHandler.fukllPublishServer, commandHandler, context)),
+        vscode.commands.registerCommand('server.publishFull', context => executeCommand(commandHandler.fullPublishServer, commandHandler, context)),
 
         rspserverstdout,
         rspserverstderr

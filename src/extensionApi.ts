@@ -17,7 +17,7 @@ export class CommandHandler {
         this.serversData = serversData;
     }
 
-    async startServer(mode: string, context?: any): Promise<Protocol.StartServerResponse> {
+    async startServer(mode: string, context?: Protocol.ServerState): Promise<Protocol.StartServerResponse> {
         let selectedServerType: Protocol.ServerType;
         let selectedServerId: string;
 
@@ -48,13 +48,13 @@ export class CommandHandler {
         }
     }
 
-    async stopServer(context?: any): Promise<Protocol.Status> {
+    async stopServer(context?: Protocol.ServerState): Promise<Protocol.Status> {
         let serverId: string;
         if (context === undefined) {
             serverId = await vscode.window.showQuickPick(Array.from(this.serversData.serverStatus.keys()),
                 { placeHolder: 'Select runtime/server to stop' });
         } else {
-            serverId = context.id;
+            serverId = context.server.id;
         }
 
         if (this.serversData.serverStatus.get(serverId).state === ServerState.STARTED) {
@@ -68,7 +68,7 @@ export class CommandHandler {
         }
     }
 
-    async removeServer(context?: any): Promise<Protocol.Status> {
+    async removeServer(context?: Protocol.ServerState): Promise<Protocol.Status> {
         let serverId: string;
         let selectedServerType: Protocol.ServerType;
         if (context === undefined) {
@@ -91,7 +91,7 @@ export class CommandHandler {
         }
     }
 
-    async showServerOutput(context?: any): Promise<void> {
+    async showServerOutput(context?: Protocol.ServerState): Promise<void> {
         if (context === undefined) {
             const serverId = await vscode.window.showQuickPick(Array.from(this.serversData.serverStatus.keys()),
                 { placeHolder: 'Select runtime/server to show ouput channel' });
@@ -100,7 +100,7 @@ export class CommandHandler {
         this.serversData.showOutput(context);
     }
 
-    async restartServer(context?: any): Promise<void> {
+    async restartServer(context?: Protocol.ServerState): Promise<void> {
         if (context === undefined) {
             const serverId: string = await vscode.window.showQuickPick(
                 Array.from(this.serversData.serverStatus.keys())
@@ -113,22 +113,22 @@ export class CommandHandler {
         const params: Protocol.LaunchParameters = {
             mode: 'run',
             params: {
-                id: context.id,
-                serverType: context.type.id,
+                id: context.server.id,
+                serverType: context.server.type.id,
                 attributes: new Map<string, any>()
             }
         };
 
-        await this.client.stopServerSync({ id: context.id, force: true });
+        await this.client.stopServerSync({ id: context.server.id, force: true });
         await this.client.startServerAsync(params);
     }
 
-    async addDeployment(context?: any): Promise<Protocol.Status> {
+    async addDeployment(context?: Protocol.ServerState): Promise<Protocol.Status> {
         let serverId: string;
         if (context === undefined) {
             return Promise.reject('Please select a server from the Servers view.');
         } else {
-            serverId = context.id;
+            serverId = context.server.id;
         }
 
         if (this.serversData) {
@@ -139,7 +139,7 @@ export class CommandHandler {
         }
     }
 
-    async removeDeployment(context?: any): Promise<Protocol.Status> {
+    async removeDeployment(context?: Protocol.ServerState): Promise<Protocol.Status> {
         let serverId: string;
         let deploymentId: string;
         if (context === undefined) {
@@ -159,12 +159,12 @@ export class CommandHandler {
         }
     }
 
-    async fukllPublishServer(context?: any): Promise<Protocol.Status> {
+    async fullPublishServer(context?: Protocol.ServerState): Promise<Protocol.Status> {
         let serverId: string;
         if (context === undefined) {
             return Promise.reject('Please select a server from the Servers view.');
         } else {
-            serverId = context.id;
+            serverId = context.server.id;
         }
 
         if (this.serversData) {
