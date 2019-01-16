@@ -119,7 +119,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
 
     async removeDeployment(server: Protocol.ServerHandle, deployableRef: Protocol.DeployableReference): Promise<Protocol.Status> {
         const req : Protocol.ModifyDeployableRequest = { server: server, deployable : deployableRef};
-        const status = await this.client.addDeployable(req);
+        const status = await this.client.removeDeployable(req);
         if (status.severity > 0) {
             return Promise.reject(status.message);
         }

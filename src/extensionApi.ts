@@ -143,15 +143,21 @@ export class CommandHandler {
         let serverId: string;
         let deploymentId: string;
         if (context === undefined) {
-            return Promise.reject('Please select a deployment from the Servers view.');
+            return Promise.reject('Please select a deployment from the Servers view to run this action.');
         } else {
-            serverId = context.reference.label;
+            serverId = context.server.id;
             deploymentId = context.reference.path; // TODO this is clearly wrong?!
         }
 
         if (this.serversData) {
-            const serverHandle: Protocol.ServerHandle = this.serversData.serverStatus.get(serverId).server;
-            const states: Protocol.DeployableState[] = this.serversData.serverStatus.get(serverId).deployableStates;
+            const tmp1 : ServersViewTreeDataProvider = this.serversData;
+            const tmp : Map<string, Protocol.ServerState>  = this.serversData.serverStatus;
+            const serverState : Protocol.ServerState = this.serversData.serverStatus.get(serverId);
+            if( serverState == undefined ) {
+                return Promise.reject('Please select a deployment from the Servers view to run this action.');
+            }
+            const serverHandle: Protocol.ServerHandle = serverState.server;
+            const states: Protocol.DeployableState[] = serverState.deployableStates;
 
             return this.serversData.removeDeployment(serverHandle, states[0].reference); // TODO fix this
         } else {

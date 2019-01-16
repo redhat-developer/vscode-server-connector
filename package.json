@@ -158,6 +158,16 @@
           "command": "server.addDeployment",
           "when": "view == servers",
           "group": "server-status"
+        },        
+        {
+          "command": "server.removeDeployment",
+          "when": "view == servers",
+          "group": "server-status"
+        },        
+        {
+          "command": "server.publishFull",
+          "when": "view == servers",
+          "group": "server-status"
         }
       ]
     },
