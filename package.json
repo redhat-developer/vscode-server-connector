@@ -153,6 +153,11 @@
           "command": "server.output",
           "when": "view == servers && viewItem == 'Stopping'",
           "group": "server-status"
+        }, 
+        {
+          "command": "server.addDeployment",
+          "when": "view == servers" ,
+          "group": "server-status"
         }
       ]
     },

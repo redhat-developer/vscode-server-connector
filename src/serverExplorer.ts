@@ -55,7 +55,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
 
     updateServer(event: Protocol.ServerState): void {
         this.serverStatus.set(event.server.id, event);
-        this.refresh(event);
+        this.refresh();
         const channel: OutputChannel = this.serverOutputChannels.get(event.server.id);
         if (event.state === ServerState.STARTING && channel) {
             channel.clear();
@@ -85,14 +85,14 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
         }
     }
 
-    showOutput(server: Protocol.ServerHandle): void {
-        const channel: OutputChannel = this.serverOutputChannels.get(server.id);
+    showOutput(state: Protocol.ServerState): void {
+        const channel: OutputChannel = this.serverOutputChannels.get(state.server.id);
         if (channel) {
             channel.show();
         }
     }
 
-    refresh(data?): void {
+    refresh(data?: Protocol.ServerState): void {
         this._onDidChangeTreeData.fire(data);
     }
 
@@ -189,10 +189,9 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
             const runState2: string = this.runStateEnum.get(state.state);
             const pubState: string = this.publishStateEnum.get(state.publishState);
             const depStr = `${id1} (${runState2}) (${pubState})`;
-
             const treeItem: TreeItem = new TreeItem(`${depStr}`, TreeItemCollapsibleState.Expanded);
             treeItem.iconPath = Uri.file(path.join(__dirname, '../../images/server-light.png'));
-            treeItem.contextValue =  this.runStateEnum.get(state.state);
+            treeItem.contextValue =  runState2;
             return treeItem;
         } else if( (<Protocol.DeployableState>item).reference ) {
             const state: Protocol.DeployableState = (<Protocol.DeployableState>item);
@@ -202,7 +201,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
             const depStr = `${id1} (${runState}) (${pubState})`;
             const treeItem: TreeItem = new TreeItem(`${depStr}`);
             treeItem.iconPath = Uri.file(path.join(__dirname, '../../images/server-light.png'));
-            treeItem.contextValue =  this.runStateEnum.get(state.state);
+            treeItem.contextValue =  runState;
             return treeItem;
         }
     }
