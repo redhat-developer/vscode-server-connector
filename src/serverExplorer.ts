@@ -40,8 +40,8 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
         this.publishStateEnum.set(1, 'Synchronized');
         this.publishStateEnum.set(2, 'Incremental');
         this.publishStateEnum.set(3, 'Full');
-        this.publishStateEnum.set(4, 'Added');
-        this.publishStateEnum.set(5, 'Removed');
+        this.publishStateEnum.set(4, 'Add');
+        this.publishStateEnum.set(5, 'Remove');
         this.publishStateEnum.set(6, 'Unknown');
 
         client.getServerHandles().then(servers => servers.forEach(async server => this.insertServer(server)));
