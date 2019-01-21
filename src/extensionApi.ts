@@ -140,26 +140,26 @@ export class CommandHandler {
     }
 
     async removeDeployment(context?: Protocol.DeployableState): Promise<Protocol.Status> {
-        let serverId: string;
-        let deploymentId: string;
         if (context === undefined) {
             return Promise.reject('Please select a deployment from the Servers view to run this action.');
-        } else {
-            serverId = context.server.id;
-            deploymentId = context.reference.path; // TODO this is clearly wrong?!
         }
 
+        const serverId: string = context.server.id;
+        const deploymentId: string = context.reference.label;
+
         if (this.serversData) {
-            const tmp1 : ServersViewTreeDataProvider = this.serversData;
-            const tmp : Map<string, Protocol.ServerState>  = this.serversData.serverStatus;
             const serverState : Protocol.ServerState = this.serversData.serverStatus.get(serverId);
-            if( serverState == undefined ) {
+            if( serverState === undefined ) {
                 return Promise.reject('Please select a deployment from the Servers view to run this action.');
             }
             const serverHandle: Protocol.ServerHandle = serverState.server;
             const states: Protocol.DeployableState[] = serverState.deployableStates;
-
-            return this.serversData.removeDeployment(serverHandle, states[0].reference); // TODO fix this
+            for( let entry of states ) {
+                if( entry.reference.label === deploymentId) {
+                    return this.serversData.removeDeployment(serverHandle, entry.reference);
+                }
+            }
+            return Promise.reject('Cannot find deployment ' + deploymentId);
         } else {
             return Promise.reject('Runtime Server Protocol (RSP) Server is starting, please try again later.');
         }
