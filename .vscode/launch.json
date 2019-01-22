@@ -19,7 +19,7 @@
             "preLaunchTask": "npm: watch"
         },
         {
-            "name": "Extension Tests",
+            "name": "Extension Tests Debug",
             "type": "extensionHost",
             "request": "launch",
             "runtimeExecutable": "${execPath}",
@@ -30,7 +30,27 @@
             "outFiles": [
                 "${workspaceFolder}/out/test/**/*.js"
             ],
-            "preLaunchTask": "npm: watch"
+            "preLaunchTask": "npm: watch",
+            "env": {
+                "VSCA_TEST_MODE": "debug"
+            }
+        },
+        {
+            "name": "Extension Tests Coverage",
+            "type": "extensionHost",
+            "request": "launch",
+            "runtimeExecutable": "${execPath}",
+            "args": [
+                "--extensionDevelopmentPath=${workspaceFolder}",
+                "--extensionTestsPath=${workspaceFolder}/out/test"
+            ],
+            "outFiles": [
+                "${workspaceFolder}/out/test/**/*.js"
+            ],
+            "preLaunchTask": "npm: watch",
+            "env": {
+                "VSCA_TEST_MODE": "debug"
+            }
         }
     ]
 }
