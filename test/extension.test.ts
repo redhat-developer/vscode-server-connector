@@ -89,12 +89,17 @@ suite('Extension Tests', function() {
                 'server.remove',
                 'server.output',
                 'servers.addLocation',
-                'server.restart'
+                'server.restart',
+                `server.addDeployment`,
+                `server.removeDeployment`,
+                'server.publishFull'
             ];
             const foundServerCommands = commands.filter(value => {
                 return SERVER_COMMANDS.indexOf(value) >= 0 || value.startsWith('server.');
             });
-            assert.equal(foundServerCommands.length , SERVER_COMMANDS.length, 'Some server commands are not registered properly or a new command is not added to the test');
+            const t1 = foundServerCommands.length;
+            const t2 = SERVER_COMMANDS.length;
+            assert.equal(t1, t2, 'Some server commands are not registered properly or a new command is not added to the test');
         });
     });
 

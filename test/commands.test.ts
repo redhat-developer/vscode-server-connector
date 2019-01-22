@@ -353,7 +353,7 @@ suite('Command Handler', () => {
                 await nullHandler.addLocation();
                 expect.fail();
             } catch (err) {
-                expect(err).equals('Stack Protocol Server is starting, please try again later.');
+                expect(err).equals('Runtime Server Protocol (RSP) Server is starting, please try again later.');
             }
         });
     });
