@@ -146,7 +146,7 @@
         },
         {
           "command": "server.removeDeployment",
-          "when": "view == servers && viewItem =~ /(Add|Full|Synchronized|Incremental|Unknown)/",
+          "when": "view == servers && viewItem =~ /(Synchronized|Publish Required|Unknown)/",
           "group": "3_server-deployments@2"
         },
         {
