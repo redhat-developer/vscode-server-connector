@@ -158,12 +158,12 @@
           "command": "server.addDeployment",
           "when": "view == servers",
           "group": "server-status"
-        },        
+        },
         {
           "command": "server.removeDeployment",
-          "when": "view == servers",
+          "when": "view == servers && viewItem =~ /(Add|Full|Synchronized|Incremental|Unknown)/",
           "group": "server-status"
-        },        
+        },
         {
           "command": "server.publishFull",
           "when": "view == servers",
