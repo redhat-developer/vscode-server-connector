@@ -127,7 +127,7 @@
         {
           "command": "server.restart",
           "when": "view == servers && viewItem == 'Started'",
-          "group": "1_server-command@4"
+          "group": "1_server-startstop@4"
         },
         {
           "command": "server.remove",
@@ -136,7 +136,7 @@
         },
         {
           "command": "server.publishFull",
-          "when": "view == servers",
+          "when": "view == servers && viewItem =~ /(Starting|Started|Stopping|Stopped|Unknown)/",
           "group": "3_server-deployments@6"
         },
         {
