@@ -112,62 +112,47 @@
         {
           "command": "server.start",
           "when": "view == servers && viewItem == 'Stopped'",
-          "group": "server-command@1"
+          "group": "1_server-startstop@1"
         },
         {
           "command": "server.debug",
           "when": "view == servers && viewItem == 'Stopped'",
-          "group": "server-command@2"
+          "group": "1_server-startstop@2"
         },
         {
           "command": "server.stop",
           "when": "view == servers && viewItem == 'Started'",
-          "group": "server-command@3"
+          "group": "1_server-startstop@3"
         },
         {
           "command": "server.restart",
           "when": "view == servers && viewItem == 'Started'",
-          "group": "server-command@4"
+          "group": "1_server-command@4"
         },
         {
           "command": "server.remove",
           "when": "view == servers && viewItem == 'Stopped'",
-          "group": "server-remove"
-        },
-        {
-          "command": "server.output",
-          "when": "view == servers && viewItem == 'Started'",
-          "group": "server-status"
-        },
-        {
-          "command": "server.output",
-          "when": "view == servers && viewItem == 'Stopped'",
-          "group": "server-status"
-        },
-        {
-          "command": "server.output",
-          "when": "view == servers && viewItem == 'Starting'",
-          "group": "server-status"
-        },
-        {
-          "command": "server.output",
-          "when": "view == servers && viewItem == 'Stopping'",
-          "group": "server-status"
-        },
-        {
-          "command": "server.addDeployment",
-          "when": "view == servers",
-          "group": "server-status"
-        },
-        {
-          "command": "server.removeDeployment",
-          "when": "view == servers && viewItem =~ /(Add|Full|Synchronized|Incremental|Unknown)/",
-          "group": "server-status"
+          "group": "2_server-remove@1"
         },
         {
           "command": "server.publishFull",
           "when": "view == servers",
-          "group": "server-status"
+          "group": "3_server-deployments@6"
+        },
+        {
+          "command": "server.addDeployment",
+          "when": "view == servers && viewItem =~ /(Starting|Started|Stopping|Stopped|Unknown)/",
+          "group": "3_server-deployments@1"
+        },
+        {
+          "command": "server.removeDeployment",
+          "when": "view == servers && viewItem =~ /(Add|Full|Synchronized|Incremental|Unknown)/",
+          "group": "3_server-deployments@2"
+        },
+        {
+          "command": "server.output",
+          "when": "view == servers && viewItem =~ '/(Starting|Started|Stopping|Stopped)/'",
+          "group": "4_server-status@1"
         }
       ]
     },
