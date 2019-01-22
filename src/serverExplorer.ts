@@ -106,8 +106,8 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
             if (file && file.length === 1) {
                 // var fileUrl = require('file-url');
                 // const filePath : string = fileUrl(file[0].fsPath);
-                const deployableRef : Protocol.DeployableReference = { label: file[0].fsPath,  path: file[0].fsPath};
-                const req : Protocol.ModifyDeployableRequest = { server: server, deployable : deployableRef};
+                const deployableRef: Protocol.DeployableReference = { label: file[0].fsPath,  path: file[0].fsPath};
+                const req: Protocol.ModifyDeployableRequest = { server: server, deployable : deployableRef};
                 const status = await this.client.addDeployable(req);
                 if (status.severity > 0) {
                     return Promise.reject(status.message);
@@ -181,27 +181,27 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
     }
 
     getTreeItem(item: Protocol.ServerState |  Protocol.DeployableState): TreeItem {
-        if( (<Protocol.ServerState>item).deployableStates ) {
+        if ((<Protocol.ServerState>item).deployableStates) {
             // item is a serverState
-            const state : Protocol.ServerState = (<Protocol.ServerState>item);
-            const handle : Protocol.ServerHandle = state.server;
+            const state: Protocol.ServerState = <Protocol.ServerState>item;
+            const handle: Protocol.ServerHandle = state.server;
             const id1: string = handle.id;
-            const runState2: string = this.runStateEnum.get(state.state);
+            const runState: string = this.runStateEnum.get(state.state);
             const pubState: string = this.publishStateEnum.get(state.publishState);
-            const depStr = `${id1} (${runState2}) (${pubState})`;
+            const depStr = `${id1} (${runState}) (${pubState})`;
             const treeItem: TreeItem = new TreeItem(`${depStr}`, TreeItemCollapsibleState.Expanded);
             treeItem.iconPath = Uri.file(path.join(__dirname, '../../images/server-light.png'));
-            treeItem.contextValue =  runState2;
+            treeItem.contextValue =  runState;
             return treeItem;
-        } else if( (<Protocol.DeployableState>item).reference ) {
-            const state: Protocol.DeployableState = (<Protocol.DeployableState>item);
+        } else if ((<Protocol.DeployableState>item).reference ) {
+            const state: Protocol.DeployableState = <Protocol.DeployableState>item;
             const id1: string = state.reference.label;
             const runState: string = this.runStateEnum.get(state.state);
             const pubState: string = this.publishStateEnum.get(state.publishState);
             const depStr = `${id1} (${runState}) (${pubState})`;
             const treeItem: TreeItem = new TreeItem(`${depStr}`);
             treeItem.iconPath = Uri.file(path.join(__dirname, '../../images/server-light.png'));
-            treeItem.contextValue =  runState;
+            treeItem.contextValue =  pubState;
             return treeItem;
         }
     }
