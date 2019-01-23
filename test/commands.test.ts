@@ -52,10 +52,10 @@ suite('Command Handler', () => {
     };
 
     const simpleContext = {
-        id: 'cid'
+        id: 'id'
     };
     const context = {
-        id: 'cid',
+        id: 'id',
         type: serverType
     };
 
@@ -179,7 +179,14 @@ suite('Command Handler', () => {
         let stopStub: sinon.SinonStub;
 
         setup(() => {
-            statusStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverState);
+            const serverStateInternal: Protocol.ServerState =  {
+                server: serverHandle,
+                deployableStates: [],
+                publishState: 0,
+                state: ServerState.STARTED
+            }
+
+            statusStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverStateInternal);
             stopStub = sandbox.stub(client, 'stopServerAsync').resolves(status);
             sandbox.stub(vscode.window, 'showQuickPick').resolves('id');
         });
