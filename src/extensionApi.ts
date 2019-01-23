@@ -30,7 +30,8 @@ export class CommandHandler {
             selectedServerId = context.server.id;
         }
 
-        if (this.serversData.serverStatus.get(selectedServerId).state === ServerState.STOPPED) {
+        const serverState = this.serversData.serverStatus.get(selectedServerId).state;
+        if (serverState === ServerState.STOPPED || serverState === ServerState.UNKNOWN) {
             const response = await this.client.startServerAsync({
                 params: {
                     serverType: selectedServerType.id,
@@ -57,7 +58,8 @@ export class CommandHandler {
             serverId = context.server.id;
         }
 
-        if (this.serversData.serverStatus.get(serverId).state === ServerState.STARTED) {
+        const stateObj: Protocol.ServerState = this.serversData.serverStatus.get(serverId);
+        if (stateObj.state === ServerState.STARTED) {
             const status = await this.client.stopServerAsync({ id: serverId, force: true });
             if (status.severity > 0) {
                 return Promise.reject(status.message);
