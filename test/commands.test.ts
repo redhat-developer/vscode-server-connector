@@ -131,8 +131,6 @@ suite('Command Handler', () => {
 
         test('works without injected context', async () => {
             sandbox.stub(vscode.window, 'showQuickPick').resolves('id');
-            sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverState);
-
             const result = await handler.startServer('run');
             const args: Protocol.LaunchParameters = {
                 mode: 'run',
@@ -241,7 +239,14 @@ suite('Command Handler', () => {
         let removeStub: sinon.SinonStub;
 
         setup(() => {
-            statusStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverState);
+            const serverStateInternal: Protocol.ServerState =  {
+                server: serverHandle,
+                deployableStates: [],
+                publishState: 0,
+                state: ServerState.STOPPED
+            }
+
+            statusStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverStateInternal);
             removeStub = sandbox.stub(client, 'deleteServerAsync').resolves(status);
             sandbox.stub(vscode.window, 'showQuickPick').resolves('id');
         });
@@ -258,7 +263,6 @@ suite('Command Handler', () => {
         });
 
         test('works without injected context', async () => {
-            sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverState);
             const result = await handler.removeServer();
             const args: Protocol.ServerHandle = {
                 id: 'id',
@@ -324,7 +328,6 @@ suite('Command Handler', () => {
         });
 
         test('works without injected context', async () => {
-            sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverState);
             await handler.restartServer();
             const stopArgs: Protocol.StopServerAttributes = {
                 id: 'id',
