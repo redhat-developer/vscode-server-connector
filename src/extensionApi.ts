@@ -82,7 +82,8 @@ export class CommandHandler {
             selectedServerType = context.server.type;
         }
 
-        if (this.serversData.serverStatus.get(serverId).state === ServerState.STOPPED) {
+        const status1: Protocol.ServerState = this.serversData.serverStatus.get(serverId);
+        if (status1.state === ServerState.STOPPED) {
             const status = await this.client.deleteServerAsync({ id: serverId, type: selectedServerType });
             if (status.severity > 0) {
                 return Promise.reject(status.message);
