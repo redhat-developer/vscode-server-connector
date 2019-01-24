@@ -110,7 +110,7 @@ suite('Server explorer', () => {
 
     suite('updateServer', () => {
 
-        let getServersStub: sinon.SinonStub;
+	//let getServersStub: sinon.SinonStub;
         let setStatusStub: sinon.SinonStub;
 
         const stateChangeUnknown: Protocol.ServerState = {
@@ -167,7 +167,7 @@ suite('Server explorer', () => {
 
         setup(() => {
             serverExplorer.serverStatus =  new Map<string, Protocol.ServerState>([['server', serverState]]);
-            getServersStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverState);
+	    //getServersStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverState);
             setStatusStub = sandbox.stub(serverExplorer.serverStatus, 'set');
         });
 
