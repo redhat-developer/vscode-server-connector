@@ -103,7 +103,7 @@ suite('Server explorer', () => {
         const fireStub = sandbox.stub(EventEmitter.prototype, 'fire');
         serverExplorer.refresh(serverState);
 
-        expect(fireStub).calledOnceWith(serverHandle);
+        expect(fireStub).calledOnceWith(serverState);
     });
 
     suite('updateServer', () => {
