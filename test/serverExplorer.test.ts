@@ -71,6 +71,8 @@ suite('Server explorer', () => {
 
         expect(refreshStub).calledOnce;
         expect(children.length).equals(1);
+        expect(children[0].server).exist;
+        expect(children[0].server).deep.equals(serverHandle);
     });
 
     test('removeServer call should remove server from tree data model', () => {
