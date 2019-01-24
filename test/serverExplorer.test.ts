@@ -16,18 +16,6 @@ suite('Server explorer', () => {
     const clientStub: RSPClient = new RSPClient('somehost', 8080);
     let serverExplorer: ServersViewTreeDataProvider;
 
-    setup(() => {
-        sandbox = sinon.createSandbox();
-        sandbox.stub(clientStub, 'connect').resolves();
-        sandbox.stub(clientStub, 'getServerHandles').resolves([]);
-        serverExplorer = new ServersViewTreeDataProvider(clientStub);
-        getStub = sandbox.stub(serverExplorer.serverOutputChannels, 'get').returns(fakeChannel);
-    });
-
-    teardown(() => {
-        sandbox.restore();
-    });
-
     const serverType: Protocol.ServerType = {
         description: 'a type',
         id: 'type',
@@ -63,13 +51,26 @@ suite('Server explorer', () => {
         name: 'fake'
     };
 
-    test('insertServer call should add server to tree data model', () => {
+    setup(() => {
+        sandbox = sinon.createSandbox();
+        sandbox.stub(clientStub, 'connect').resolves();
+        sandbox.stub(clientStub, 'getServerHandles').resolves([]);
+        sandbox.stub(clientStub, 'getServerState').resolves(serverState);
+        serverExplorer = new ServersViewTreeDataProvider(clientStub);
+        getStub = sandbox.stub(serverExplorer.serverOutputChannels, 'get').returns(fakeChannel);
+    });
+
+    teardown(() => {
+        sandbox.restore();
+    });
+
+    test('insertServer call should add server to tree data model', async () => {
         const refreshStub = sandbox.stub(serverExplorer, 'refresh');
-        serverExplorer.insertServer(serverHandle);
+        await serverExplorer.insertServer(serverHandle);
         const children = serverExplorer.getChildren();
 
         expect(refreshStub).calledOnce;
-        expect(children).deep.equals([serverHandle]);
+        expect(children.length).equals(1);
     });
 
     test('removeServer call should remove server from tree data model', () => {
