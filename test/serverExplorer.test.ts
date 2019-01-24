@@ -3,7 +3,7 @@ import * as sinon from 'sinon';
 import * as sinonChai from 'sinon-chai';
 import { ServersViewTreeDataProvider } from '../src/serverExplorer';
 import { RSPClient, Protocol } from 'rsp-client';
-import { EventEmitter, window, Uri, OutputChannel } from 'vscode';
+import { EventEmitter, window, Uri, OutputChannel, TreeItemCollapsibleState } from 'vscode';
 import * as path from 'path';
 
 const expect = chai.expect;
@@ -143,22 +143,22 @@ suite('Server explorer', () => {
         };
 
         const serverStop = {
-            collapsibleState: 0,
-            label: `id:the type(Stopped)`,
+            collapsibleState: TreeItemCollapsibleState.Expanded,
+            label: `id (Stopped) (undefined)`,
             contextValue: 'Stopped',
             iconPath: Uri.file(path.join(__dirname, '../../images/server-light.png'))
         };
 
         const serverStart = {
-            collapsibleState: 0,
-            label: 'id:the type(Started)',
+            collapsibleState: TreeItemCollapsibleState.Expanded,
+            label: 'id (Started) (undefined)',
             contextValue: 'Started',
             iconPath: Uri.file(path.join(__dirname, '../../images/server-light.png'))
         };
 
         const serverUnknown = {
-            collapsibleState: 0,
-            label: 'id:the type(Unknown)',
+            collapsibleState: TreeItemCollapsibleState.Expanded,
+            label: 'id (Unknown) (undefined)',
             contextValue: 'Unknown',
             iconPath: Uri.file(path.join(__dirname, '../../images/server-light.png'))
         };
@@ -178,10 +178,9 @@ suite('Server explorer', () => {
             serverExplorer.refresh();
             serverExplorer.updateServer(stateChangeStopped);
 
-            expect(getServersStub).calledTwice;
             expect(setStatusStub).calledTwice;
             expect(getStub).calledTwice;
-            expect(children).deep.equals([serverHandle]);
+            expect(children).deep.equals([serverState]);
             expect(treeItem).deep.equals(serverStop);
         });
 
@@ -194,10 +193,10 @@ suite('Server explorer', () => {
             serverExplorer.refresh();
             serverExplorer.updateServer(stateChangeStarted);
 
-            expect(getServersStub).calledTwice;
+
             expect(setStatusStub).calledTwice;
             expect(getStub).calledTwice;
-            expect(children).deep.equals([serverHandle]);
+            expect(children).deep.equals([serverState]);
             expect(treeItem).deep.equals(serverStart);
         });
 
@@ -208,10 +207,9 @@ suite('Server explorer', () => {
 
             serverExplorer.updateServer(stateChangeUnknown);
 
-            expect(getServersStub).calledOnce;
             expect(setStatusStub).calledOnce;
             expect(getStub).calledOnce;
-            expect(children).deep.equals([serverHandle]);
+            expect(children).deep.equals([serverState]);
             expect(treeItem).deep.equals(serverUnknown);
         });
     });
@@ -262,7 +260,7 @@ suite('Server explorer', () => {
         });
 
         test('should error if no server detected in provided location', async () => {
-            findServerStub.resolves(serverBean);
+            findServerStub.resolves([]);
 
             try {
                 await serverExplorer.addLocation();
