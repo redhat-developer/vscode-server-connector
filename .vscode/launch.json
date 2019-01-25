@@ -49,7 +49,7 @@
             ],
             "preLaunchTask": "npm: watch",
             "env": {
-                "VSCA_TEST_MODE": "debug"
+                "VSCA_TEST_MODE": "coverage"
             }
         }
     ]
