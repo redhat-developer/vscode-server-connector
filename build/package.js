@@ -2,10 +2,8 @@ const fs = require('fs-extra');
 const download = require('download');
 const decompress = require('decompress');
 
-const RSP_SERVER_JAR_NAME = 'org.jboss.tools.rsp.distribution-0.12.0-SNAPSHOT.zip';
+const RSP_SERVER_JAR_NAME = 'org.jboss.tools.rsp.distribution-0.12.1.Final.zip';
 const RSP_SERVER_JAR_URL = `http://download.jboss.org/jbosstools/adapters/snapshots/${RSP_SERVER_JAR_NAME}`;
-//const RSP_SERVER_JAR_NAME = 'org.jboss.tools.rsp.distribution-0.10.0.Final.zip';
-//const RSP_SERVER_JAR_URL = `https://repository.jboss.org/org/jboss/tools/rsp/org.jboss.tools.rsp.distribution/0.10.0.Final/${RSP_SERVER_JAR_NAME}`;
 
 function clean() {
     return Promise.resolve()
