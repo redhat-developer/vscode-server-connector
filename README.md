@@ -18,11 +18,14 @@ This extension supports a number of commands for interacting with server adapter
    * `Stop` - From the list of servers present, select the server to stop.
    * `Remove` - From the list of servers present, select the server to be removed.
    * `Debug` - From the list of servers present, select the server to run in Debug mode.
+   * `Add Deployment to Server` - Add a deployable file to the server to be published
+   * `Remove Deployment from Server` - Remove a deployment from the server
+   * `Publish Server (Full)` - Publish the server, synchronizing the content of deployments from your workspace to the server.
    * `Show Output Channel` - Select a particular server from the list to show its ouput channel in the editor.
 
 ### Supported Servers
-   * Wildfly [8/9/10/11/12/13/14]
-   * EAP
+   * Wildfly [8/9/10/11/12/13/14/15]
+   * EAP [4.3/5.0/6.0/6.1/7.0/7,1]
    * Minishift Binary
 
 ## Extension Settings
