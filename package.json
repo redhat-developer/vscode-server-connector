@@ -24,7 +24,7 @@
     "minishift",
     "adapters"
   ],
-  "icon": "images/wildfly_logomark.png",
+  "icon": "images/producticons_1017_RGB_EAP_color.png",
   "activationEvents": [
     "onCommand:servers.addLocation",
     "onCommand:server.start",
