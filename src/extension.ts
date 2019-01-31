@@ -54,7 +54,7 @@ function onStdoutData(data: string) {
 
 function onStderrData(data: string) {
     displayLog(rspserverstderr, data.toString());
-};
+}
 
 function displayLog(outputPanel: vscode.OutputChannel, message: string, show: boolean = true) {
     if (show) outputPanel.show();

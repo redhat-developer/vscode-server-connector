@@ -31,7 +31,7 @@ suite('Command Handler', () => {
         deployableStates: [],
         publishState: 0,
         state: 0
-    }
+    };
 
     const status: Protocol.Status = {
         code: 0,
@@ -182,7 +182,7 @@ suite('Command Handler', () => {
                 deployableStates: [],
                 publishState: 0,
                 state: ServerState.STARTED
-            }
+            };
 
             statusStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverStateInternal);
             stopStub = sandbox.stub(client, 'stopServerAsync').resolves(status);
@@ -244,7 +244,7 @@ suite('Command Handler', () => {
                 deployableStates: [],
                 publishState: 0,
                 state: ServerState.STOPPED
-            }
+            };
 
             statusStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverStateInternal);
             removeStub = sandbox.stub(client, 'deleteServerAsync').resolves(status);
