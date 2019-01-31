@@ -75,7 +75,7 @@ suite('Extension Tests', function() {
         sandbox.stub(CommandHandler.prototype, 'activate').resolves();
         const registerTreeDataProviderStub = sandbox.stub(vscode.window, 'registerTreeDataProvider');
         const result = await activate(context);
-        expect(startStub).calledOnce
+        expect(startStub).calledOnce;
         expect(result).deep.equals({serverInfo: serverdata});
         expect(registerTreeDataProviderStub).calledOnce;
     });

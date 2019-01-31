@@ -115,11 +115,11 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
                 }
                 return status;
             }
-        })
+        });
     }
 
     async removeDeployment(server: Protocol.ServerHandle, deployableRef: Protocol.DeployableReference): Promise<Protocol.Status> {
-        const req : Protocol.ModifyDeployableRequest = { server: server, deployable : deployableRef};
+        const req: Protocol.ModifyDeployableRequest = { server: server, deployable : deployableRef};
         const status = await this.client.removeDeployable(req);
         if (status.severity > 0) {
             return Promise.reject(status.message);
@@ -128,7 +128,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
     }
 
     async publish(server: Protocol.ServerHandle, type: number): Promise<Protocol.Status> {
-        const req : Protocol.PublishServerRequest = { server: server, kind : type};
+        const req: Protocol.PublishServerRequest = { server: server, kind : type};
         const status = await this.client.publish(req);
         if (status.severity > 0) {
             return Promise.reject(status.message);
@@ -275,7 +275,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
         if (element === undefined) {
             return Array.from(this.serverStatus.values());
         }
-        if( (<Protocol.ServerState>element).deployableStates ) {
+        if ((<Protocol.ServerState>element).deployableStates ) {
             return (<Protocol.ServerState>element).deployableStates;
         }
     }
