@@ -7,5 +7,11 @@ src/**
 tsconfig.json
 vsc-extension-quickstart.md
 tslint.json
-org.jboss.tools.ssp.distribution-0.0.9-SNAPSHOT.zip
+org.jboss.tools.rsp.distribution-*.zip
 *.vsix
+build/**
+coverage/**
+images/vscode-adapters.gif
+test/**
+.travis.yml
+Jenkinsfile
