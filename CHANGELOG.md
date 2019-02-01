@@ -12,5 +12,4 @@
 - Run / Publish state for Server in Servers view now accurate
 - Automatically update publish state for a deployment if deployment source in vscode has changed
 - Clean up context menu to only show relevant actions [issue 203 / 204 / 206]
-
-
+- Red Hat Container Development Kit (CDK), found at https://developers.redhat.com/products/cdk, is not currently supported, but is planned. Attempts to create a CDK server adapter will fail. 
