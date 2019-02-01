@@ -22,6 +22,9 @@ export function start(stdoutCballback : (data: string) => void, stderrCallback: 
                 portfinder.basePort = 27511;
                 portfinder.getPortPromise()
                 .then(serverport => {
+                    // Debuggable version
+                    //const process = cp.spawn(java, [`-Xdebug`, `-Xrunjdwp:transport=dt_socket,server=y,address=8001,suspend=n`, `-Drsp.server.port=${serverport}`, '-jar', felix], { cwd: serverLocation });
+                    // Production version
                     const process = cp.spawn(java, [`-Drsp.server.port=${serverport}`, '-jar', felix], { cwd: serverLocation });
                     process.stdout.on('data', stdoutCballback);
                     process.stderr.on('data', stderrCallback);

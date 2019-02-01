@@ -2,16 +2,16 @@
 import * as vscode from 'vscode';
 import { ServersViewTreeDataProvider } from './serverExplorer';
 import * as server from './server';
-import { RSPClient } from 'rsp-client';
+import { RSPClient, Protocol, ServerState } from 'rsp-client';
 import { ExtensionAPI, CommandHandler } from './extensionApi';
 
 let client: RSPClient;
+let serversData: ServersViewTreeDataProvider;
 
 const rspserverstdout = vscode.window.createOutputChannel('RSP Server (stdout)');
 const rspserverstderr = vscode.window.createOutputChannel('RSP Server (stderr)');
 
 export async function activate(context: vscode.ExtensionContext): Promise<ExtensionAPI> {
-    let serversData: ServersViewTreeDataProvider;
     let commandHandler: CommandHandler;
 
     const serverInfo = await server.start(onStdoutData, onStderrData);
@@ -45,7 +45,19 @@ export async function activate(context: vscode.ExtensionContext): Promise<Extens
 }
 
 export function deactivate() {
-    if (client) client.shutdownServer();
+    if (client) {
+        if( serversData) {
+            const statIterator: Protocol.ServerState = serversData.serverStatus.values();
+            while(statIterator.hasNext()) {
+                const oneStat: Protocol.ServerState = statIterator.next();
+                const stateNum = oneStat.state;
+                if(stateNum !== ServerState.UNKNOWN && stateNum !== ServerState.STOPPED && stateNum !== ServerState.STOPPING) {
+                    client.stopServerAsync( {id: oneStat.server.id, force: true });
+                }
+            }
+        }
+        client.shutdownServer();
+    }
 }
 
 function onStdoutData(data: string) {
