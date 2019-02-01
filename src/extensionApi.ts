@@ -151,14 +151,14 @@ export class CommandHandler {
         const deploymentId: string = context.reference.label;
 
         if (this.serversData) {
-            const serverState : Protocol.ServerState = this.serversData.serverStatus.get(serverId);
-            if( serverState === undefined ) {
+            const serverState: Protocol.ServerState = this.serversData.serverStatus.get(serverId);
+            if (serverState === undefined) {
                 return Promise.reject('Please select a deployment from the Servers view to run this action.');
             }
             const serverHandle: Protocol.ServerHandle = serverState.server;
             const states: Protocol.DeployableState[] = serverState.deployableStates;
-            for( let entry of states ) {
-                if( entry.reference.label === deploymentId) {
+            for (const entry of states) {
+                if ( entry.reference.label === deploymentId) {
                     return this.serversData.removeDeployment(serverHandle, entry.reference);
                 }
             }
