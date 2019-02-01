@@ -155,7 +155,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
     }
 
     private createServerAsync(): (value: { name: string; bean: Protocol.ServerBean; attributes: {}}) => Thenable<Protocol.Status> {
-        return async (data) => {
+        return async data => {
             if (data && data.name) {
                 const status = await this.client.createServerAsync(data.bean, data.name, data.attributes);
                 if (status.severity > 0) {
@@ -226,6 +226,25 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
         });
     }
 
+    private async getOptionalParameters(value: { name: string; bean: Protocol.ServerBean, attributes: any}): Promise<{ name: string; bean: Protocol.ServerBean; attributes: {}}> {
+        const serverAttribute = this.serverAttributes.get(value.bean.serverAdapterTypeId);
+        if (serverAttribute.optional && serverAttribute.optional.attributes) {
+            const answer = await window.showQuickPick(['No', 'Yes'], {placeHolder: 'Do you want to edit optional parameters ?'});
+            if (answer === 'Yes') {
+                for(const name in serverAttribute.optional.attributes) {
+                    if (name !== 'server.home.dir' && name !== 'server.home.file') {
+                        const attribute = serverAttribute.optional.attributes[name];
+                        const val = await window.showInputBox({prompt: attribute.description, value: attribute.defaultVal});
+                        if (val) {
+                            value.attributes[name] = val;
+                        }
+                    }
+                }
+            }
+        }
+        return Promise.resolve(value);
+    }
+
     getTreeItem(item: Protocol.ServerState |  Protocol.DeployableState): TreeItem {
         if ((<Protocol.ServerState>item).deployableStates) {
             // item is a serverState
@@ -250,25 +269,6 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
             treeItem.contextValue =  pubState;
             return treeItem;
         }
-    }
-
-    private async getOptionalParameters(value: { name: string; bean: Protocol.ServerBean, attributes: any}): Promise<{ name: string; bean: Protocol.ServerBean; attributes: {}}> {
-        const serverAttribute = this.serverAttributes.get(value.bean.serverAdapterTypeId);
-        if (serverAttribute.optional && serverAttribute.optional.attributes) {
-            const answer = await window.showQuickPick(['No', 'Yes'], {placeHolder: 'Do you want to edit optional parameters ?'});
-            if (answer === 'Yes') {
-                for(const name in serverAttribute.optional.attributes) {
-                    if (name !== 'server.home.dir' && name !== 'server.home.file') {
-                        const attribute = serverAttribute.optional.attributes[name];
-                        const val = await window.showInputBox({prompt: attribute.description, value: attribute.defaultVal});
-                        if (val) {
-                            value.attributes[name] = val;
-                        }
-                    }
-                }
-            }
-        }
-        return Promise.resolve(value);
     }
 
     getChildren(element?:  Protocol.ServerState | Protocol.DeployableState):  Protocol.ServerState[] | Protocol.DeployableState[] {
