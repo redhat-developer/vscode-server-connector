@@ -230,6 +230,9 @@ suite('Server explorer', () => {
             version: '7.1'
         };
 
+        const noAttributes: Protocol.RequiredAttributes = {
+            attributes: new Map<String, Protocol.Attribute>()
+        };
         const status = {
             code: 0,
             message: 'ok',
@@ -245,8 +248,12 @@ suite('Server explorer', () => {
         });
 
         test('should detect the server in a given location', async () => {
-            sandbox.stub(window, 'showInputBox').resolves('eap');
+            const inputBoxStub = sandbox.stub(window, 'showInputBox');
+            inputBoxStub.onFirstCall().resolves('eap');
+            inputBoxStub.onSecondCall().resolves('No');
             sandbox.stub(clientStub, 'createServerAsync').resolves(status);
+            sandbox.stub(clientStub, 'getServerTypeRequiredAttributes').resolves(noAttributes);
+            sandbox.stub(clientStub, 'getServerTypeOptionalAttributes').resolves(noAttributes);
             await serverExplorer.addLocation();
 
             expect(findServerStub).calledOnceWith(discoveryPath.fsPath);
@@ -254,7 +261,11 @@ suite('Server explorer', () => {
         });
 
         test('should call client.createServerAsync with detected server bean for location and name provided by user', async () => {
-            sandbox.stub(window, 'showInputBox').resolves('eap');
+            const inputBoxStub = sandbox.stub(window, 'showInputBox');
+            inputBoxStub.onFirstCall().resolves('eap');
+            inputBoxStub.onSecondCall().resolves('No');
+            sandbox.stub(clientStub, 'getServerTypeRequiredAttributes').resolves(noAttributes);
+            sandbox.stub(clientStub, 'getServerTypeOptionalAttributes').resolves(noAttributes);
             const createServerStub = sandbox.stub(clientStub, 'createServerAsync').resolves(status);
             await serverExplorer.addLocation();
 
