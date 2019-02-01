@@ -46,12 +46,11 @@ export async function activate(context: vscode.ExtensionContext): Promise<Extens
 
 export function deactivate() {
     if (client) {
-        if( serversData) {
-            const statIterator: Protocol.ServerState = serversData.serverStatus.values();
-            while(statIterator.hasNext()) {
-                const oneStat: Protocol.ServerState = statIterator.next();
+        if (serversData) {
+            for (const val of serversData.serverStatus.values()) {
+                const oneStat: Protocol.ServerState = val;
                 const stateNum = oneStat.state;
-                if(stateNum !== ServerState.UNKNOWN && stateNum !== ServerState.STOPPED && stateNum !== ServerState.STOPPING) {
+                if (stateNum !== ServerState.UNKNOWN && stateNum !== ServerState.STOPPED && stateNum !== ServerState.STOPPING) {
                     client.stopServerAsync( {id: oneStat.server.id, force: true });
                 }
             }
