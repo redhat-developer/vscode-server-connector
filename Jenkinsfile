@@ -40,6 +40,7 @@ node('rhel7'){
 		stage('Snapshot') {
 			def filesToPush = findFiles(glob: '**.vsix')
 			sh "rsync -Pzrlt --rsh=ssh --protocol=28 ${filesToPush[0].path} ${UPLOAD_LOCATION}/snapshots/vscode-middleware-tools/"
+			stash name:'vsix', includes:filesToPush[0].path
 		}
 	}
 }
