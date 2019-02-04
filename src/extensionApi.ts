@@ -193,7 +193,6 @@ export class CommandHandler {
     }
 
     async activate(): Promise<void> {
-        await this.client.connect();
         this.client.onServerAdded(handle => {
             this.serversData.insertServer(handle);
         });

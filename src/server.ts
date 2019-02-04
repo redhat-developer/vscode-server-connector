@@ -34,6 +34,9 @@ export function start(stdoutCallback: (data: string) => void, stderrCallback: (d
       port = serverPort;
       const serverLocation = getServerLocation(process);
       startServer(serverLocation, serverPort, javaHome, stdoutCallback, stderrCallback);
+      //return  new Promise(resolve=>{
+      //  setTimeout(resolve, 5000)
+      //});
       return waitOn({ resources: [`tcp:localhost:${serverPort}`] });
     })
     .then(() => {
@@ -61,7 +64,7 @@ function startServer(location: string, port: number, javaHome: string, stdoutCal
   const felix = path.join(location, 'bin', 'felix.jar');
   const java = path.join(javaHome, 'bin', 'java');
   // Debuggable version
-  // const process = cp.spawn(java, [`-Xdebug`, `-Xrunjdwp:transport=dt_socket,server=y,address=8001,suspend=n`, `-Drsp.server.port=${serverport}`, '-jar', felix], { cwd: serverLocation });
+  // const process = cp.spawn(java, [`-Xdebug`, `-Xrunjdwp:transport=dt_socket,server=y,address=8001,suspend=n`, `-Drsp.server.port=${port}`, '-jar', felix], { cwd: location });
   // Production version
   const process = cp.spawn(java, [`-Drsp.server.port=${port}`, '-jar', felix], { cwd: location });
   process.stdout.on('data', stdoutCallback);
