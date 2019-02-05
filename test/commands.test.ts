@@ -73,12 +73,6 @@ suite('Command Handler', () => {
         sandbox.restore();
     });
 
-    test('activate connects to the server', async () => {
-        await handler.activate();
-
-        expect(client.connect).calledOnce;
-    });
-
     test('activate registers event listeners', async () => {
         sandbox.spy(client, 'onServerAdded');
         sandbox.spy(client, 'onServerRemoved');
