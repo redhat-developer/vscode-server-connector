@@ -19,6 +19,17 @@ export async function activate(context: vscode.ExtensionContext): Promise<Extens
     }
     client = new RSPClient('localhost', serverInfo.port);
     await client.connect();
+    client.onStringPrompt((event) => {
+        return vscode.window.showInputBox({prompt: event.prompt, password: true}).then(value => {
+            if (value && value.trim().length) {
+                return value;
+            } else {
+                throw new Error("Cancelled by user");
+            }
+        }, error => {
+            throw error;
+        });
+    });
 
     serversData = new ServersViewTreeDataProvider(client);
     vscode.window.registerTreeDataProvider('servers', serversData);
