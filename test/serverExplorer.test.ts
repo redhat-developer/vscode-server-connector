@@ -227,9 +227,10 @@ suite('Server explorer', () => {
             version: '7.1'
         };
 
-        const noAttributes: Protocol.RequiredAttributes = {
-            attributes: new Map<String, Protocol.Attribute>()
+        const noAttributes: Protocol.Attributes = {
+            attributes: { }
         };
+
         const status = {
             code: 0,
             message: 'ok',
