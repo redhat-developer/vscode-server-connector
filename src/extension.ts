@@ -20,6 +20,26 @@ export async function activate(context: vscode.ExtensionContext): Promise<Extens
     client = new RSPClient('localhost', serverInfo.port);
     await client.connect();
 
+    client.onStringPrompt(event => {
+        return new Promise<string>((resolve, reject) => {
+            vscode.window.showInputBox({prompt: event.prompt, password: true})
+            .then(value => {
+                if (value && value.trim().length) {
+                    resolve(value);
+                } else {
+                    reject(new Error('Cancelled by user'));
+                }
+            });
+        });
+    });
+    const extensionCapabilities: Protocol.ClientCapabilitiesRequest = {
+        map: {
+            'protocol.version': '0.13.0',
+            'prompt.string': 'true',
+        }
+    };
+    client.registerClientCapabilities(extensionCapabilities);
+
     serversData = new ServersViewTreeDataProvider(client);
     vscode.window.registerTreeDataProvider('servers', serversData);
     const commandHandler = new CommandHandler(serversData, client);

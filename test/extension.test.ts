@@ -5,7 +5,7 @@ import * as vscode from 'vscode';
 import * as chai from 'chai';
 import * as sinonChai from 'sinon-chai';
 import * as sinon from 'sinon';
-import { RSPClient } from 'rsp-client';
+import { RSPClient, Protocol } from 'rsp-client';
 import * as server from '../src/server';
 import { activate, deactivate } from '../src/extension';
 import { CommandHandler } from '../src/extensionApi';
@@ -58,9 +58,17 @@ suite('Extension Tests', function() {
 
     setup(() => {
         sandbox = sinon.createSandbox();
+        const capab: Protocol.ServerCapabilitiesResponse = {
+            serverCapabilities: {
+            },
+            clientRegistrationStatus: undefined
+        };
+
         startStub = sandbox.stub(server, 'start').resolves(serverdata);
         sandbox.stub(RSPClient.prototype, 'connect').resolves();
         sandbox.stub(RSPClient.prototype, 'getServerHandles').resolves([]);
+        sandbox.stub(RSPClient.prototype, 'registerClientCapabilities').resolves(capab);
+        sandbox.stub(RSPClient.prototype, 'onStringPrompt').resolves();
     });
 
     teardown(() => {
