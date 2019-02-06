@@ -211,7 +211,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
                 return Promise.resolve(server);
             });
         }
-        return serverAttribute.then(async (s) => {
+        return serverAttribute.then(async s => {
             const attributes = {};
             for(const name in s.required.attributes) {
                 if (name !== 'server.home.dir' && name !== 'server.home.file') {
