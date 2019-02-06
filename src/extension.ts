@@ -32,7 +32,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<Extens
             });
         });
     });
-
     const extensionCapabilities: Protocol.ClientCapabilitiesRequest = {
         map: {
             'protocol.version': '0.13.0',
