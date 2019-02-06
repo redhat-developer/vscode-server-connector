@@ -15,15 +15,15 @@ export function activate(context: vscode.ExtensionContext): Promise<ExtensionAPI
         client = new RSPClient('localhost', serverInfo.port);
         await client.connect();
 
-        client.onStringPrompt((event, resolve, reject) => {
-            vscode.window.showInputBox({prompt: event.prompt, password: true}).then(value => {
+        client.onStringPrompt((event) => {
+            return vscode.window.showInputBox({prompt: event.prompt, password: true}).then(value => {
                 if (value && value.trim().length) {
-                    resolve(value);
+                    return value;
                 } else {
-                    reject(new Error("Cancelled by user"));
+                    throw new Error("Cancelled by user");
                 }
             }, error => {
-                reject(error);
+                throw error;
             });
         });
         const rspserverstdout = vscode.window.createOutputChannel('RSP Server (stdout)');

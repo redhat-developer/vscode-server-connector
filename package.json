@@ -190,7 +190,7 @@
     "path": "0.12.7",
     "pify": "4.0.0",
     "portfinder": "^1.0.17",
-    "rsp-client": "0.0.4",
+    "rsp-client": "0.0.6",
     "vscode-jsonrpc": "^4.0.0",
     "vscode-languageclient": "^5.1.0",
     "wait-on": "^3.0.1"
