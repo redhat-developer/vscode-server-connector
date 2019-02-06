@@ -32,13 +32,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<Extens
             });
         });
     });
-    const extensionCapabilities: Protocol.ClientCapabilitiesRequest = {
-        map: {
-            'protocol.version': '0.13.0',
-            'prompt.string': 'true',
-        }
-    };
-    client.registerClientCapabilities(extensionCapabilities);
+
+    client.registerClientCapabilities({map: { 'protocol.version': '0.13.0', 'prompt.string': 'true'}});
 
     serversData = new ServersViewTreeDataProvider(client);
     vscode.window.registerTreeDataProvider('servers', serversData);
