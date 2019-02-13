@@ -185,7 +185,6 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
                 if (this.serverStatus.get(value)) {
                     return 'Cannot set duplicate server name';
                 }
-                return null;
             }
         };
         server.name = await window.showInputBox(options);
@@ -204,7 +203,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
             const opt = await this.client.getServerTypeOptionalAttributes({id: bean.serverAdapterTypeId, visibleName: '', description: ''});
             serverAttribute = { required: req, optional: opt };
 
-            this.serverAttributes.set(bean.serverAdapterTypeId, { required: req, optional: opt });
+            this.serverAttributes.set(bean.serverAdapterTypeId, serverAttribute);
         }
         const attributes = {};
         for (const key in serverAttribute.required.attributes) {
