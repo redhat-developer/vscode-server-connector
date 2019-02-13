@@ -152,7 +152,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
             if (serverBeans && serverBeans.length > 0 && serverBeans[0].typeCategory && serverBeans[0].typeCategory !== 'UNKNOWN') {
                 server.bean = serverBeans[0];
             } else {
-                return Promise.reject('Cannot detect server in selected location!');
+                throw new Error('Cannot detect server in selected location!');
             }
         })
         .then(() => this.getServerName(server))
@@ -165,9 +165,9 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
         if (name && bean) {
             const response = await this.client.createServerAsync(bean, name, attributes);
             if (response.status.severity > 0) {
-                return Promise.reject(response.status.message);
+                throw new Error(response.status.message);
             }
-            return Promise.resolve(response.status);
+            return response.status;
         }
     }
 
