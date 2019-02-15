@@ -231,11 +231,18 @@ suite('Server explorer', () => {
             attributes: { }
         };
 
-        const status = {
+        const status: Protocol.Status = {
             code: 0,
             message: 'ok',
-            pluginId: 'unknown',
-            severity: 0
+            severity: 0,
+            ok: true,
+            plugin: 'plugin',
+            trace: ''
+        };
+
+        const createResponse: Protocol.CreateServerResponse = {
+            status: status,
+            invalidKeys: []
         };
 
         const discoveryPath = { fsPath: 'path/path' };
@@ -245,28 +252,17 @@ suite('Server explorer', () => {
             showOpenDialogStub = sandbox.stub(window, 'showOpenDialog').resolves([discoveryPath]);
         });
 
-        test('should detect the server in a given location', async () => {
+        test('should detect and create the server in a given location', async () => {
             const inputBoxStub = sandbox.stub(window, 'showInputBox');
             inputBoxStub.onFirstCall().resolves('eap');
             inputBoxStub.onSecondCall().resolves('No');
-            sandbox.stub(clientStub, 'createServerAsync').resolves(status);
+            const createServerStub = sandbox.stub(clientStub, 'createServerAsync').resolves(createResponse);
             sandbox.stub(clientStub, 'getServerTypeRequiredAttributes').resolves(noAttributes);
             sandbox.stub(clientStub, 'getServerTypeOptionalAttributes').resolves(noAttributes);
             await serverExplorer.addLocation();
 
             expect(findServerStub).calledOnceWith(discoveryPath.fsPath);
             expect(showOpenDialogStub).calledOnce;
-        });
-
-        test('should call client.createServerAsync with detected server bean for location and name provided by user', async () => {
-            const inputBoxStub = sandbox.stub(window, 'showInputBox');
-            inputBoxStub.onFirstCall().resolves('eap');
-            inputBoxStub.onSecondCall().resolves('No');
-            sandbox.stub(clientStub, 'getServerTypeRequiredAttributes').resolves(noAttributes);
-            sandbox.stub(clientStub, 'getServerTypeOptionalAttributes').resolves(noAttributes);
-            const createServerStub = sandbox.stub(clientStub, 'createServerAsync').resolves(status);
-            await serverExplorer.addLocation();
-
             expect(createServerStub).calledOnceWith(serverBean, 'eap');
         });
 
@@ -277,7 +273,7 @@ suite('Server explorer', () => {
                 await serverExplorer.addLocation();
                 expect.fail();
             } catch (err) {
-                expect(err).equals('Cannot detect server in selected location!');
+                expect(err.message).equals('Cannot detect server in selected location!');
             }
         });
     });

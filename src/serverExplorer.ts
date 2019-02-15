@@ -136,113 +136,108 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
         return status;
     }
 
-    addLocation(): Thenable<Protocol.Status> {
+    async addLocation(): Promise<Protocol.Status> {
+        const server: { name: string, bean: Protocol.ServerBean } = { name: null, bean: null };
         return window.showOpenDialog(<OpenDialogOptions>{
             canSelectFiles: false,
             canSelectMany: false,
             canSelectFolders: true,
             openLabel: 'Select desired server location'
         })
-        .then(folders => {
+        .then(async folders => {
+            let serverBeans: Protocol.ServerBean[];
             if (folders && folders.length === 1) {
-                return this.client.findServerBeans(folders[0].fsPath);
+                serverBeans = await this.client.findServerBeans(folders[0].fsPath);
+            }
+            if (serverBeans && serverBeans.length > 0 && serverBeans[0].typeCategory && serverBeans[0].typeCategory !== 'UNKNOWN') {
+                server.bean = serverBeans[0];
+            } else {
+                throw new Error('Cannot detect server in selected location!');
             }
         })
-        .then(this.getServerName())
-        .then(value => this.getRequiredParameters(value))
-        .then(value => this.getOptionalParameters(value))
-        .then(this.createServerAsync());
+        .then(() => this.getServerName(server))
+        .then(() => this.getRequiredParameters(server.bean))
+        .then(attributes => this.getOptionalParameters(server.bean, attributes))
+        .then(attributes => this.createServerAsync(server.name, server.bean, attributes));
     }
 
-    private createServerAsync(): (value: { name: string; bean: Protocol.ServerBean; attributes: {}}) => Thenable<Protocol.Status> {
-        return async data => {
-            if (data && data.name) {
-                const status = await this.client.createServerAsync(data.bean, data.name, data.attributes);
-                if (status.severity > 0) {
-                    return Promise.reject(status.message);
-                }
-                return Promise.resolve(status);
+    private async createServerAsync(name: string, bean: Protocol.ServerBean, attributes: object = {}): Promise<Protocol.Status> {
+        if (name && bean) {
+            const response = await this.client.createServerAsync(bean, name, attributes);
+            if (response.status.severity > 0) {
+                throw new Error(response.status.message);
             }
-        };
-    }
-
-    private getServerName(): (value: Protocol.ServerBean[]) => Thenable<{ name: string; bean: Protocol.ServerBean; }> {
-        return serverBeans => {
-            if (serverBeans && serverBeans.length > 0 && serverBeans[0].typeCategory && serverBeans[0].typeCategory !== 'UNKNOWN') {
-                // Prompt for server name
-                const options: InputBoxOptions = {
-                    prompt: `Provide the server name`,
-                    placeHolder: `Server name`,
-                    validateInput: (value: string) => {
-                        if (!value || value.trim().length === 0) {
-                            return 'Cannot set empty server name';
-                        }
-                        if (this.serverStatus.get(value)) {
-                            return 'Cannot set duplicate server name';
-                        }
-                        return null;
-                    }
-                };
-                return window.showInputBox(options).then(value => {
-                    return Promise.resolve({ name: value, bean: serverBeans[0] });
-                });
-            } else {
-                if (serverBeans) {
-                    return Promise.reject('Cannot detect server in selected location!');
-                }
-            }
-        };
-    }
-
-    private getRequiredParameters(value: { name: string; bean: Protocol.ServerBean}): Thenable<{ name: string; bean: Protocol.ServerBean; attributes: {}}> {
-        let serverAttribute: Promise<{required: Protocol.Attributes; optional: Protocol.Attributes}>;
-
-        if (this.serverAttributes.has(value.bean.serverAdapterTypeId)) {
-            serverAttribute = Promise.resolve(this.serverAttributes.get(value.bean.serverAdapterTypeId));
-        } else {
-            let required: Protocol.Attributes;
-
-            serverAttribute = this.client.getServerTypeRequiredAttributes({id: value.bean.serverAdapterTypeId, visibleName: '', description: ''})
-            .then((req: Protocol.Attributes) => { required = req; return req;})
-            .then(() => this.client.getServerTypeOptionalAttributes({id: value.bean.serverAdapterTypeId, visibleName: '', description: ''})
-            .then(optional => Promise.resolve({required: required, optional: optional})))
-            .then(server => {
-                this.serverAttributes.set(value.bean.serverAdapterTypeId, server);
-                return Promise.resolve(server);
-            });
+            return response.status;
         }
-        return serverAttribute.then(async s => {
-            const attributes = {};
-            for(const name in s.required.attributes) {
-                if (name !== 'server.home.dir' && name !== 'server.home.file') {
-                    const attribute = s.required.attributes[name];
-                    const value = await window.showInputBox({prompt: attribute.description, value: attribute.defaultVal});
-                    if (value) {
-                        attributes[name] = value;
-                    }
-                }
-            }
-            return Promise.resolve({name: value.name, bean: value.bean, attributes: attributes});
-        });
     }
 
-    private async getOptionalParameters(value: { name: string; bean: Protocol.ServerBean, attributes: any}): Promise<{ name: string; bean: Protocol.ServerBean; attributes: {}}> {
-        const serverAttribute = this.serverAttributes.get(value.bean.serverAdapterTypeId);
+    /**
+     * Prompts for server name
+     */
+    private async getServerName(server: { name: string }): Promise<void> {
+        const options: InputBoxOptions = {
+            prompt: `Provide the server name`,
+            placeHolder: `Server name`,
+            validateInput: (value: string) => {
+                if (!value || value.trim().length === 0) {
+                    return 'Cannot set empty server name';
+                }
+                if (this.serverStatus.get(value)) {
+                    return 'Cannot set duplicate server name';
+                }
+            }
+        };
+        server.name = await window.showInputBox(options);
+    }
+
+    /**
+     * Requests parameters for the given server and lets user fill the required ones
+     */
+    private async getRequiredParameters(bean: Protocol.ServerBean): Promise<object> {
+        let serverAttribute: {required: Protocol.Attributes; optional: Protocol.Attributes};
+
+        if (this.serverAttributes.has(bean.serverAdapterTypeId)) {
+            serverAttribute = this.serverAttributes.get(bean.serverAdapterTypeId);
+        } else {
+            const req = await this.client.getServerTypeRequiredAttributes({id: bean.serverAdapterTypeId, visibleName: '', description: ''});
+            const opt = await this.client.getServerTypeOptionalAttributes({id: bean.serverAdapterTypeId, visibleName: '', description: ''});
+            serverAttribute = { required: req, optional: opt };
+
+            this.serverAttributes.set(bean.serverAdapterTypeId, serverAttribute);
+        }
+        const attributes = {};
+        for (const key in serverAttribute.required.attributes) {
+            if (key !== 'server.home.dir' && key !== 'server.home.file') {
+                const attribute = serverAttribute.required.attributes[key];
+                const value = await window.showInputBox({prompt: attribute.description, value: attribute.defaultVal});
+                if (value) {
+                    attributes[key] = value;
+                }
+            }
+        }
+        return attributes;
+    }
+
+    /**
+     * Let user choose to fill in optional parameters for a server
+     */
+    private async getOptionalParameters(bean: Protocol.ServerBean, attributes: object): Promise<object> {
+        const serverAttribute = this.serverAttributes.get(bean.serverAdapterTypeId);
         if (serverAttribute.optional && serverAttribute.optional.attributes) {
             const answer = await window.showQuickPick(['No', 'Yes'], {placeHolder: 'Do you want to edit optional parameters ?'});
             if (answer === 'Yes') {
-                for(const name in serverAttribute.optional.attributes) {
-                    if (name !== 'server.home.dir' && name !== 'server.home.file') {
-                        const attribute = serverAttribute.optional.attributes[name];
+                for (const key in serverAttribute.optional.attributes) {
+                    if (key !== 'server.home.dir' && key !== 'server.home.file') {
+                        const attribute = serverAttribute.optional.attributes[key];
                         const val = await window.showInputBox({prompt: attribute.description, value: attribute.defaultVal});
                         if (val) {
-                            value.attributes[name] = val;
+                            attributes[key] = val;
                         }
                     }
                 }
             }
         }
-        return Promise.resolve(value);
+        return attributes;
     }
 
     getTreeItem(item: Protocol.ServerState |  Protocol.DeployableState): TreeItem {

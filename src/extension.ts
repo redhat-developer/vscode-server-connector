@@ -99,7 +99,8 @@ function displayLog(outputPanel: vscode.OutputChannel, message: string, show: bo
 }
 
 function executeCommand(command: (...args: any[]) => Promise<any>, thisArg: any, ...params: any[]) {
-    return command.call(thisArg, ...params).catch(err => {
-        vscode.window.showErrorMessage(err);
+    return command.call(thisArg, ...params).catch((err: string | Error) => {
+        const error = typeof err === 'string' ? new Error(err) : err;
+        vscode.window.showErrorMessage(error.message);
     });
 }
