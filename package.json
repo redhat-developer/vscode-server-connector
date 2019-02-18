@@ -2,7 +2,7 @@
   "name": "vscode-server-connector",
   "displayName": "Server Connector",
   "description": "Connects vscode with different server adapters and runtimes",
-  "version": "0.13.0",
+  "version": "0.13.1",
   "license": "SEE LICENSE IN LICENSE",
   "publisher": "redhat",
   "author": "Red Hat",
