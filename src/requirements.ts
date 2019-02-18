@@ -75,7 +75,7 @@ function checkJavaVersion(javaHome: string): Promise<number> {
       cp.execFile(javaExecutable, ['-version'], {}, (error, stdout, stderr) => {
             const javaVersion = parseMajorVersion(stderr);
             if (javaVersion < 8) {
-                rejectWithDownloadUrl(reject, 'Java 8 or more recent is required to run. Please download and install a recent JDK');
+                rejectWithDownloadUrl(reject, `Java 8 or newer is required to run this extension. Java ${javaVersion} was found at ${javaHome}. Please download and install a recent JDK`);
             } else {
                 resolve(javaVersion);
             }
