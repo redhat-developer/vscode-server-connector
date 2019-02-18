@@ -11,7 +11,7 @@
     "type": "git",
     "url": "https://github.com/redhat-developer/vscode-adapters.git"
   },
-  "bugs":"https://github.com/redhat-developer/vscode-adapters/issues/",
+  "bugs": "https://github.com/redhat-developer/vscode-adapters/issues/",
   "engines": {
     "vscode": "^1.25.0"
   },
@@ -222,7 +222,7 @@
     "path-exists": "^3.0.0",
     "pify": "4.0.0",
     "portfinder": "^1.0.17",
-    "rsp-client": "0.0.6",
+    "rsp-client": "^0.13.0",
     "vscode-jsonrpc": "^4.0.0",
     "vscode-languageclient": "^5.1.0",
     "wait-on": "^3.0.1"
