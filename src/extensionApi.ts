@@ -2,7 +2,12 @@ import { ServerInfo } from './server';
 import { ServersViewTreeDataProvider } from './serverExplorer';
 import * as vscode from 'vscode';
 import { Protocol, RSPClient, ServerState } from 'rsp-client';
-
+import {
+    window,
+    OpenDialogOptions,
+    InputBoxOptions,
+} from 'vscode';
+import { ClientRequest } from 'http';
 export interface ExtensionAPI {
     readonly serverInfo: ServerInfo;
 }
@@ -191,6 +196,85 @@ export class CommandHandler {
         } else {
             return Promise.reject('Runtime Server Protocol (RSP) Server is starting, please try again later.');
         }
+    }
+
+    async downloadRuntime(): Promise<Protocol.Status> {
+        const rts: Protocol.ListDownloadRuntimeResponse = await this.client.listDownloadRuntimes(5000);
+        const rtId: string = await this.promptDownloadableRuntimes(rts);
+        let response1: Protocol.WorkflowResponse = await this.initEmptyDownloadRuntimeRequest(rtId);
+        while(true) {
+            if( response1.status.severity === 0) {
+                vscode.window.showInformationMessage(`Your download has begun.`);
+                return Promise.resolve(response1.status);
+            }
+            if( response1.status.severity === 4 || response1.status.severity === 8) {
+                // error
+                return Promise.reject(response1.status);
+            }
+
+            // not complete, not an error. 
+            const workflowMap = {};
+            for( const item of response1.items ) {
+                let quickpicks = [];
+                const prompt = item.content === undefined ? `${item.label}` : `${item.label}\n${item.content}`;
+                let onePropResolved;
+                if( item.responseType === `none`) {
+                    quickpicks = [`continue...`];
+                    await window.showQuickPick(quickpicks, { placeHolder: prompt});
+                } else {
+                    if( item.responseType === `bool`) {
+                        quickpicks = [`true`, `false`];
+                        const oneProp = await window.showQuickPick(quickpicks, { placeHolder: prompt});
+                        onePropResolved = (oneProp === 'true' ? true : false);
+                    } else {
+                        const oneProp =  await window.showInputBox(
+                            { prompt: prompt});
+                        if( item.responseType === `int` ) {
+                            onePropResolved = +oneProp;
+                        } else {
+                            onePropResolved = oneProp;
+                        }
+                    }
+                    workflowMap[item.id] = onePropResolved;
+                }
+            }
+            // Now we have a data map
+            response1 = await this.initDownloadRuntimeRequest(rtId, workflowMap, response1.requestId);
+        }
+    }
+    async initDownloadRuntimeRequest(id: string, data1: {[index: string]: any}, reqId: number): Promise<Protocol.WorkflowResponse> {
+        const req: Protocol.DownloadSingleRuntimeRequest = {
+            requestId: reqId,
+            downloadRuntimeId: id,
+            data: data1
+        };
+        const resp: Promise<Protocol.WorkflowResponse> = this.client.downloadRuntime(req);
+        return resp;
+    }
+    async initEmptyDownloadRuntimeRequest(id: string): Promise<Protocol.WorkflowResponse> {
+        const req: Protocol.DownloadSingleRuntimeRequest = {
+            requestId: null,
+            downloadRuntimeId: id,
+            data: {
+            }
+        };
+        const resp: Promise<Protocol.WorkflowResponse> = this.client.downloadRuntime(req);
+        return resp;
+    }
+    async promptDownloadableRuntimes(list: Protocol.ListDownloadRuntimeResponse): Promise<string> {
+        const rts: Protocol.DownloadRuntimeDescription[] = list.runtimes;
+        const newlist: string[] = [];
+        for( const rt of rts) {
+            newlist.push(rt.name);
+        }
+        const answer = await window.showQuickPick(newlist, {placeHolder: 'Please choose a runtime to download.'});
+        console.log(`${answer} was chosen`);
+        const ind = newlist.indexOf(answer);
+        if( ind === -1 ) {
+            return null;
+        }
+        const id = rts[ind].id;
+        return id;
     }
 
     async activate(): Promise<void> {
