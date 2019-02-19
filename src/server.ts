@@ -64,7 +64,7 @@ function startServer(location: string, port: number, javaHome: string, stdoutCal
   const felix = path.join(location, 'bin', 'felix.jar');
   const java = path.join(javaHome, 'bin', 'java');
   // Debuggable version
-  // const process = cp.spawn(java, [`-Xdebug`, `-Xrunjdwp:transport=dt_socket,server=y,address=8001,suspend=y`, `-Drsp.server.port=${port}`, '-jar', felix], { cwd: location });
+  //const process = cp.spawn(java, [`-Xdebug`, `-Xrunjdwp:transport=dt_socket,server=y,address=8001,suspend=y`, `-Drsp.server.port=${port}`, '-jar', felix], { cwd: location });
   // Production version
   const process = cp.spawn(java, [`-Drsp.server.port=${port}`, '-jar', felix], { cwd: location });
   process.stdout.on('data', stdoutCallback);

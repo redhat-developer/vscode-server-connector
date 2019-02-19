@@ -49,6 +49,11 @@
         "category": "Servers"
       },
       {
+        "command": "servers.downloadRuntime",
+        "title": "Download Runtime...",
+        "category": "Servers"
+      },
+      {
         "command": "server.start",
         "title": "Start",
         "category": "Servers"
@@ -155,6 +160,11 @@
           "command": "server.output",
           "when": "view == servers && viewItem =~ '/(Starting|Started|Stopping|Stopped)/'",
           "group": "4_server-status@1"
+        },
+        {
+          "command": "servers.downloadRuntime",
+          "when": "view == servers",
+          "group": "5_rsp@1"
         }
       ]
     },
