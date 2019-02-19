@@ -79,9 +79,12 @@ function checkJavaVersion(javaHome: string): Promise<number> {
         const javaExecutable = path.resolve(javaHome, 'bin', JAVA_FILENAME);
         cp.execFile(javaExecutable, ['-version'], {}, (error, stdout, stderr) => {
             const javaVersion = parseMajorVersion(stderr);
-            if (javaVersion < 8) {
-                rejectWithDownloadUrl(reject, `Java 8 or newer is required to run this extension.
-                Java ${javaVersion} was found at ${javaHome}. Please download and install a recent JDK`);
+            if (!javaVersion) {
+                rejectWithDownloadUrl(reject, `Java 8 or newer is required. No Java was found on your system..
+                Please get a recent JDK or configure it for "Servers View" if it already exists`);
+            } else if (javaVersion < 8) {
+                rejectWithDownloadUrl(reject, `Java 8 or newer is required. Java ${javaVersion} was found at ${javaHome}.
+                Please get a recent JDK or configure it for "Servers View" if it already exists`);
             } else {
                 resolve(javaVersion);
             }
@@ -93,7 +96,7 @@ export function parseMajorVersion(content: string): number {
     let regexp = /version "(.*)"/g;
     let match = regexp.exec(content);
     if (!match) {
-        return 0;
+        return undefined;
     }
     let version = match[1];
     // Ignore '1.' prefix for legacy Java versions

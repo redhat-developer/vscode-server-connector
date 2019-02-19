@@ -6,21 +6,20 @@
 'use strict';
 
 import * as cp from 'child_process';
+import { ExtensionAPI } from './extensionApi';
 import * as path from 'path';
 import * as portfinder from 'portfinder';
 import * as requirements from './requirements';
-import { ExtensionAPI } from './extensionApi';
-import { ServerInfo, ServerState } from 'vscode-server-connector-api';
 import * as vscode from 'vscode';
-
+import { ServerInfo, ServerState } from 'vscode-server-connector-api';
 import * as waitOn from 'wait-on';
 
 let cpProcess: cp.ChildProcess;
 let javaHome: string;
 let port: number;
 
-const rspid: string = "redhat-server-connector";
-export function start(stdoutCallback: (data: string) => void, 
+const rspid = 'redhat-server-connector';
+export function start(stdoutCallback: (data: string) => void,
                       stderrCallback: (data: string) => void,
                       api: ExtensionAPI ): Promise<ServerInfo> {
     return requirements.resolveRequirements()
@@ -73,9 +72,9 @@ function getServerLocation(process: any): string {
     process.env.RSP_SERVER_LOCATION : path.resolve(__dirname, '..', '..', 'server');
 }
 
-function startServer(location: string, port: number, javaHome: string, 
-                stdoutCallback: (data: string) => void, stderrCallback: (data: string) => void,
-                api: ExtensionAPI): void {
+function startServer(
+    location: string, port: number, javaHome: string,
+    stdoutCallback: (data: string) => void, stderrCallback: (data: string) => void, api: ExtensionAPI): void {
     const felix = path.join(location, 'bin', 'felix.jar');
     const java = path.join(javaHome, 'bin', 'java');
     // Debuggable version
@@ -85,12 +84,14 @@ function startServer(location: string, port: number, javaHome: string,
     cpProcess.stdout.on('data', stdoutCallback);
     cpProcess.stderr.on('data', stderrCallback);
     cpProcess.on('close', (code) => {
-        if( api != null )
+        if ( api != null ) {
             api.updateRSPStateChanged(ServerState.STOPPED);
+        }
     });
     cpProcess.on('exit', (code) => {
-        if( api != null )
+        if ( api != null ) {
             api.updateRSPStateChanged(ServerState.STOPPED);
+        }
     });
 }
 
