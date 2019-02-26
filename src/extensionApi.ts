@@ -24,6 +24,7 @@ export class CommandHandler {
         if (context === undefined) {
             selectedServerId = await vscode.window.showQuickPick(Array.from(this.serversData.serverStatus.keys()),
                 { placeHolder: 'Select runtime/server to start' });
+            if (!selectedServerId) return null;
             selectedServerType = this.serversData.serverStatus.get(selectedServerId).server.type;
         } else {
             selectedServerType = context.server.type;
@@ -54,6 +55,7 @@ export class CommandHandler {
         if (context === undefined) {
             serverId = await vscode.window.showQuickPick(Array.from(this.serversData.serverStatus.keys()),
                 { placeHolder: 'Select runtime/server to stop' });
+            if (!serverId) return null;
         } else {
             serverId = context.server.id;
         }
@@ -76,6 +78,7 @@ export class CommandHandler {
         if (context === undefined) {
             serverId = await vscode.window.showQuickPick(Array.from(this.serversData.serverStatus.keys()),
                 { placeHolder: 'Select runtime/server to remove' });
+            if (!serverId) return null;
             selectedServerType = this.serversData.serverStatus.get(serverId).server.type;
         } else {
             serverId = context.server.id;
@@ -111,6 +114,7 @@ export class CommandHandler {
                 .filter(item => this.serversData.serverStatus.get(item).state === ServerState.STARTED),
                 { placeHolder: 'Select runtime/server to restart' }
             );
+            if (!serverId) return null;
             context = this.serversData.serverStatus.get(serverId);
         }
 
