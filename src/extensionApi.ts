@@ -2,12 +2,6 @@ import { ServerInfo } from './server';
 import { ServersViewTreeDataProvider } from './serverExplorer';
 import * as vscode from 'vscode';
 import { Protocol, RSPClient, ServerState } from 'rsp-client';
-import {
-    window,
-    OpenDialogOptions,
-    InputBoxOptions,
-} from 'vscode';
-import { ClientRequest } from 'http';
 export interface ExtensionAPI {
     readonly serverInfo: ServerInfo;
 }
@@ -219,14 +213,14 @@ export class CommandHandler {
                 let onePropResolved;
                 if( item.responseType === `none`) {
                     quickpicks = [`continue...`];
-                    await window.showQuickPick(quickpicks, { placeHolder: prompt});
+                    await vscode.window.showQuickPick(quickpicks, { placeHolder: prompt});
                 } else {
                     if( item.responseType === `bool`) {
                         quickpicks = [`true`, `false`];
-                        const oneProp = await window.showQuickPick(quickpicks, { placeHolder: prompt});
+                        const oneProp = await vscode.window.showQuickPick(quickpicks, { placeHolder: prompt});
                         onePropResolved = (oneProp === 'true' ? true : false);
                     } else {
-                        const oneProp =  await window.showInputBox(
+                        const oneProp =  await vscode.window.showInputBox(
                             { prompt: prompt});
                         if( item.responseType === `int` ) {
                             onePropResolved = +oneProp;
@@ -266,7 +260,7 @@ export class CommandHandler {
         for( const rt of rts) {
             newlist.push(rt.name);
         }
-        const answer = await window.showQuickPick(newlist, {placeHolder: 'Please choose a runtime to download.'});
+        const answer = await vscode.window.showQuickPick(newlist, {placeHolder: 'Please choose a runtime to download.'});
         console.log(`${answer} was chosen`);
         const ind = newlist.indexOf(answer);
         if( ind === -1 ) {
