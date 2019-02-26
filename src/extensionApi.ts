@@ -98,6 +98,7 @@ export class CommandHandler {
         if (context === undefined) {
             const serverId = await vscode.window.showQuickPick(Array.from(this.serversData.serverStatus.keys()),
                 { placeHolder: 'Select runtime/server to show ouput channel' });
+            if (!serverId) return null;
             context = this.serversData.serverStatus.get(serverId);
         }
         this.serversData.showOutput(context);
