@@ -138,27 +138,35 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
 
     async addLocation(): Promise<Protocol.Status> {
         const server: { name: string, bean: Protocol.ServerBean } = { name: null, bean: null };
-        return window.showOpenDialog(<OpenDialogOptions>{
+        const folders = await window.showOpenDialog(<OpenDialogOptions>{
             canSelectFiles: false,
             canSelectMany: false,
             canSelectFolders: true,
             openLabel: 'Select desired server location'
-        })
-        .then(async folders => {
-            let serverBeans: Protocol.ServerBean[];
-            if (folders && folders.length === 1) {
-                serverBeans = await this.client.findServerBeans(folders[0].fsPath);
-            }
-            if (serverBeans && serverBeans.length > 0 && serverBeans[0].typeCategory && serverBeans[0].typeCategory !== 'UNKNOWN') {
-                server.bean = serverBeans[0];
-            } else {
-                throw new Error('Cannot detect server in selected location!');
-            }
-        })
-        .then(() => this.getServerName(server))
-        .then(() => this.getRequiredParameters(server.bean))
-        .then(attributes => this.getOptionalParameters(server.bean, attributes))
-        .then(attributes => this.createServerAsync(server.name, server.bean, attributes));
+        });
+
+        let serverBeans: Protocol.ServerBean[];
+        if (folders && folders.length === 1) {
+            serverBeans = await this.client.findServerBeans(folders[0].fsPath);
+        } else {
+            return {
+                severity: 8,
+                code: 0,
+                trace: ``,
+                plugin: ``,
+                ok: false,
+                message: `Canceled by user`
+            };
+        }
+        if (serverBeans && serverBeans.length > 0 && serverBeans[0].typeCategory && serverBeans[0].typeCategory !== 'UNKNOWN') {
+            server.bean = serverBeans[0];
+        } else {
+            throw new Error('Cannot detect server in selected location!');
+        }
+        server.name = await this.getServerName();
+        const attrs = await this.getRequiredParameters(server.bean);
+        await this.getOptionalParameters(server.bean, attrs);
+        return await this.createServerAsync(server.name, server.bean, attrs);
     }
 
     private async createServerAsync(name: string, bean: Protocol.ServerBean, attributes: object = {}): Promise<Protocol.Status> {
@@ -174,7 +182,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
     /**
      * Prompts for server name
      */
-    private async getServerName(server: { name: string }): Promise<void> {
+    private async getServerName(): Promise<string> {
         const options: InputBoxOptions = {
             prompt: `Provide the server name`,
             placeHolder: `Server name`,
@@ -187,7 +195,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
                 }
             }
         };
-        server.name = await window.showInputBox(options);
+        return await window.showInputBox(options);
     }
 
     /**
