@@ -247,7 +247,7 @@ export class CommandHandler {
             downloadRuntimeId: id,
             data: data1
         };
-        const resp: Promise<Protocol.WorkflowResponse> = this.client.downloadRuntime(req);
+        const resp: Promise<Protocol.WorkflowResponse> = this.client.downloadRuntime(req, 20000);
         return resp;
     }
     async initEmptyDownloadRuntimeRequest(id: string): Promise<Protocol.WorkflowResponse> {
