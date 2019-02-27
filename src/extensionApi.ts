@@ -1,5 +1,6 @@
 import { ServerInfo } from './server';
 import { ServersViewTreeDataProvider } from './serverExplorer';
+import { EditorUtil } from './editorutil';
 import * as vscode from 'vscode';
 import { Protocol, RSPClient, ServerState } from 'rsp-client';
 export interface ExtensionAPI {
@@ -215,9 +216,13 @@ export class CommandHandler {
             for( const item of response1.items ) {
                 let quickpicks = [];
                 const prompt = item.content === undefined ? `${item.label}` : `${item.label}\n${item.content}`;
+
                 let onePropResolved;
                 if( item.responseType === `none`) {
                     quickpicks = [`continue...`];
+                    if( item.content !== undefined && item.content.indexOf(`\n`) !== -1 ) {
+                        await new EditorUtil().showEditor(item.id, item.content);
+                    }
                     await vscode.window.showQuickPick(quickpicks, { placeHolder: prompt});
                 } else {
                     if( item.responseType === `bool`) {
