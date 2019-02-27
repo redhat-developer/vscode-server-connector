@@ -200,6 +200,9 @@ export class CommandHandler {
     async downloadRuntime(): Promise<Protocol.Status> {
         const rts: Protocol.ListDownloadRuntimeResponse = await this.client.listDownloadRuntimes(5000);
         const rtId: string = await this.promptDownloadableRuntimes(rts);
+        if( rtId === undefined || rtId === null) {
+            return Promise.reject(`Canceled by user`);
+        }
         let response1: Protocol.WorkflowResponse = await this.initEmptyDownloadRuntimeRequest(rtId);
         while(true) {
             if( response1.status.severity === 0) {
