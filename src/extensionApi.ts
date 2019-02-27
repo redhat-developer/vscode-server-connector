@@ -224,15 +224,17 @@ export class CommandHandler {
                 let onePropResolved;
                 if( item.responseType === `none`) {
                     quickpicks = [`continue...`];
-                    await vscode.window.showQuickPick(quickpicks, { placeHolder: prompt});
+                    await vscode.window.showQuickPick(quickpicks, 
+                        { placeHolder: prompt, ignoreFocusOut: true});
                 } else {
                     if( item.responseType === `bool`) {
                         quickpicks = [`true`, `false`];
-                        const oneProp = await vscode.window.showQuickPick(quickpicks, { placeHolder: prompt});
+                        const oneProp = await vscode.window.showQuickPick(quickpicks, 
+                            { placeHolder: prompt, ignoreFocusOut: true});
                         onePropResolved = (oneProp === 'true' ? true : false);
                     } else {
                         const oneProp =  await vscode.window.showInputBox(
-                            { prompt: prompt});
+                            { prompt: prompt, ignoreFocusOut: true});
                         if( item.responseType === `int` ) {
                             onePropResolved = +oneProp;
                         } else {
