@@ -198,8 +198,7 @@ export class CommandHandler {
     }
 
     async downloadRuntime(): Promise<Protocol.Status> {
-        const rts: Protocol.ListDownloadRuntimeResponse = await this.client.listDownloadRuntimes(5000);
-        const rtId: string = await this.promptDownloadableRuntimes(rts);
+        const rtId: string = await this.promptDownloadableRuntimes();
         if( rtId === undefined || rtId === null) {
             return Promise.reject(`Canceled by user`);
         }
@@ -270,20 +269,19 @@ export class CommandHandler {
         const resp: Promise<Protocol.WorkflowResponse> = this.client.downloadRuntime(req);
         return resp;
     }
-    async promptDownloadableRuntimes(list: Protocol.ListDownloadRuntimeResponse): Promise<string> {
-        const rts: Protocol.DownloadRuntimeDescription[] = list.runtimes;
-        const newlist: string[] = [];
-        for( const rt of rts) {
-            newlist.push(rt.name);
-        }
-        const answer = await vscode.window.showQuickPick(newlist, {placeHolder: 'Please choose a runtime to download.'});
+
+    async promptDownloadableRuntimes(): Promise<string> {
+        const newlist = this.client.listDownloadRuntimes(5000).then(async (list: Protocol.ListDownloadRuntimeResponse) => {
+            const rts: Protocol.DownloadRuntimeDescription[] = list.runtimes;
+            const newlist: any[] = [];
+            for (const rt of rts) {
+                newlist.push({ label: rt.name, id: rt.id });
+            }
+            return newlist;
+        });
+        const answer = await vscode.window.showQuickPick(newlist, { placeHolder: 'Please choose a runtime to download.' });
         console.log(`${answer} was chosen`);
-        const ind = newlist.indexOf(answer);
-        if( ind === -1 ) {
-            return null;
-        }
-        const id = rts[ind].id;
-        return id;
+        return answer.id;
     }
 
     async activate(): Promise<void> {
