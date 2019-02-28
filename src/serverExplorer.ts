@@ -28,7 +28,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
     public serverOutputChannels: Map<string, OutputChannel> = new Map<string, OutputChannel>();
     public runStateEnum: Map<number, string> = new Map<number, string>();
     public publishStateEnum: Map<number, string> = new Map<number, string>();
-    private serverAttributes: Map<String, {required: Protocol.Attributes; optional: Protocol.Attributes}> = new Map<String, {required: Protocol.Attributes; optional: Protocol.Attributes}>();
+    private serverAttributes: Map<string, {required: Protocol.Attributes; optional: Protocol.Attributes}> = new Map<string, {required: Protocol.Attributes; optional: Protocol.Attributes}>();
 
     constructor(client: RSPClient) {
         this.client = client;
