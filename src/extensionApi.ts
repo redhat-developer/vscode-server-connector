@@ -2,7 +2,7 @@ import { ServerInfo } from './server';
 import { ServersViewTreeDataProvider } from './serverExplorer';
 import { EditorUtil } from './editorutil';
 import * as vscode from 'vscode';
-import { Protocol, RSPClient, ServerState } from 'rsp-client';
+import { Protocol, RSPClient, ServerState, StatusSeverity } from 'rsp-client';
 export interface ExtensionAPI {
     readonly serverInfo: ServerInfo;
 }
@@ -41,7 +41,7 @@ export class CommandHandler {
                 },
                 mode: mode
             });
-            if (response.status.severity > 0) {
+            if (!StatusSeverity.isOk(response.status)) {
                 return Promise.reject(response.status.message);
             }
             return response;
@@ -63,7 +63,7 @@ export class CommandHandler {
         const stateObj: Protocol.ServerState = this.serversData.serverStatus.get(serverId);
         if (stateObj.state === ServerState.STARTED) {
             const status = await this.client.stopServerAsync({ id: serverId, force: true });
-            if (status.severity > 0) {
+            if (!StatusSeverity.isOk(status)) {
                 return Promise.reject(status.message);
             }
             return status;
@@ -88,7 +88,7 @@ export class CommandHandler {
         const status1: Protocol.ServerState = this.serversData.serverStatus.get(serverId);
         if (status1.state === ServerState.STOPPED) {
             const status = await this.client.deleteServerAsync({ id: serverId, type: selectedServerType });
-            if (status.severity > 0) {
+            if (!StatusSeverity.isOk(status)) {
                 return Promise.reject(status.message);
             }
             return status;
@@ -204,11 +204,11 @@ export class CommandHandler {
         }
         let response1: Protocol.WorkflowResponse = await this.initEmptyDownloadRuntimeRequest(rtId);
         while (true) {
-            if (response1.status.severity === 0) {
+            if (StatusSeverity.isOk(response1.status)) {
                 vscode.window.showInformationMessage(`Your download has begun.`);
                 return Promise.resolve(response1.status);
-            }
-            if (response1.status.severity === 4 || response1.status.severity === 8) {
+            } else if (StatusSeverity.isError(response1.status)
+                        || StatusSeverity.isCancel(response1.status)) {
                 // error
                 return Promise.reject(response1.status);
             }
@@ -216,40 +216,43 @@ export class CommandHandler {
             // not complete, not an error.
             const workflowMap = {};
             for (const item of response1.items ) {
-                let quickpicks = [];
-                const prompt = item.content === undefined ? `${item.label}` : `${item.label}\n${item.content}`;
-
-                if (item.content !== undefined && item.content.indexOf(`\n`) !== -1 ) {
+                if (this.isMultilineText(item.content) ) {
                     await new EditorUtil().showEditor(item.id, item.content);
                 }
 
-                let onePropResolved;
-                if (item.responseType === `none`) {
-                    quickpicks = [`continue...`];
-                    await vscode.window.showQuickPick(quickpicks,
-                        { placeHolder: prompt, ignoreFocusOut: true });
-                } else {
-                    if (item.responseType === `bool`) {
-                        quickpicks = [`true`, `false`];
-                        const oneProp = await vscode.window.showQuickPick(quickpicks,
-                            { placeHolder: prompt, ignoreFocusOut: true });
-                        onePropResolved = (oneProp === 'true');
-                    } else {
-                        const oneProp =  await vscode.window.showInputBox(
-                            { prompt: prompt, ignoreFocusOut: true });
-                        if ( item.responseType === `int` ) {
-                            onePropResolved = +oneProp;
-                        } else {
-                            onePropResolved = oneProp;
-                        }
-                    }
-                    workflowMap[item.id] = onePropResolved;
-                }
+                await this.promptUser(item, workflowMap);
             }
             // Now we have a data map
             response1 = await this.initDownloadRuntimeRequest(rtId, workflowMap, response1.requestId);
         }
     }
+
+  private async promptUser(item: Protocol.WorkflowResponseItem, workflowMap: {}) {
+    const prompt = item.label + (item.content ? `\n${item.content}` : ``);
+    if (item.responseType === `none`) {
+      await vscode.window.showQuickPick([`continue...`], { placeHolder: prompt, ignoreFocusOut: true });
+    } else {
+      let onePropResolved: any;
+      if (item.responseType === `bool`) {
+        const oneProp = await vscode.window.showQuickPick([`true`, `false`], { placeHolder: prompt, ignoreFocusOut: true });
+        onePropResolved = (oneProp === 'true');
+      } else {
+        const oneProp = await vscode.window.showInputBox({ prompt: prompt, ignoreFocusOut: true });
+        if (item.responseType === `int`) {
+          onePropResolved = +oneProp;
+        }
+        else {
+          onePropResolved = oneProp;
+        }
+      }
+      workflowMap[item.id] = onePropResolved;
+    }
+  }
+
+    private isMultilineText(content: string) {
+      return content && content.indexOf(`\n`) !== -1;
+    }
+
     async initDownloadRuntimeRequest(id: string, data1: {[index: string]: any}, reqId: number): Promise<Protocol.WorkflowResponse> {
         const req: Protocol.DownloadSingleRuntimeRequest = {
             requestId: reqId,

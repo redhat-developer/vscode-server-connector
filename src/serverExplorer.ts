@@ -16,7 +16,8 @@ import * as path from 'path';
 import {
     RSPClient,
     Protocol,
-    ServerState
+    ServerState,
+    StatusSeverity
 } from 'rsp-client';
 
 export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.ServerState | Protocol.DeployableState> {
@@ -110,7 +111,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
                 const deployableRef: Protocol.DeployableReference = { label: file[0].fsPath,  path: file[0].fsPath};
                 const req: Protocol.ModifyDeployableRequest = { server: server, deployable : deployableRef};
                 const status = await this.client.addDeployable(req);
-                if (status.severity > 0) {
+                if (!StatusSeverity.isOk(status)) {
                     return Promise.reject(status.message);
                 }
                 return status;
@@ -121,7 +122,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
     async removeDeployment(server: Protocol.ServerHandle, deployableRef: Protocol.DeployableReference): Promise<Protocol.Status> {
         const req: Protocol.ModifyDeployableRequest = { server: server, deployable : deployableRef};
         const status = await this.client.removeDeployable(req);
-        if (status.severity > 0) {
+        if (!StatusSeverity.isOk(status)) {
             return Promise.reject(status.message);
         }
         return status;
@@ -130,7 +131,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
     async publish(server: Protocol.ServerHandle, type: number): Promise<Protocol.Status> {
         const req: Protocol.PublishServerRequest = { server: server, kind : type};
         const status = await this.client.publish(req);
-        if (status.severity > 0) {
+        if (!StatusSeverity.isOk(status)) {
             return Promise.reject(status.message);
         }
         return status;
