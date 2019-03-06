@@ -220,34 +220,38 @@ export class CommandHandler {
                     await new EditorUtil().showEditor(item.id, item.content);
                 }
 
-                await this.promptUser(item, workflowMap);
+                const canceled: boolean = await this.promptUser(item, workflowMap);
+                if (canceled) {
+                  return Promise.reject('Canceled by user');
+                }
             }
             // Now we have a data map
             response1 = await this.initDownloadRuntimeRequest(rtId, workflowMap, response1.requestId);
         }
     }
 
-    private async promptUser(item: Protocol.WorkflowResponseItem, workflowMap: {}) {
+    private async promptUser(item: Protocol.WorkflowResponseItem, workflowMap: {}): Promise<boolean> {
       const prompt = item.label + (item.content ? `\n${item.content}` : ``);
-      if (item.responseType === `none`) {
-        await vscode.window.showQuickPick([`continue...`], { placeHolder: prompt, ignoreFocusOut: true });
+      let userInput: any = null;
+      if (item.responseType === 'none') {
+        userInput = await vscode.window.showQuickPick(['continue...'], { placeHolder: prompt, ignoreFocusOut: true });
       } else {
-        let onePropResolved: any;
-        if (item.responseType === `bool`) {
-          const oneProp = await vscode.window.showQuickPick([`true`, `false`], { placeHolder: prompt, ignoreFocusOut: true });
-          onePropResolved = (oneProp === 'true');
+        if (item.responseType === 'bool') {
+          const oneProp = await vscode.window.showQuickPick(['true', 'false'], { placeHolder: prompt, ignoreFocusOut: true });
+          userInput = (oneProp === 'true');
         } else {
           const oneProp = await vscode.window.showInputBox({ prompt: prompt, ignoreFocusOut: true });
-          if (item.responseType === `int`) {
-            onePropResolved = +oneProp;
-          }
-          else {
-            onePropResolved = oneProp;
+          if (item.responseType === 'int') {
+            userInput = +oneProp;
+          } else {
+            userInput = oneProp;
           }
         }
-        workflowMap[item.id] = onePropResolved;
       }
-    }
+
+      workflowMap[item.id] = userInput;
+      return userInput === undefined;
+  }
 
     private isMultilineText(content: string) {
       return content && content.indexOf(`\n`) !== -1;
