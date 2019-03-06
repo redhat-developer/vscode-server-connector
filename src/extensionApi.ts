@@ -227,54 +227,55 @@ export class CommandHandler {
         }
     }
 
-  private async promptUser(item: Protocol.WorkflowResponseItem, workflowMap: {}) {
-    const prompt = item.label + (item.content ? `\n${item.content}` : ``);
-    if (item.responseType === `none`) {
-      await vscode.window.showQuickPick([`continue...`], { placeHolder: prompt, ignoreFocusOut: true });
-    } else {
-      let onePropResolved: any;
-      if (item.responseType === `bool`) {
-        const oneProp = await vscode.window.showQuickPick([`true`, `false`], { placeHolder: prompt, ignoreFocusOut: true });
-        onePropResolved = (oneProp === 'true');
+    private async promptUser(item: Protocol.WorkflowResponseItem, workflowMap: {}) {
+      const prompt = item.label + (item.content ? `\n${item.content}` : ``);
+      if (item.responseType === `none`) {
+        await vscode.window.showQuickPick([`continue...`], { placeHolder: prompt, ignoreFocusOut: true });
       } else {
-        const oneProp = await vscode.window.showInputBox({ prompt: prompt, ignoreFocusOut: true });
-        if (item.responseType === `int`) {
-          onePropResolved = +oneProp;
+        let onePropResolved: any;
+        if (item.responseType === `bool`) {
+          const oneProp = await vscode.window.showQuickPick([`true`, `false`], { placeHolder: prompt, ignoreFocusOut: true });
+          onePropResolved = (oneProp === 'true');
+        } else {
+          const oneProp = await vscode.window.showInputBox({ prompt: prompt, ignoreFocusOut: true });
+          if (item.responseType === `int`) {
+            onePropResolved = +oneProp;
+          }
+          else {
+            onePropResolved = oneProp;
+          }
         }
-        else {
-          onePropResolved = oneProp;
-        }
+        workflowMap[item.id] = onePropResolved;
       }
-      workflowMap[item.id] = onePropResolved;
     }
-  }
 
     private isMultilineText(content: string) {
       return content && content.indexOf(`\n`) !== -1;
     }
 
     async initDownloadRuntimeRequest(id: string, data1: {[index: string]: any}, reqId: number): Promise<Protocol.WorkflowResponse> {
-        const req: Protocol.DownloadSingleRuntimeRequest = {
-            requestId: reqId,
-            downloadRuntimeId: id,
-            data: data1
-        };
-        const resp: Promise<Protocol.WorkflowResponse> = this.client.downloadRuntime(req, 20000);
-        return resp;
+      const req: Protocol.DownloadSingleRuntimeRequest = {
+        requestId: reqId,
+        downloadRuntimeId: id,
+        data: data1
+      };
+      const resp: Promise<Protocol.WorkflowResponse> = this.client.downloadRuntime(req, 20000);
+      return resp;
     }
+
     async initEmptyDownloadRuntimeRequest(id: string): Promise<Protocol.WorkflowResponse> {
-        const req: Protocol.DownloadSingleRuntimeRequest = {
-            requestId: null,
-            downloadRuntimeId: id,
-            data: {
-            }
-        };
-        const resp: Promise<Protocol.WorkflowResponse> = this.client.downloadRuntime(req);
-        return resp;
+      const req: Protocol.DownloadSingleRuntimeRequest = {
+        requestId: null,
+        downloadRuntimeId: id,
+        data: {}
+    };
+    const resp: Promise<Protocol.WorkflowResponse> = this.client.downloadRuntime(req);
+    return resp;
     }
 
     async promptDownloadableRuntimes(): Promise<string> {
-        const newlist = this.client.listDownloadRuntimes(5000).then(async (list: Protocol.ListDownloadRuntimeResponse) => {
+        const newlist = this.client.listDownloadRuntimes(5000)
+          .then(async (list: Protocol.ListDownloadRuntimeResponse) => {
             const rts: Protocol.DownloadRuntimeDescription[] = list.runtimes;
             const newlist: any[] = [];
             for (const rt of rts) {

@@ -173,7 +173,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
     private async createServerAsync(name: string, bean: Protocol.ServerBean, attributes: object = {}): Promise<Protocol.Status> {
         if (name && bean) {
             const response = await this.client.createServerAsync(bean, name, attributes);
-            if (response.status.severity > 0) {
+            if (!StatusSeverity.isOk(response.status)) {
                 throw new Error(response.status.message);
             }
             return response.status;
