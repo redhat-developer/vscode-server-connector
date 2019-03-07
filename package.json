@@ -27,9 +27,9 @@
   ],
   "icon": "images/producticons_1017_RGB_EAP_color.png",
   "activationEvents": [
-    "onCommand:servers.createServer",
-    "onCommand:servers.addLocation",
-    "onCommand:servers.downloadRuntime",
+    "onCommand:server.createServer",
+    "onCommand:server.addLocation",
+    "onCommand:server.downloadRuntime",
     "onCommand:server.start",
     "onCommand:server.debug",
     "onCommand:server.stop",
@@ -45,19 +45,19 @@
   "contributes": {
     "commands": [
       {
-        "command": "servers.createServer",
+        "command": "server.createServer",
         "title": "Create New Server...",
         "icon": "resources/dark/new-server.svg",
         "category": "Servers"
       },
       {
-        "command": "servers.addLocation",
+        "command": "server.addLocation",
         "title": "Add Local Server...",
         "icon": "resources/dark/add-location.svg",
         "category": "Servers"
       },
       {
-        "command": "servers.downloadRuntime",
+        "command": "server.downloadRuntime",
         "title": "Download Server...",
         "category": "Servers"
       },
@@ -118,7 +118,7 @@
     "menus": {
       "view/title": [
         {
-          "command": "servers.createServer",
+          "command": "server.createServer",
           "when": "view == servers",
           "group": "navigation"
         }
@@ -170,12 +170,12 @@
           "group": "4_server-status@1"
         },
         {
-          "command": "servers.downloadRuntime",
+          "command": "server.downloadRuntime",
           "when": "view == servers",
           "group": "5_rsp@1"
         },
         {
-          "command": "servers.addLocation",
+          "command": "server.addLocation",
           "when": "view == servers",
           "group": "5_rsp@2"
         }

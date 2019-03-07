@@ -92,17 +92,17 @@ suite('Extension Tests', function() {
         return await vscode.commands.getCommands(true).then(commands => {
             const SERVER_COMMANDS = [
                 'server.start',
+                'server.restart',
                 'server.debug',
                 'server.stop',
                 'server.remove',
                 'server.output',
+                `server.addDeployment`,
+                'server.removeDeployment',
+                'server.publishFull',
                 'server.createServer',
                 'server.addLocation',
-                'servers.downloadRuntime',
-                'server.restart',
-                `server.addDeployment`,
-                `server.removeDeployment`,
-                'server.publishFull'
+                'server.downloadRuntime'
             ];
             const foundServerCommands = commands.filter(value => {
                 return SERVER_COMMANDS.indexOf(value) >= 0 || value.startsWith('server.');
