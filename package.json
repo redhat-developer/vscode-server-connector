@@ -27,7 +27,9 @@
   ],
   "icon": "images/producticons_1017_RGB_EAP_color.png",
   "activationEvents": [
+    "onCommand:servers.createServer",
     "onCommand:servers.addLocation",
+    "onCommand:servers.downloadRuntime",
     "onCommand:server.start",
     "onCommand:server.debug",
     "onCommand:server.stop",
@@ -43,14 +45,20 @@
   "contributes": {
     "commands": [
       {
+        "command": "servers.createServer",
+        "title": "Create New Server...",
+        "icon": "resources/dark/new-server.svg",
+        "category": "Servers"
+      },
+      {
         "command": "servers.addLocation",
-        "title": "Add Server Location",
+        "title": "Add Local Server...",
         "icon": "resources/dark/add-location.svg",
         "category": "Servers"
       },
       {
         "command": "servers.downloadRuntime",
-        "title": "Download Runtime...",
+        "title": "Download Server...",
         "category": "Servers"
       },
       {
@@ -110,7 +118,7 @@
     "menus": {
       "view/title": [
         {
-          "command": "servers.addLocation",
+          "command": "servers.createServer",
           "when": "view == servers",
           "group": "navigation"
         }
@@ -165,6 +173,11 @@
           "command": "servers.downloadRuntime",
           "when": "view == servers",
           "group": "5_rsp@1"
+        },
+        {
+          "command": "servers.addLocation",
+          "when": "view == servers",
+          "group": "5_rsp@2"
         }
       ]
     },

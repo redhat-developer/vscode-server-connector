@@ -159,6 +159,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
                 message: `Canceled by user`
             };
         }
+
         if (serverBeans && serverBeans.length > 0 && serverBeans[0].typeCategory && serverBeans[0].typeCategory !== 'UNKNOWN') {
             server.bean = serverBeans[0];
         } else {
