@@ -54,6 +54,7 @@ function registerCommands(commandHandler: CommandHandler, context: vscode.Extens
     vscode.commands.registerCommand('server.addDeployment', context => executeCommand(commandHandler.addDeployment, commandHandler, context)),
     vscode.commands.registerCommand('server.removeDeployment', context => executeCommand(commandHandler.removeDeployment, commandHandler, context)),
     vscode.commands.registerCommand('server.publishFull', context => executeCommand(commandHandler.fullPublishServer, commandHandler, context)),
+    vscode.commands.registerCommand('servers.createServer', () => executeCommand(commandHandler.createServer, commandHandler)),
     vscode.commands.registerCommand('servers.addLocation', () => executeCommand(commandHandler.addLocation, commandHandler)),
     vscode.commands.registerCommand('servers.downloadRuntime', () => executeCommand(commandHandler.downloadRuntime, commandHandler)),
     rspserverstdout,

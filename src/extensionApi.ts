@@ -110,9 +110,10 @@ export class CommandHandler {
     async restartServer(context?: Protocol.ServerState): Promise<void> {
         if (context === undefined) {
             const serverId: string = await vscode.window.showQuickPick(
-                Array.from(this.serversData.serverStatus.keys())
-                .filter(item => this.serversData.serverStatus.get(item).state === ServerState.STARTED),
-                { placeHolder: 'Select runtime/server to restart' }
+                Array
+                  .from(this.serversData.serverStatus.keys())
+                  .filter(item => this.serversData.serverStatus.get(item).state === ServerState.STARTED),
+                    { placeHolder: 'Select runtime/server to restart' }
             );
             if (!serverId) return null;
             context = this.serversData.serverStatus.get(serverId);
@@ -189,6 +190,23 @@ export class CommandHandler {
         }
     }
 
+    async createServer(): Promise<Protocol.Status> {
+        this.assertServersDataExists();
+        const download: string = await vscode.window.showQuickPick(['Yes, please download', 'No, use runtime on my disk'],
+            { placeHolder: 'Do you want to download a runtime?', ignoreFocusOut: true });
+        if (download.startsWith('Yes')) {
+            return this.downloadRuntime();
+        } else if (download.startsWith('No')) {
+            return this.addLocation();
+        }
+    }
+
+    private assertServersDataExists() {
+      if (!this.serversData) {
+        throw new Error('Runtime Server Protocol (RSP) Server is starting, please try again later.');
+      }
+    }
+
     async addLocation(): Promise<Protocol.Status> {
         if (this.serversData) {
             return this.serversData.addLocation();
@@ -200,12 +218,12 @@ export class CommandHandler {
     async downloadRuntime(): Promise<Protocol.Status> {
         const rtId: string = await this.promptDownloadableRuntimes();
         if (!rtId) {
-            return Promise.reject(`Canceled by user`);
+            return Promise.reject('Canceled by user');
         }
         let response1: Protocol.WorkflowResponse = await this.initEmptyDownloadRuntimeRequest(rtId);
         while (true) {
             if (StatusSeverity.isOk(response1.status)) {
-                vscode.window.showInformationMessage(`Your download has begun.`);
+                vscode.window.showInformationMessage('Your download has begun.');
                 return Promise.resolve(response1.status);
             } else if (StatusSeverity.isError(response1.status)
                         || StatusSeverity.isCancel(response1.status)) {
@@ -231,30 +249,30 @@ export class CommandHandler {
     }
 
     private async promptUser(item: Protocol.WorkflowResponseItem, workflowMap: {}): Promise<boolean> {
-      const prompt = item.label + (item.content ? `\n${item.content}` : ``);
-      let userInput: any = null;
-      if (item.responseType === 'none') {
-        userInput = await vscode.window.showQuickPick(['continue...'], { placeHolder: prompt, ignoreFocusOut: true });
-      } else {
-        if (item.responseType === 'bool') {
-          const oneProp = await vscode.window.showQuickPick(['true', 'false'], { placeHolder: prompt, ignoreFocusOut: true });
-          userInput = (oneProp === 'true');
+        const prompt = item.label + (item.content ? `\n${item.content}` : '');
+        let userInput: any = null;
+        if (item.responseType === 'none') {
+            userInput = await vscode.window.showQuickPick(['continue...'], { placeHolder: prompt, ignoreFocusOut: true });
         } else {
-          const oneProp = await vscode.window.showInputBox({ prompt: prompt, ignoreFocusOut: true });
-          if (item.responseType === 'int') {
-            userInput = +oneProp;
-          } else {
-            userInput = oneProp;
-          }
+            if (item.responseType === 'bool') {
+                const oneProp = await vscode.window.showQuickPick(['true', 'false'], { placeHolder: prompt, ignoreFocusOut: true });
+                userInput = (oneProp === 'true');
+            } else {
+                const oneProp = await vscode.window.showInputBox({ prompt: prompt, ignoreFocusOut: true });
+                if (item.responseType === 'int') {
+                    userInput = +oneProp;
+                } else {
+                    userInput = oneProp;
+                }
+            }
         }
-      }
 
-      workflowMap[item.id] = userInput;
-      return userInput === undefined;
-  }
+        workflowMap[item.id] = userInput;
+        return userInput === undefined;
+    }
 
     private isMultilineText(content: string) {
-      return content && content.indexOf(`\n`) !== -1;
+      return content && content.indexOf('\n') !== -1;
     }
 
     async initDownloadRuntimeRequest(id: string, data1: {[index: string]: any}, reqId: number): Promise<Protocol.WorkflowResponse> {
@@ -272,9 +290,9 @@ export class CommandHandler {
         requestId: null,
         downloadRuntimeId: id,
         data: {}
-    };
-    const resp: Promise<Protocol.WorkflowResponse> = this.client.downloadRuntime(req);
-    return resp;
+      };
+      const resp: Promise<Protocol.WorkflowResponse> = this.client.downloadRuntime(req);
+      return resp;
     }
 
     async promptDownloadableRuntimes(): Promise<string> {
@@ -289,10 +307,10 @@ export class CommandHandler {
         });
         const answer = await vscode.window.showQuickPick(newlist, { placeHolder: 'Please choose a runtime to download.' });
         console.log(`${answer} was chosen`);
-        if (answer) {
-          return answer.id;
-        } else {
+        if (!answer) {
           return null;
+        } else {
+          return answer.id;
         }
     }
 
