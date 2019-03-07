@@ -265,7 +265,7 @@ export class CommandHandler {
                 const oneProp = await vscode.window.showQuickPick(['True', 'False'], { placeHolder: prompt, ignoreFocusOut: true });
                 userInput = (oneProp === 'True');
             } else {
-                const oneProp = await vscode.window.showInputBox({ prompt: prompt, ignoreFocusOut: true });
+                const oneProp = await vscode.window.showInputBox({ prompt: prompt, ignoreFocusOut: true, password: item.responseSecret });
                 if (item.responseType === 'int') {
                     userInput = +oneProp;
                 } else {
