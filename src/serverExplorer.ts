@@ -232,7 +232,8 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
           for (const key in serverAttribute.required.attributes) {
             if (key !== 'server.home.dir' && key !== 'server.home.file') {
                 const attribute = serverAttribute.required.attributes[key];
-                const value = await window.showInputBox({prompt: attribute.description, value: attribute.defaultVal});
+                const value = await window.showInputBox({prompt: attribute.description, 
+                    value: attribute.defaultVal, password: attribute.secret});
                 if (value) {
                     attributes[key] = value;
                 }
@@ -255,7 +256,8 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
                 for (const key in serverAttribute.optional.attributes) {
                     if (key !== 'server.home.dir' && key !== 'server.home.file') {
                         const attribute = serverAttribute.optional.attributes[key];
-                        const val = await window.showInputBox({prompt: attribute.description, value: attribute.defaultVal});
+                        const val = await window.showInputBox({prompt: attribute.description, 
+                            value: attribute.defaultVal, password: attribute.secret});
                         if (val) {
                             attributes[key] = val;
                         }

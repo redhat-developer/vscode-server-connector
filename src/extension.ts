@@ -29,7 +29,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Extens
 
     client.getIncomingHandler().onPromptString(event => {
         return new Promise<string>((resolve, reject) => {
-            vscode.window.showInputBox({prompt: event.prompt, password: true})
+            vscode.window.showInputBox({prompt: event.prompt, password: event.secret})
             .then(value => {
                 if (value && value.trim().length) {
                     resolve(value);
