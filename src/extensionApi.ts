@@ -7,6 +7,12 @@ export interface ExtensionAPI {
     readonly serverInfo: ServerInfo;
 }
 
+enum ResponseType {
+  NONE = 'none',
+  BOOL = 'bool',
+  INT = 'int'
+}
+
 export class CommandHandler {
 
     private client: RSPClient;
@@ -216,7 +222,7 @@ export class CommandHandler {
     }
 
     async downloadRuntime(): Promise<Protocol.Status> {
-        const rtId: string = await this.promptDownloadableRuntimes();
+      const rtId: string = await this.promptDownloadableRuntimes();
         if (!rtId) {
             return Promise.reject('Canceled by user');
         }
@@ -233,14 +239,20 @@ export class CommandHandler {
 
             // not complete, not an error.
             const workflowMap = {};
+            let topic = '';
             for (const item of response1.items ) {
                 if (this.isMultilineText(item.content) ) {
                     await new EditorUtil().showEditor(item.id, item.content);
                 }
 
-                const canceled: boolean = await this.promptUser(item, workflowMap);
-                if (canceled) {
-                  return Promise.reject('Canceled by user');
+                if (item.responseType === ResponseType.NONE) {
+                  topic = item.label.replace(':', ' -');
+                } else {
+                  const prompt = `${topic} ${item.label} ${ item.content ? item.content : '' }`;
+                  const canceled: boolean = await this.promptUser(prompt, item, workflowMap);
+                  if (canceled) {
+                    return Promise.reject('Canceled by user');
+                  }
                 }
             }
             // Now we have a data map
@@ -248,22 +260,17 @@ export class CommandHandler {
         }
     }
 
-    private async promptUser(item: Protocol.WorkflowResponseItem, workflowMap: {}): Promise<boolean> {
-        const prompt = item.label + (item.content ? `\n${item.content}` : '');
+    private async promptUser(prompt: string, item: Protocol.WorkflowResponseItem, workflowMap: {}): Promise<boolean> {
         let userInput: any = null;
-        if (item.responseType === 'none') {
-            userInput = await vscode.window.showQuickPick(['continue...'], { placeHolder: prompt, ignoreFocusOut: true });
+        if (item.responseType === ResponseType.BOOL) {
+            const oneProp = await vscode.window.showQuickPick(['true', 'false'], { placeHolder: prompt, ignoreFocusOut: true });
+            userInput = (oneProp === 'true');
         } else {
-            if (item.responseType === 'bool') {
-                const oneProp = await vscode.window.showQuickPick(['true', 'false'], { placeHolder: prompt, ignoreFocusOut: true });
-                userInput = (oneProp === 'true');
+            const oneProp = await vscode.window.showInputBox({ prompt: prompt, ignoreFocusOut: true });
+            if (item.responseType === ResponseType.INT) {
+                userInput = +oneProp;
             } else {
-                const oneProp = await vscode.window.showInputBox({ prompt: prompt, ignoreFocusOut: true });
-                if (item.responseType === 'int') {
-                    userInput = +oneProp;
-                } else {
-                    userInput = oneProp;
-                }
+                userInput = oneProp;
             }
         }
 
