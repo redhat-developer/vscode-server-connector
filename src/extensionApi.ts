@@ -100,7 +100,7 @@ export class CommandHandler {
     async showServerOutput(context?: Protocol.ServerState): Promise<void> {
         if (context === undefined) {
             const serverId = await vscode.window.showQuickPick(Array.from(this.serversData.serverStatus.keys()),
-                { placeHolder: 'Select runtime/server to show ouput channel' });
+                { placeHolder: 'Select runtime/server to show output channel' });
             if (!serverId) return null;
             context = this.serversData.serverStatus.get(serverId);
         }
