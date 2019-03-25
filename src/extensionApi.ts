@@ -40,7 +40,7 @@ export class CommandHandler {
 
         const serverState = this.serversData.serverStatus.get(selectedServerId).state;
         if (serverState === ServerState.STOPPED || serverState === ServerState.UNKNOWN) {
-            const response = await this.client.startServerAsync({
+            const response = await this.client.getOutgoingHandler().startServerAsync({
                 params: {
                     serverType: selectedServerType.id,
                     id: selectedServerId,
@@ -69,7 +69,7 @@ export class CommandHandler {
 
         const stateObj: Protocol.ServerState = this.serversData.serverStatus.get(serverId);
         if (stateObj.state === ServerState.STARTED) {
-            const status = await this.client.stopServerAsync({ id: serverId, force: true });
+            const status = await this.client.getOutgoingHandler().stopServerAsync({ id: serverId, force: true });
             if (!StatusSeverity.isOk(status)) {
                 return Promise.reject(status.message);
             }
@@ -94,7 +94,7 @@ export class CommandHandler {
 
         const status1: Protocol.ServerState = this.serversData.serverStatus.get(serverId);
         if (status1.state === ServerState.STOPPED) {
-            const status = await this.client.deleteServerAsync({ id: serverId, type: selectedServerType });
+            const status = await this.client.getOutgoingHandler().deleteServer({ id: serverId, type: selectedServerType });
             if (!StatusSeverity.isOk(status)) {
                 return Promise.reject(status.message);
             }
@@ -135,8 +135,8 @@ export class CommandHandler {
             }
         };
 
-        await this.client.stopServerSync({ id: context.server.id, force: true });
-        await this.client.startServerAsync(params);
+        await this.client.getOutgoingSyncHandler().stopServerSync({ id: context.server.id, force: true });
+        await this.client.getOutgoingHandler().startServerAsync(params);
     }
 
     async addDeployment(context?: Protocol.ServerState): Promise<Protocol.Status> {
@@ -288,7 +288,7 @@ export class CommandHandler {
         downloadRuntimeId: id,
         data: data1
       };
-      const resp: Promise<Protocol.WorkflowResponse> = this.client.downloadRuntime(req, 20000);
+      const resp: Promise<Protocol.WorkflowResponse> = this.client.getOutgoingHandler().downloadRuntime(req, 20000);
       return resp;
     }
 
@@ -298,12 +298,12 @@ export class CommandHandler {
         downloadRuntimeId: id,
         data: {}
       };
-      const resp: Promise<Protocol.WorkflowResponse> = this.client.downloadRuntime(req);
+      const resp: Promise<Protocol.WorkflowResponse> = this.client.getOutgoingHandler().downloadRuntime(req);
       return resp;
     }
 
     async promptDownloadableRuntimes(): Promise<string> {
-        const newlist = this.client.listDownloadRuntimes(5000)
+        const newlist = this.client.getOutgoingHandler().listDownloadableRuntimes(5000)
           .then(async (list: Protocol.ListDownloadRuntimeResponse) => {
             const rts: Protocol.DownloadRuntimeDescription[] = list.runtimes;
             const newlist: any[] = [];
@@ -322,19 +322,19 @@ export class CommandHandler {
     }
 
     async activate(): Promise<void> {
-        this.client.onServerAdded(handle => {
+        this.client.getIncomingHandler().onServerAdded(handle => {
             this.serversData.insertServer(handle);
         });
 
-        this.client.onServerRemoved(handle => {
+        this.client.getIncomingHandler().onServerRemoved(handle => {
             this.serversData.removeServer(handle);
         });
 
-        this.client.onServerStateChange(event => {
+        this.client.getIncomingHandler().onServerStateChanged(event => {
             this.serversData.updateServer(event);
         });
 
-        this.client.onServerOutputAppended(event => {
+        this.client.getIncomingHandler().onServerProcessOutputAppended(event => {
             this.serversData.addServerOutput(event);
         });
     }

@@ -53,11 +53,11 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
         this.publishStateEnum.set(5, '- Publish Required');
         this.publishStateEnum.set(6, 'Unknown');
 
-        client.getServerHandles().then(servers => servers.forEach(async server => this.insertServer(server)));
+        client.getOutgoingHandler().getServerHandles().then(servers => servers.forEach(async server => this.insertServer(server)));
     }
 
     async insertServer(event: Protocol.ServerHandle) {
-        const state = await this.client.getServerState(event);
+        const state = await this.client.getOutgoingHandler().getServerState(event);
         this.serverStatus.set(state.server.id, state);
         this.refresh();
     }
@@ -117,7 +117,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
                 // const filePath : string = fileUrl(file[0].fsPath);
                 const deployableRef: Protocol.DeployableReference = { label: file[0].fsPath,  path: file[0].fsPath};
                 const req: Protocol.ModifyDeployableRequest = { server: server, deployable : deployableRef};
-                const status = await this.client.addDeployable(req);
+                const status = await this.client.getOutgoingHandler().addDeployable(req);
                 if (!StatusSeverity.isOk(status)) {
                     return Promise.reject(status.message);
                 }
@@ -128,7 +128,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
 
     async removeDeployment(server: Protocol.ServerHandle, deployableRef: Protocol.DeployableReference): Promise<Protocol.Status> {
         const req: Protocol.ModifyDeployableRequest = { server: server, deployable : deployableRef};
-        const status = await this.client.removeDeployable(req);
+        const status = await this.client.getOutgoingHandler().removeDeployable(req);
         if (!StatusSeverity.isOk(status)) {
             return Promise.reject(status.message);
         }
@@ -137,7 +137,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
 
     async publish(server: Protocol.ServerHandle, type: number): Promise<Protocol.Status> {
         const req: Protocol.PublishServerRequest = { server: server, kind : type};
-        const status = await this.client.publish(req);
+        const status = await this.client.getOutgoingHandler().publish(req);
         if (!StatusSeverity.isOk(status)) {
             return Promise.reject(status.message);
         }
@@ -155,7 +155,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
 
         let serverBeans: Protocol.ServerBean[];
         if (folders && folders.length === 1) {
-            serverBeans = await this.client.findServerBeans(folders[0].fsPath);
+            serverBeans = await this.client.getOutgoingHandler().findServerBeans({ filepath: folders[0].fsPath });
         } else {
             return {
                 severity: 8,
@@ -167,25 +167,28 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
             };
         }
 
-        if (serverBeans && serverBeans.length > 0 && serverBeans[0].typeCategory && serverBeans[0].typeCategory !== 'UNKNOWN') {
-            server.bean = serverBeans[0];
-        } else {
+        if (!serverBeans
+          || serverBeans.length === 0
+          || !serverBeans[0].typeCategory
+          || serverBeans[0].typeCategory === 'UNKNOWN') {
             throw new Error('Cannot detect server in selected location!');
         }
+        server.bean = serverBeans[0];
         server.name = await this.getServerName();
         const attrs = await this.getRequiredParameters(server.bean);
         await this.getOptionalParameters(server.bean, attrs);
-        return await this.createServerAsync(server.name, server.bean, attrs);
+        return this.createServer(server.bean, server.name, attrs);
     }
 
-    private async createServerAsync(name: string, bean: Protocol.ServerBean, attributes: object = {}): Promise<Protocol.Status> {
-        if (name && bean) {
-            const response = await this.client.createServerAsync(bean, name, attributes);
-            if (!StatusSeverity.isOk(response.status)) {
-                throw new Error(response.status.message);
-            }
-            return response.status;
-        }
+    private async createServer(bean: Protocol.ServerBean, name: string, attributes: any = {}): Promise<Protocol.Status> {
+      if (!bean || !name) {
+        throw new Error('Couldn\'t create server: no type or name provided.');
+      }
+      const response = await this.client.getServerCreation().createServerFromBeanAsync(bean, name, attributes);
+      if (!StatusSeverity.isOk(response.status)) {
+          throw new Error(response.status.message);
+      }
+      return response.status;
     }
 
     /**
@@ -216,14 +219,17 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
         if (this.serverAttributes.has(bean.serverAdapterTypeId)) {
             serverAttribute = this.serverAttributes.get(bean.serverAdapterTypeId);
         } else {
-            const req = await this.client.getServerTypeRequiredAttributes({id: bean.serverAdapterTypeId, visibleName: '', description: ''});
-            const opt = await this.client.getServerTypeOptionalAttributes({id: bean.serverAdapterTypeId, visibleName: '', description: ''});
+            const req = await this.client.getOutgoingHandler().getRequiredAttributes({id: bean.serverAdapterTypeId, visibleName: '', description: ''});
+            const opt = await this.client.getOutgoingHandler().getOptionalAttributes({id: bean.serverAdapterTypeId, visibleName: '', description: ''});
             serverAttribute = { required: req, optional: opt };
 
             this.serverAttributes.set(bean.serverAdapterTypeId, serverAttribute);
         }
         const attributes = {};
-        for (const key in serverAttribute.required.attributes) {
+        if (serverAttribute.optional
+              && serverAttribute.optional.attributes
+              && Object.keys(serverAttribute.optional.attributes).length > 0) {
+          for (const key in serverAttribute.required.attributes) {
             if (key !== 'server.home.dir' && key !== 'server.home.file') {
                 const attribute = serverAttribute.required.attributes[key];
                 const value = await window.showInputBox({prompt: attribute.description, value: attribute.defaultVal});
@@ -231,6 +237,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
                     attributes[key] = value;
                 }
             }
+          }
         }
         return attributes;
     }
@@ -240,7 +247,9 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
      */
     private async getOptionalParameters(bean: Protocol.ServerBean, attributes: object): Promise<object> {
         const serverAttribute = this.serverAttributes.get(bean.serverAdapterTypeId);
-        if (serverAttribute.optional && serverAttribute.optional.attributes) {
+        if (serverAttribute.optional
+              && serverAttribute.optional.attributes
+              && Object.keys(serverAttribute.optional.attributes).length > 0) {
             const answer = await window.showQuickPick(['No', 'Yes'], {placeHolder: 'Do you want to edit optional parameters ?'});
             if (answer === 'Yes') {
                 for (const key in serverAttribute.optional.attributes) {
