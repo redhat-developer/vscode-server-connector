@@ -46,15 +46,15 @@ function checkJavaRuntime(): Promise<string> {
         if (javaHome ) {
             javaHome = expandHomeDir(javaHome);
             if (!pathExists.sync(javaHome)) {
-                rejectWithDownloadUrl(reject, source + ' points to a missing folder');
+                rejectWithDownloadUrl(reject, `${source} points to a missing folder`);
             }
             if (!pathExists.sync(path.resolve(javaHome, 'bin', JAVAC_FILENAME))) {
-                rejectWithDownloadUrl(reject, source + ' does not point to a JDK.');
+                rejectWithDownloadUrl(reject, `${source} does not point to a JDK.`);
             }
             return resolve(javaHome);
         }
         // No settings, let's try to detect as last resort.
-        findJavaHome(function(err, home) {
+        findJavaHome(function(err: any, home: string | PromiseLike<string>) {
                 if (err) {
                     rejectWithDownloadUrl(reject, 'Java runtime could not be located');
                 } else {
