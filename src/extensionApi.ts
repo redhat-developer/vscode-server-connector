@@ -168,7 +168,7 @@ export class CommandHandler {
                     return this.serversData.removeDeployment(serverHandle, entry.reference);
                 }
             }
-            return Promise.reject('Cannot find deployment ' + deploymentId);
+            return Promise.reject(`Cannot find deployment ${deploymentId}`);
         } else {
             return Promise.reject('Runtime Server Protocol (RSP) Server is starting, please try again later.');
         }
@@ -223,7 +223,7 @@ export class CommandHandler {
         let response1: Protocol.WorkflowResponse = await this.initEmptyDownloadRuntimeRequest(rtId);
         while (true) {
             if (StatusSeverity.isOk(response1.status)) {
-                vscode.window.showInformationMessage('Your download has begun.');
+                vscode.window.showInformationMessage('Your download has started.');
                 return Promise.resolve(response1.status);
             } else if (StatusSeverity.isError(response1.status)
                         || StatusSeverity.isCancel(response1.status)) {
@@ -252,11 +252,11 @@ export class CommandHandler {
         const prompt = item.label + (item.content ? `\n${item.content}` : '');
         let userInput: any = null;
         if (item.responseType === 'none') {
-            userInput = await vscode.window.showQuickPick(['continue...'], { placeHolder: prompt, ignoreFocusOut: true });
+            userInput = await vscode.window.showQuickPick(['Continue...'], { placeHolder: prompt, ignoreFocusOut: true });
         } else {
             if (item.responseType === 'bool') {
-                const oneProp = await vscode.window.showQuickPick(['true', 'false'], { placeHolder: prompt, ignoreFocusOut: true });
-                userInput = (oneProp === 'true');
+                const oneProp = await vscode.window.showQuickPick(['True', 'False'], { placeHolder: prompt, ignoreFocusOut: true });
+                userInput = (oneProp === 'True');
             } else {
                 const oneProp = await vscode.window.showInputBox({ prompt: prompt, ignoreFocusOut: true });
                 if (item.responseType === 'int') {
