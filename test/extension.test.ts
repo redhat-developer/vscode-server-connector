@@ -9,10 +9,11 @@ import * as vscode from 'vscode';
 import * as chai from 'chai';
 import * as sinonChai from 'sinon-chai';
 import * as sinon from 'sinon';
-import { RSPClient, Protocol } from 'rsp-client';
+import { Protocol } from 'rsp-client';
 import * as server from '../src/server';
 import { activate, deactivate } from '../src/extension';
 import { CommandHandler } from '../src/extensionApi';
+import { Stubs } from './stubs';
 
 const expect = chai.expect;
 chai.use(sinonChai);
@@ -21,6 +22,7 @@ chai.use(sinonChai);
 suite('Extension Tests', function() {
     let sandbox: sinon.SinonSandbox;
     let startStub;
+    let stubs: Stubs;
 
     class DummyMemento implements vscode.Memento {
         get<T>(key: string): Promise<T|undefined> {
@@ -62,18 +64,20 @@ suite('Extension Tests', function() {
 
     setup(() => {
         sandbox = sinon.createSandbox();
-        const capab: Protocol.ServerCapabilitiesResponse = {
-            serverCapabilities: {
-            },
-            clientRegistrationStatus: undefined
-        };
+
+        stubs = new Stubs(sandbox);
 
         startStub = sandbox.stub(server, 'start').resolves(serverdata);
-        sandbox.stub(RSPClient.prototype, 'connect').resolves();
-        sandbox.stub(RSPClient.prototype, 'getServerHandles').resolves([]);
-        sandbox.stub(RSPClient.prototype, 'registerClientCapabilities').resolves(capab);
-        sandbox.stub(RSPClient.prototype, 'onStringPrompt').resolves();
-    });
+
+        stubs.outgoing.getServerHandles.resolves([]);
+        const capab: Protocol.ServerCapabilitiesResponse = {
+          serverCapabilities: {
+          },
+          clientRegistrationStatus: undefined
+        };
+        stubs.outgoing.registerClientCapabilities.resolves(capab);
+        stubs.incoming.onPromptString.resolves();
+      });
 
     teardown(() => {
         sandbox.restore();
@@ -118,8 +122,8 @@ suite('Extension Tests', function() {
     });
 
     test('server has been stopped on deactivation', () => {
-        const shutdownServerStub = sandbox.stub(RSPClient.prototype, 'shutdownServer');
-        deactivate();
-        expect(shutdownServerStub).calledOnce;
+      deactivate();
+
+      expect(stubs.clientStub.shutdownServer).calledOnce;
     });
 });

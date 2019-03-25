@@ -16,6 +16,8 @@ let serversData: ServersViewTreeDataProvider;
 const rspserverstdout = vscode.window.createOutputChannel('RSP Server (stdout)');
 const rspserverstderr = vscode.window.createOutputChannel('RSP Server (stderr)');
 
+const PROTOCOL_VERSION = '0.14.0';
+
 export async function activate(context: vscode.ExtensionContext): Promise<ExtensionAPI> {
     const serverInfo = await server.start(onStdoutData, onStderrData);
 
@@ -25,7 +27,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Extens
     client = new RSPClient('localhost', serverInfo.port);
     await client.connect();
 
-    client.onStringPrompt(event => {
+    client.getIncomingHandler().onPromptString(event => {
         return new Promise<string>((resolve, reject) => {
             vscode.window.showInputBox({prompt: event.prompt, password: true})
             .then(value => {
@@ -38,7 +40,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Extens
         });
     });
 
-    client.registerClientCapabilities({map: { 'protocol.version': '0.13.0', 'prompt.string': 'true'}});
+    client.getOutgoingHandler().registerClientCapabilities({map: { 'protocol.version': PROTOCOL_VERSION, 'prompt.string': 'true'}});
 
     serversData = new ServersViewTreeDataProvider(client);
     vscode.window.registerTreeDataProvider('servers', serversData);
@@ -88,7 +90,7 @@ function stopServer(val: Protocol.ServerState) {
   if (stateNum !== ServerState.UNKNOWN
     && stateNum !== ServerState.STOPPED
     && stateNum !== ServerState.STOPPING) {
-    client.stopServerAsync({ id: oneStat.server.id, force: true });
+    client.getOutgoingHandler().stopServerAsync({ id: oneStat.server.id, force: true });
   }
 }
 

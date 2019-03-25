@@ -8,9 +8,10 @@
 import * as sinon from 'sinon';
 import * as sinonChai from 'sinon-chai';
 import { ServersViewTreeDataProvider } from '../src/serverExplorer';
-import { RSPClient, Protocol } from 'rsp-client';
+import { Protocol } from 'rsp-client';
 import { EventEmitter, window, Uri, OutputChannel, TreeItemCollapsibleState } from 'vscode';
 import * as path from 'path';
+import { Stubs } from './stubs';
 
 const expect = chai.expect;
 chai.use(sinonChai);
@@ -19,7 +20,7 @@ suite('Server explorer', () => {
 
     let sandbox: sinon.SinonSandbox;
     let getStub: sinon.SinonStub;
-    const clientStub: RSPClient = new RSPClient('somehost', 8080);
+    let stubs: Stubs;
     let serverExplorer: ServersViewTreeDataProvider;
 
     const serverType: Protocol.ServerType = {
@@ -59,10 +60,12 @@ suite('Server explorer', () => {
 
     setup(() => {
         sandbox = sinon.createSandbox();
-        sandbox.stub(clientStub, 'connect').resolves();
-        sandbox.stub(clientStub, 'getServerHandles').resolves([]);
-        sandbox.stub(clientStub, 'getServerState').resolves(serverState);
-        serverExplorer = new ServersViewTreeDataProvider(clientStub);
+
+        stubs = new Stubs(sandbox);
+        stubs.outgoing.getServerHandles.resolves([]);
+        stubs.outgoing.getServerState.resolves(serverState);
+
+        serverExplorer = new ServersViewTreeDataProvider(stubs.client);
         getStub = sandbox.stub(serverExplorer.serverOutputChannels, 'get').returns(fakeChannel);
     });
 
@@ -251,23 +254,31 @@ suite('Server explorer', () => {
             invalidKeys: []
         };
 
-        const discoveryPath = { fsPath: 'path/path' };
+        const userSelectedPath = { fsPath: 'path/path' };
+
+        const discoveryPath: Protocol.DiscoveryPath = {
+          filepath: userSelectedPath.fsPath
+        };
 
         setup(() => {
-            findServerStub = sandbox.stub(clientStub, 'findServerBeans').resolves([serverBean]);
-            showOpenDialogStub = sandbox.stub(window, 'showOpenDialog').resolves([discoveryPath]);
+            findServerStub = stubs.outgoing.findServerBeans.resolves([serverBean]);
+
+            showOpenDialogStub = sandbox.stub(window, 'showOpenDialog').resolves([userSelectedPath]);
+            sandbox.stub(window, 'showQuickPick').resolves();
         });
 
         test('should detect and create the server in a given location', async () => {
             const inputBoxStub = sandbox.stub(window, 'showInputBox');
             inputBoxStub.onFirstCall().resolves('eap');
             inputBoxStub.onSecondCall().resolves('No');
-            const createServerStub = sandbox.stub(clientStub, 'createServerAsync').resolves(createResponse);
-            sandbox.stub(clientStub, 'getServerTypeRequiredAttributes').resolves(noAttributes);
-            sandbox.stub(clientStub, 'getServerTypeOptionalAttributes').resolves(noAttributes);
+
+            const createServerStub = stubs.serverCreation.createServerFromBeanAsync.resolves(createResponse);
+            stubs.outgoing.getOptionalAttributes.resolves(noAttributes);
+            stubs.outgoing.getRequiredAttributes.resolves(noAttributes);
+
             await serverExplorer.addLocation();
 
-            expect(findServerStub).calledOnceWith(discoveryPath.fsPath);
+            expect(findServerStub).calledOnceWith(discoveryPath);
             expect(showOpenDialogStub).calledOnce;
             expect(createServerStub).calledOnceWith(serverBean, 'eap');
         });

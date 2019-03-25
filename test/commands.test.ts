@@ -8,15 +8,16 @@ import * as sinon from 'sinon';
 import * as sinonChai from 'sinon-chai';
 import * as vscode from 'vscode';
 import { ServersViewTreeDataProvider } from '../src/serverExplorer';
-import { RSPClient, ServerState, Protocol } from 'rsp-client';
+import { ServerState, Protocol } from 'rsp-client';
 import { CommandHandler } from '../src/extensionApi';
+import { Stubs } from './stubs';
 
 const expect = chai.expect;
 chai.use(sinonChai);
 
 suite('Command Handler', () => {
     let sandbox: sinon.SinonSandbox;
-    let client: RSPClient;
+    let stubs: Stubs;
     let handler: CommandHandler;
     let serverExplorer: ServersViewTreeDataProvider;
 
@@ -66,30 +67,30 @@ suite('Command Handler', () => {
 
     setup(() => {
         sandbox = sinon.createSandbox();
-        client = new RSPClient('localhost', 27155);
-        sandbox.stub(client, 'connect').resolves();
-        sandbox.stub(client, 'getServerHandles').resolves([]);
-        serverExplorer = new ServersViewTreeDataProvider(client);
-        handler = new CommandHandler(serverExplorer, client);
+
+        stubs = new Stubs(sandbox);
+        stubs.outgoing.getServerHandles.resolves([serverHandle]);
+        serverExplorer = new ServersViewTreeDataProvider(stubs.client);
+        handler = new CommandHandler(serverExplorer, stubs.client);
         sandbox.stub(serverExplorer);
-    });
+      });
 
     teardown(() => {
         sandbox.restore();
     });
 
     test('activate registers event listeners', async () => {
-        sandbox.spy(client, 'onServerAdded');
-        sandbox.spy(client, 'onServerRemoved');
-        sandbox.spy(client, 'onServerStateChange');
-        sandbox.spy(client, 'onServerOutputAppended');
+        sinon.spy(stubs.incoming.onServerAdded);
+        sinon.spy(stubs.incoming.onServerRemoved);
+        sinon.spy(stubs.incoming.onServerStateChanged);
+        sinon.spy(stubs.incoming.onServerProcessOutputAppended);
 
-        await handler.activate();
+      await handler.activate();
 
-        expect(client.onServerAdded).calledOnce;
-        expect(client.onServerRemoved).calledOnce;
-        expect(client.onServerStateChange).calledOnce;
-        expect(client.onServerOutputAppended).calledOnce;
+        expect(stubs.incoming.onServerAdded).calledOnce;
+        expect(stubs.incoming.onServerRemoved).calledOnce;
+        expect(stubs.incoming.onServerStateChanged).calledOnce;
+        expect(stubs.incoming.onServerProcessOutputAppended).calledOnce;
     });
 
     suite('startServer', () => {
@@ -110,8 +111,9 @@ suite('Command Handler', () => {
 
         setup(() => {
             statusStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverState);
-            startStub = sandbox.stub(client, 'startServerAsync').resolves(response);
-        });
+            startStub = sandbox.stub().resolves(response);
+            stubs.outgoing.startServerAsync = startStub;
+          });
 
         test('works with injected context', async () => {
             const result = await handler.startServer('run', serverState);
@@ -184,7 +186,7 @@ suite('Command Handler', () => {
             };
 
             statusStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverStateInternal);
-            stopStub = sandbox.stub(client, 'stopServerAsync').resolves(status);
+            stopStub = stubs.outgoing.stopServerAsync.resolves(status);
             sandbox.stub(vscode.window, 'showQuickPick').resolves('id');
         });
 
@@ -246,7 +248,7 @@ suite('Command Handler', () => {
             };
 
             statusStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverStateInternal);
-            removeStub = sandbox.stub(client, 'deleteServerAsync').resolves(status);
+            removeStub = stubs.outgoing.deleteServer.resolves(status);
             sandbox.stub(vscode.window, 'showQuickPick').resolves('id');
         });
 
@@ -301,8 +303,8 @@ suite('Command Handler', () => {
 
         setup(() => {
             sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverState);
-            startStub = sandbox.stub(client, 'startServerAsync').resolves(status);
-            stopStub = sandbox.stub(client, 'stopServerSync').resolves(status);
+            startStub = stubs.outgoing.startServerAsync.resolves(status);
+            stopStub = stubs.outgoingSync.stopServerSync.resolves(status);
             sandbox.stub(vscode.window, 'showQuickPick').resolves('id');
         });
 
@@ -356,7 +358,7 @@ suite('Command Handler', () => {
         });
 
         test('errors if server explorer is not initialized', async () => {
-            const nullHandler = new CommandHandler(null, client);
+            const nullHandler = new CommandHandler(null, stubs.client);
 
             try {
                 await nullHandler.addLocation();
