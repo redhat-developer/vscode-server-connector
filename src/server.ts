@@ -1,3 +1,10 @@
+/*-----------------------------------------------------------------------------------------------
+ *  Copyright (c) Red Hat, Inc. All rights reserved.
+ *  Licensed under the EPL v2.0 License. See LICENSE file in the project root for license information.
+ *-----------------------------------------------------------------------------------------------*/
+
+'use strict';
+
 import * as requirements from './requirements';
 import * as vscode from 'vscode';
 import * as cp from 'child_process';
