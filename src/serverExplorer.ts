@@ -153,25 +153,26 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
             openLabel: 'Select desired server location'
         });
 
-        let serverBeans: Protocol.ServerBean[];
-        if (folders && folders.length === 1) {
-            serverBeans = await this.client.getOutgoingHandler().findServerBeans({ filepath: folders[0].fsPath });
-        } else {
-            return {
+        if (!folders
+          || folders.length === 0) {
+            return Promise.reject({
                 severity: 8,
                 code: 0,
                 trace: ``,
                 plugin: ``,
                 ok: false,
                 message: `Canceled by user`
-            };
+            });
         }
+
+        const serverBeans: Protocol.ServerBean[] =
+          await this.client.getOutgoingHandler().findServerBeans({ filepath: folders[0].fsPath });
 
         if (!serverBeans
           || serverBeans.length === 0
           || !serverBeans[0].typeCategory
           || serverBeans[0].typeCategory === 'UNKNOWN') {
-            throw new Error('Cannot detect server in selected location!');
+            throw new Error(`Could not detect any server at ${folders[0].fsPath}!`);
         }
         server.bean = serverBeans[0];
         server.name = await this.getServerName();
@@ -232,7 +233,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
           for (const key in serverAttribute.required.attributes) {
             if (key !== 'server.home.dir' && key !== 'server.home.file') {
                 const attribute = serverAttribute.required.attributes[key];
-                const value = await window.showInputBox({prompt: attribute.description, 
+                const value = await window.showInputBox({prompt: attribute.description,
                     value: attribute.defaultVal, password: attribute.secret});
                 if (value) {
                     attributes[key] = value;
@@ -256,7 +257,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
                 for (const key in serverAttribute.optional.attributes) {
                     if (key !== 'server.home.dir' && key !== 'server.home.file') {
                         const attribute = serverAttribute.optional.attributes[key];
-                        const val = await window.showInputBox({prompt: attribute.description, 
+                        const val = await window.showInputBox({prompt: attribute.description,
                             value: attribute.defaultVal, password: attribute.secret});
                         if (val) {
                             attributes[key] = val;
