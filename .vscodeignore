@@ -15,3 +15,5 @@ images/vscode-adapters.gif
 test/**
 .travis.yml
 Jenkinsfile
+images/vscode-adapters.gif
+CONTRIBUTING.md
