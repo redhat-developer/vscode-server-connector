@@ -2,7 +2,7 @@
   "name": "vscode-server-connector",
   "displayName": "Server Connector",
   "description": "Connects vscode with different server adapters and runtimes",
-  "version": "0.13.1",
+  "version": "0.14.0",
   "license": "SEE LICENSE IN LICENSE",
   "publisher": "redhat",
   "author": "Red Hat",
@@ -245,7 +245,7 @@
     "path-exists": "^3.0.0",
     "pify": "4.0.0",
     "portfinder": "^1.0.17",
-    "rsp-client": "^0.13.2",
+    "rsp-client": "^0.14.0",
     "vscode-jsonrpc": "^4.0.0",
     "vscode-languageclient": "^5.1.0",
     "wait-on": "^3.0.1"
