@@ -233,7 +233,6 @@ export class CommandHandler {
         let response1: Protocol.WorkflowResponse = await this.initEmptyDownloadRuntimeRequest(rtId);
         while (true) {
             if (StatusSeverity.isOk(response1.status)) {
-                vscode.window.showInformationMessage('Your download has started.');
                 return Promise.resolve(response1.status);
             } else if (StatusSeverity.isError(response1.status)
                         || StatusSeverity.isCancel(response1.status)) {
@@ -243,7 +242,7 @@ export class CommandHandler {
 
             // not complete, not an error.
             const workflowMap = {};
-            for (const item of response1.items ) {
+            for (const item of response1.items) {
                 if (this.isMultilineText(item.content) ) {
                     await new EditorUtil().showEditor(item.id, item.content);
                 }

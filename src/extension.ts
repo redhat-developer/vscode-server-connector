@@ -9,6 +9,7 @@ import { ServersViewTreeDataProvider } from './serverExplorer';
 import * as server from './server';
 import { RSPClient, Protocol, ServerState } from 'rsp-client';
 import { ExtensionAPI, CommandHandler } from './extensionApi';
+import { JobProgress } from './jobprogress';
 
 let client: RSPClient;
 let serversData: ServersViewTreeDataProvider;
@@ -24,30 +25,37 @@ export async function activate(context: vscode.ExtensionContext): Promise<Extens
     if (!serverInfo || !serverInfo.port) {
       return Promise.reject('Failed to start the rsp server');
     }
-    client = new RSPClient('localhost', serverInfo.port);
-    await client.connect();
-
-    client.getIncomingHandler().onPromptString(event => {
-        return new Promise<string>((resolve, reject) => {
-            vscode.window.showInputBox({prompt: event.prompt, password: event.secret})
-            .then(value => {
-                if (value && value.trim().length) {
-                    resolve(value);
-                } else {
-                    reject(new Error('Cancelled by user'));
-                }
-            });
-        });
-    });
-
-    client.getOutgoingHandler().registerClientCapabilities({map: { 'protocol.version': PROTOCOL_VERSION, 'prompt.string': 'true'}});
-
+    client = await initClient(serverInfo);
     serversData = new ServersViewTreeDataProvider(client);
     vscode.window.registerTreeDataProvider('servers', serversData);
     const commandHandler = new CommandHandler(serversData, client);
     await commandHandler.activate();
     registerCommands(commandHandler, context);
     return { serverInfo };
+}
+
+async function initClient(serverInfo: server.ServerInfo): Promise<RSPClient> {
+  const client = new RSPClient('localhost', serverInfo.port);
+  await client.connect();
+
+  client.getIncomingHandler().onPromptString(event => {
+    return new Promise<string>((resolve, reject) => {
+      vscode.window.showInputBox({ prompt: event.prompt, password: true })
+        .then(value => {
+          if (value && value.trim().length) {
+            resolve(value);
+          } else {
+            reject(new Error('Cancelled by user'));
+          }
+        });
+      });
+    }
+  );
+
+  client.getOutgoingHandler().registerClientCapabilities({ map: { 'protocol.version': PROTOCOL_VERSION, 'prompt.string': 'true' } });
+  JobProgress.create(client);
+
+  return client;
 }
 
 function registerCommands(commandHandler: CommandHandler, context: vscode.ExtensionContext) {

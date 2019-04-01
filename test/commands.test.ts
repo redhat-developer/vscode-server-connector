@@ -85,7 +85,7 @@ suite('Command Handler', () => {
         sinon.spy(stubs.incoming.onServerStateChanged);
         sinon.spy(stubs.incoming.onServerProcessOutputAppended);
 
-      await handler.activate();
+        await handler.activate();
 
         expect(stubs.incoming.onServerAdded).calledOnce;
         expect(stubs.incoming.onServerRemoved).calledOnce;
