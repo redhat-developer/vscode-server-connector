@@ -3,7 +3,7 @@ const download = require('download');
 const decompress = require('decompress');
 
 const RSP_SERVER_JAR_NAME = 'org.jboss.tools.rsp.distribution-0.14.0.Final.zip';
-const RSP_SERVER_JAR_URL = `http://download.jboss.org/jbosstools/adapters/snapshots/${RSP_SERVER_JAR_NAME}`;
+const RSP_SERVER_JAR_URL = `http://download.jboss.org/jbosstools/adapters/snapshots/rsp-server/${RSP_SERVER_JAR_NAME}`;
 
 function clean() {
     return Promise.resolve()
