@@ -155,14 +155,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
 
         if (!folders
           || folders.length === 0) {
-            return Promise.reject({
-                severity: 8,
-                code: 0,
-                trace: ``,
-                plugin: ``,
-                ok: false,
-                message: `Canceled by user`
-            });
+            return;
         }
 
         const serverBeans: Protocol.ServerBean[] =
