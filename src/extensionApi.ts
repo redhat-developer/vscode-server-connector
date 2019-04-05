@@ -228,7 +228,7 @@ export class CommandHandler {
     async downloadRuntime(): Promise<Protocol.Status> {
         const rtId: string = await this.promptDownloadableRuntimes();
         if (!rtId) {
-            return Promise.reject('Canceled by user');
+            return;
         }
         let response1: Protocol.WorkflowResponse = await this.initEmptyDownloadRuntimeRequest(rtId);
         while (true) {
@@ -250,7 +250,7 @@ export class CommandHandler {
 
                 const canceled: boolean = await this.promptUser(item, workflowMap);
                 if (canceled) {
-                  return Promise.reject('Canceled by user');
+                  return;
                 }
             }
             // Now we have a data map
