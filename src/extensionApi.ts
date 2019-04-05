@@ -198,17 +198,20 @@ export class CommandHandler {
     }
 
     async createServer(): Promise<Protocol.Status> {
-        this.assertServersDataExists();
-        const download: string = await vscode.window.showQuickPick(['Yes, please download', 'No, use runtime on my disk'],
-            { placeHolder: 'Do you want to download a runtime?', ignoreFocusOut: true });
-        if (download.startsWith('Yes')) {
-            return this.downloadRuntime();
-        } else if (download.startsWith('No')) {
-            return this.addLocation();
-        }
-    }
+      this.assertServersDataExists();
+      const download: string = await vscode.window.showQuickPick(['Yes', 'No, use runtime on disk'],
+          { placeHolder: 'Download runtime?', ignoreFocusOut: true });
+      if (!download) {
+          return;
+      }
+      if (download.startsWith('Yes')) {
+          return this.downloadRuntime();
+      } else if (download.startsWith('No')) {
+          return this.addLocation();
+      }
+  }
 
-    private assertServersDataExists() {
+  private assertServersDataExists() {
       if (!this.serversData) {
         throw new Error('Runtime Server Protocol (RSP) Server is starting, please try again later.');
       }
