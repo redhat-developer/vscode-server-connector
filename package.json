@@ -245,7 +245,7 @@
     "path-exists": "^3.0.0",
     "pify": "4.0.0",
     "portfinder": "^1.0.17",
-    "rsp-client": "^0.14.0",
+    "rsp-client": "^0.14.1",
     "vscode-jsonrpc": "^4.0.0",
     "vscode-languageclient": "^5.1.0",
     "wait-on": "^3.0.1"
