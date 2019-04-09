@@ -83,7 +83,8 @@ export class CommandHandler {
         let serverId: string;
         let selectedServerType: Protocol.ServerType;
         if (context === undefined) {
-            serverId = await vscode.window.showQuickPick(Array.from(this.serversData.serverStatus.keys()),
+            serverId = await vscode.window.showQuickPick(
+                Array.from(this.serversData.serverStatus.keys()),
                 { placeHolder: 'Select runtime/server to remove' });
             if (!serverId) return null;
             selectedServerType = this.serversData.serverStatus.get(serverId).server.type;
@@ -92,16 +93,21 @@ export class CommandHandler {
             selectedServerType = context.server.type;
         }
 
+        const remove = await vscode.window.showWarningMessage(
+            `Remove server ${serverId}?`, { modal: true }, 'Yes');
+        return remove && this.removeStoppedServer(serverId, selectedServerType);
+    }
+
+    private async removeStoppedServer(serverId: string, serverType: Protocol.ServerType): Promise<Protocol.Status> {
         const status1: Protocol.ServerState = this.serversData.serverStatus.get(serverId);
-        if (status1.state === ServerState.STOPPED) {
-            const status = await this.client.getOutgoingHandler().deleteServer({ id: serverId, type: selectedServerType });
-            if (!StatusSeverity.isOk(status)) {
-                return Promise.reject(status.message);
-            }
-            return status;
-        } else {
-            return Promise.reject('Please stop the server before removing it.');
+        if (status1.state !== ServerState.STOPPED) {
+          return Promise.reject(`Stop server ${serverId} before removing it.`);
         }
+        const status = await this.client.getOutgoingHandler().deleteServer({ id: serverId, type: serverType });
+        if (!StatusSeverity.isOk(status)) {
+            return Promise.reject(status.message);
+        }
+        return status;
     }
 
     async showServerOutput(context?: Protocol.ServerState): Promise<void> {

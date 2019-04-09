@@ -253,6 +253,7 @@ suite('Command Handler', () => {
         });
 
         test('works with injected context', async () => {
+            sandbox.stub(vscode.window, 'showWarningMessage').resolves('Yes');
             const result = await handler.removeServer(serverState);
             const args: Protocol.ServerHandle = {
                 id: context.id,
@@ -264,6 +265,7 @@ suite('Command Handler', () => {
         });
 
         test('works without injected context', async () => {
+            sandbox.stub(vscode.window, 'showWarningMessage').resolves('Yes');
             const result = await handler.removeServer();
             const args: Protocol.ServerHandle = {
                 id: 'id',
@@ -275,17 +277,19 @@ suite('Command Handler', () => {
         });
 
         test('errors if the server is not stopped', async () => {
+            sandbox.stub(vscode.window, 'showWarningMessage').resolves('Yes');
             statusStub.returns(ServerState.STARTED);
 
             try {
-                await handler.removeServer(serverState);
-                expect.fail();
-            } catch (err) {
-                expect(err).equals('Please stop the server before removing it.');
-            }
-        });
+              await handler.removeServer(serverState);
+              expect.fail();
+          } catch (err) {
+              expect(err).to.include(serverState.server.id);
+          }
+      });
 
         test('throws any errors coming from the rsp client', async () => {
+            sandbox.stub(vscode.window, 'showWarningMessage').resolves('Yes');
             removeStub.resolves(errorStatus);
 
             try {
@@ -295,7 +299,12 @@ suite('Command Handler', () => {
                 expect(err).equals(errorStatus.message);
             }
         });
-    });
+
+        test('wont remove if user does not confirm', async () => {
+          sandbox.stub(vscode.window, 'showWarningMessage').resolves();
+          expect(removeStub).not.called;
+        });
+  });
 
     suite('restartServer', () => {
         let startStub: sinon.SinonStub;
