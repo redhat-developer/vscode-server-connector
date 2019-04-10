@@ -26,6 +26,7 @@ import {
     ServerState,
     StatusSeverity
 } from 'rsp-client';
+import { ServerIcon } from './serverIcon';
 
 export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.ServerState | Protocol.DeployableState> {
 
@@ -272,7 +273,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
             const pubState: string = this.publishStateEnum.get(state.publishState);
             const depStr = `${id1} (${runState}) (${pubState})`;
             const treeItem: TreeItem = new TreeItem(`${depStr}`, TreeItemCollapsibleState.Expanded);
-            treeItem.iconPath = Uri.file(path.join(__dirname, '../../images/server-light.png'));
+            treeItem.iconPath = ServerIcon.get(handle.type);
             treeItem.contextValue =  runState;
             return treeItem;
         } else if ((<Protocol.DeployableState>item).reference ) {
