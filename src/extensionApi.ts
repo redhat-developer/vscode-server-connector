@@ -267,13 +267,16 @@ export class CommandHandler {
         const prompt = item.label + (item.content ? `\n${item.content}` : '');
         let userInput: any = null;
         if (item.responseType === 'none') {
-            userInput = await vscode.window.showQuickPick(['Continue...'], { placeHolder: prompt, ignoreFocusOut: true });
+            userInput = await vscode.window.showQuickPick(['Continue...'],
+                { placeHolder: prompt, ignoreFocusOut: true });
         } else {
             if (item.responseType === 'bool') {
-                const oneProp = await vscode.window.showQuickPick(['True', 'False'], { placeHolder: prompt, ignoreFocusOut: true });
+                const oneProp = await vscode.window.showQuickPick(['True', 'False'],
+                    { placeHolder: prompt, ignoreFocusOut: true });
                 userInput = (oneProp === 'True');
             } else {
-                const oneProp = await vscode.window.showInputBox({ prompt: prompt, ignoreFocusOut: true, password: item.responseSecret });
+                const oneProp = await vscode.window.showInputBox(
+                    { prompt: prompt, ignoreFocusOut: true, password: item.responseSecret });
                 if (item.responseType === 'int') {
                     userInput = +oneProp;
                 } else {
@@ -290,7 +293,8 @@ export class CommandHandler {
         return content && content.indexOf('\n') !== -1;
     }
 
-    async initDownloadRuntimeRequest(id: string, data1: {[index: string]: any}, reqId: number): Promise<Protocol.WorkflowResponse> {
+    async initDownloadRuntimeRequest(id: string, data1: {[index: string]: any}, reqId: number):
+        Promise<Protocol.WorkflowResponse> {
         const req: Protocol.DownloadSingleRuntimeRequest = {
             requestId: reqId,
             downloadRuntimeId: id,
@@ -320,7 +324,8 @@ export class CommandHandler {
                 }
                 return newlist;
             });
-        const answer = await vscode.window.showQuickPick(newlist, { placeHolder: 'Please choose a runtime to download.' });
+        const answer = await vscode.window.showQuickPick(newlist,
+            { placeHolder: 'Please choose a runtime to download.' });
         console.log(`${answer} was chosen`);
         if (!answer) {
             return null;
