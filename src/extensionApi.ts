@@ -5,11 +5,11 @@
 
 'use strict';
 
+import { EditorUtil } from './editorutil';
+import { Protocol, RSPClient, ServerState, StatusSeverity } from 'rsp-client';
 import { ServerInfo } from './server';
 import { ServersViewTreeDataProvider } from './serverExplorer';
-import { EditorUtil } from './editorutil';
 import * as vscode from 'vscode';
-import { Protocol, RSPClient, ServerState, StatusSeverity } from 'rsp-client';
 export interface ExtensionAPI {
     readonly serverInfo: ServerInfo;
 }
