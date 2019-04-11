@@ -24,7 +24,7 @@ export class CommandHandler {
         this.serversData = serversData;
     }
 
-    async startServer(mode: string, context?: Protocol.ServerState): Promise<Protocol.StartServerResponse> {
+    public async startServer(mode: string, context?: Protocol.ServerState): Promise<Protocol.StartServerResponse> {
         let selectedServerType: Protocol.ServerType;
         let selectedServerId: string;
 
@@ -57,7 +57,7 @@ export class CommandHandler {
         }
     }
 
-    async stopServer(context?: Protocol.ServerState): Promise<Protocol.Status> {
+    public async stopServer(context?: Protocol.ServerState): Promise<Protocol.Status> {
         let serverId: string;
         if (context === undefined) {
             serverId = await vscode.window.showQuickPick(Array.from(this.serversData.serverStatus.keys()),
@@ -79,7 +79,7 @@ export class CommandHandler {
         }
     }
 
-    async removeServer(context?: Protocol.ServerState): Promise<Protocol.Status> {
+    public async removeServer(context?: Protocol.ServerState): Promise<Protocol.Status> {
         let serverId: string;
         let selectedServerType: Protocol.ServerType;
         if (context === undefined) {
@@ -110,7 +110,7 @@ export class CommandHandler {
         return status;
     }
 
-    async showServerOutput(context?: Protocol.ServerState): Promise<void> {
+    public async showServerOutput(context?: Protocol.ServerState): Promise<void> {
         if (context === undefined) {
             const serverId = await vscode.window.showQuickPick(Array.from(this.serversData.serverStatus.keys()),
                 { placeHolder: 'Select runtime/server to show output channel' });
@@ -120,7 +120,7 @@ export class CommandHandler {
         this.serversData.showOutput(context);
     }
 
-    async restartServer(context?: Protocol.ServerState): Promise<void> {
+    public async restartServer(context?: Protocol.ServerState): Promise<void> {
         if (context === undefined) {
             const serverId: string = await vscode.window.showQuickPick(
                 Array
@@ -145,7 +145,7 @@ export class CommandHandler {
         await this.client.getOutgoingHandler().startServerAsync(params);
     }
 
-    async addDeployment(context?: Protocol.ServerState): Promise<Protocol.Status> {
+    public async addDeployment(context?: Protocol.ServerState): Promise<Protocol.Status> {
         let serverId: string;
         if (context === undefined) {
             return Promise.reject('Please select a server from the Servers view.');
@@ -161,7 +161,7 @@ export class CommandHandler {
         }
     }
 
-    async removeDeployment(context?: Protocol.DeployableState): Promise<Protocol.Status> {
+    public async removeDeployment(context?: Protocol.DeployableState): Promise<Protocol.Status> {
         if (context === undefined) {
             return Promise.reject('Please select a deployment from the Servers view to run this action.');
         }
@@ -187,7 +187,7 @@ export class CommandHandler {
         }
     }
 
-    async fullPublishServer(context?: Protocol.ServerState): Promise<Protocol.Status> {
+    public async fullPublishServer(context?: Protocol.ServerState): Promise<Protocol.Status> {
         let serverId: string;
         if (context === undefined) {
             return Promise.reject('Please select a server from the Servers view.');
@@ -203,7 +203,7 @@ export class CommandHandler {
         }
     }
 
-    async createServer(): Promise<Protocol.Status> {
+    public async createServer(): Promise<Protocol.Status> {
         this.assertServersDataExists();
         const download: string = await vscode.window.showQuickPick(['Yes', 'No, use runtime on disk'],
             { placeHolder: 'Download runtime?', ignoreFocusOut: true });
@@ -223,7 +223,7 @@ export class CommandHandler {
         }
     }
 
-    async addLocation(): Promise<Protocol.Status> {
+    public async addLocation(): Promise<Protocol.Status> {
         if (this.serversData) {
             return this.serversData.addLocation();
         } else {
@@ -231,7 +231,7 @@ export class CommandHandler {
         }
     }
 
-    async downloadRuntime(): Promise<Protocol.Status> {
+    public async downloadRuntime(): Promise<Protocol.Status> {
         const rtId: string = await this.promptDownloadableRuntimes();
         if (!rtId) {
             return;
@@ -293,7 +293,7 @@ export class CommandHandler {
         return content && content.indexOf('\n') !== -1;
     }
 
-    async initDownloadRuntimeRequest(id: string, data1: {[index: string]: any}, reqId: number):
+    private async initDownloadRuntimeRequest(id: string, data1: {[index: string]: any}, reqId: number):
         Promise<Protocol.WorkflowResponse> {
         const req: Protocol.DownloadSingleRuntimeRequest = {
             requestId: reqId,
@@ -304,7 +304,7 @@ export class CommandHandler {
         return resp;
     }
 
-    async initEmptyDownloadRuntimeRequest(id: string): Promise<Protocol.WorkflowResponse> {
+    private async initEmptyDownloadRuntimeRequest(id: string): Promise<Protocol.WorkflowResponse> {
         const req: Protocol.DownloadSingleRuntimeRequest = {
             requestId: null,
             downloadRuntimeId: id,
@@ -314,7 +314,7 @@ export class CommandHandler {
         return resp;
     }
 
-    async promptDownloadableRuntimes(): Promise<string> {
+    private async promptDownloadableRuntimes(): Promise<string> {
         const newlist = this.client.getOutgoingHandler().listDownloadableRuntimes(5000)
             .then(async (list: Protocol.ListDownloadRuntimeResponse) => {
                 const rts: Protocol.DownloadRuntimeDescription[] = list.runtimes;
@@ -334,7 +334,7 @@ export class CommandHandler {
         }
     }
 
-    async activate(): Promise<void> {
+    public async activate(): Promise<void> {
         this.client.getIncomingHandler().onServerAdded(handle => {
             this.serversData.insertServer(handle);
         });

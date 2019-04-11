@@ -4,7 +4,6 @@
         "tslint-eslint-rules"
     ],
     "rules": {
-        "ter-indent": [true, 4],
         "adjacent-overload-signatures": true,
         "arrow-parens": [
             true,
@@ -34,9 +33,9 @@
         ],
         "no-console": false,
         "no-default-export": true,
-		    "no-duplicate-variable": true,
-		    "no-duplicate-imports": true,
-		    "no-unused-variable": true,
+        "no-duplicate-variable": true,
+        "no-duplicate-imports": true,
+        "no-unused-variable": true,
         "no-eval": true,
         "no-inferrable-types": [
             true,
@@ -98,6 +97,10 @@
                 "named": "never",
                 "asyncArrow": "always"
             }
+        ],
+        "ter-indent": [
+          true,
+          4
         ],
         "trailing-comma": [
             true,
