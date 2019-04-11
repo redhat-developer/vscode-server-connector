@@ -1,5 +1,10 @@
 {
+    "extends": [
+        "tslint:recommended",
+        "tslint-eslint-rules"
+    ],
     "rules": {
+        "ter-indent": [true, 4],
         "adjacent-overload-signatures": true,
         "arrow-parens": [
             true,
@@ -20,15 +25,18 @@
             "spaces"
         ],
         "interface-over-type-literal": true,
+        "interface-name": false,
+        "member-ordering": false,
         "new-parens": true,
         "no-consecutive-blank-lines": [
             true,
             1
         ],
+        "no-console": false,
         "no-default-export": true,
-		"no-duplicate-variable": true,
-		"no-duplicate-imports": true,
-		"no-unused-variable": true,
+		    "no-duplicate-variable": true,
+		    "no-duplicate-imports": true,
+		    "no-unused-variable": true,
         "no-eval": true,
         "no-inferrable-types": [
             true,
@@ -38,6 +46,7 @@
         "no-internal-module": true,
         "no-irregular-whitespace": true,
         "no-reference": true,
+        "no-shadowed-variable": false,
         "no-string-throw": true,
         "no-trailing-whitespace": true,
         "no-unnecessary-callback-wrapper": true,
@@ -49,6 +58,8 @@
             true,
             "as-needed"
         ],
+        "object-literal-shorthand": false,
+        "object-literal-sort-keys": false,
         "one-line": [
             true,
             "check-open-brace",
@@ -57,6 +68,12 @@
         "one-variable-per-declaration": [
             true,
             "ignore-for-loop"
+        ],
+        "ordered-imports": [
+          true,
+          {
+            "module-source-path": "basename"
+          }
         ],
         "prefer-const": true,
         "prefer-for-of": true,
