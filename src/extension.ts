@@ -4,12 +4,12 @@
  *-----------------------------------------------------------------------------------------------*/
 
 'use strict';
-import * as vscode from 'vscode';
-import { ServersViewTreeDataProvider } from './serverExplorer';
-import * as server from './server';
-import { RSPClient, Protocol, ServerState } from 'rsp-client';
-import { ExtensionAPI, CommandHandler } from './extensionApi';
+import { CommandHandler, ExtensionAPI } from './extensionApi';
 import { JobProgress } from './jobprogress';
+import { Protocol, RSPClient, ServerState } from 'rsp-client';
+import * as server from './server';
+import { ServersViewTreeDataProvider } from './serverExplorer';
+import * as vscode from 'vscode';
 
 let client: RSPClient;
 let serversData: ServersViewTreeDataProvider;
