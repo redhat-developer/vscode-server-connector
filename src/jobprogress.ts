@@ -3,7 +3,7 @@
  *  Licensed under the EPL v2.0 License. See LICENSE file in the project root for license information.
  *-----------------------------------------------------------------------------------------------*/
 import * as vscode from 'vscode';
-import { RSPClient, Protocol } from 'rsp-client';
+import { RSPClient, Protocol, StatusSeverity } from 'rsp-client';
 
 export class JobProgress {
 
@@ -32,6 +32,7 @@ export class JobProgress {
                   if (error) {
                     vscode.window.showErrorMessage(error);
                   }
+                  return Promise.reject(error);
               });
           });
       });
@@ -69,10 +70,28 @@ export class JobProgress {
 
   private onJobRemoved(jobRemoved: Protocol.JobRemoved) {
       if (!this.isJob(jobRemoved.handle)) {
-        return;
+          return;
       }
       this.clearTimeout();
-      this.resolve(this.job);
+      if (!StatusSeverity.isOk(jobRemoved.status)) {
+          this.reject(this.getErrorMessage(jobRemoved.status));
+      } else {
+          this.resolve(this.job);
+      }
+  }
+
+  private getErrorMessage(status: Protocol.Status) {
+    let message = '';
+    if (status) {
+        message = status.message;
+        if (status.trace) {
+            const match = /Caused by:([^\n]+)/gm.exec(status.trace);
+            if (match && match.length && match.length > 1) {
+                message += ':\n' + match[1];
+            }
+        }
+    }
+    return message;
   }
 
   private async onCancel() {

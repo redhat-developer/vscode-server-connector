@@ -4,6 +4,7 @@
  *-----------------------------------------------------------------------------------------------*/
 
 import * as chai from 'chai';
+import * as chaipromise from 'chai-as-promised';
 import * as sinon from 'sinon';
 import * as sinonChai from 'sinon-chai';
 import * as vscode from 'vscode';
@@ -13,11 +14,12 @@ import { JobProgress } from '../src/jobprogress';
 
 const expect = chai.expect;
 chai.use(sinonChai);
+chai.use(chaipromise);
 
 class CancellationStub implements vscode.CancellationToken {
     isCancellationRequested: boolean;
     onCancellationRequested: vscode.Event<any> =
-      function () { return { dispose() { } }; };
+      function() { return { dispose() { } }; };
 }
 class ProgressStub implements vscode.Progress<{ message: string, increment: number }> {
     report(value: { message: string, increment: number }): void {
@@ -38,6 +40,7 @@ suite('Job Progress', () => {
     let cancellationStub: vscode.CancellationToken;
     let progressStub: vscode.Progress<{ message: string, increment: number }>;
     let progressStubReport: sinon.SinonSpy<[{ message: string; increment: number; }], void>;
+    let promise: Thenable<{}>;
     let withProgressFake: (
         options: vscode.ProgressOptions,
         task: (progress: vscode.Progress<{ message: string; increment: number }>, token: vscode.CancellationToken) => Thenable<{}>) => Thenable<{}>;
@@ -57,7 +60,8 @@ suite('Job Progress', () => {
       withProgressFake = (
           options: vscode.ProgressOptions,
           task: (progress: vscode.Progress<{ message: string; increment: number }>, token: vscode.CancellationToken) => Thenable<{}>) => {
-          return task(progressStub, cancellationStub);
+          promise = task(progressStub, cancellationStub);
+          return promise;
       };
       withProgressFakeSpy = sandbox.stub(vscode.window, 'withProgress').callsFake(withProgressFake);
     });
@@ -170,6 +174,108 @@ suite('Job Progress', () => {
         // then
         expect(stubs.outgoing.cancelJob).calledOnceWith(job);
     });
+
+    test('show error that contains message & (start of) trace if job removal ended with error', () => {
+        // given
+        sandbox.stub(vscode.window, 'showErrorMessage');
+        const timeoutStatus: Protocol.Status = {
+            severity: 4,
+            plugin: 'org.jboss.tools.rsp.runtime.core',
+            code: 0,
+            message: 'Error while retrieving runtime from http://download.jboss.org/jbossas/7.1/jboss-as-7.1.0.Final/jboss-as-7.1.0.Final.zip?use_mirror=autoselect',
+            trace: `org.jboss.tools.rsp.eclipse.core.runtime.CoreException: Read timed out\n
+            \tat org.jboss.tools.rsp.runtime.core.util.internal.DownloadRuntimeOperationUtility.downloadRemoteRuntime(DownloadRuntimeOperationUtility.java:188)\n
+            \tat org.jboss.tools.rsp.runtime.core.util.internal.DownloadRuntimeOperationUtility.downloadAndUnzip(DownloadRuntimeOperationUtility.java:152)\n
+            \tat org.jboss.tools.rsp.runtime.core.model.installer.internal.ExtractionRuntimeInstaller.installRuntime(ExtractionRuntimeInstaller.java:40)\n
+            \tat org.jboss.tools.rsp.server.spi.runtimes.AbstractLicenseOnlyDownloadExecutor$1.run(AbstractLicenseOnlyDownloadExecutor.java:149)\n
+            \tat org.jboss.tools.rsp.server.spi.jobs.SimpleJob.run(SimpleJob.java:96)\n
+            \tat org.jboss.tools.rsp.server.jobs.JobManager.lambda$0(JobManager.java:86)\n
+            \tat java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)\n
+            \tat java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)\n
+            \tat java.lang.Thread.run(Thread.java:748)\n
+            Caused by: java.net.SocketTimeoutException: Read timed out\n
+            \tat java.net.SocketInputStream.socketRead0(Native Method)\n
+            \tat java.net.SocketInputStream.socketRead(SocketInputStream.java:116)\n
+            \tat java.net.SocketInputStream.read(SocketInputStream.java:171)\n
+            \tat java.net.SocketInputStream.read(SocketInputStream.java:141)\n
+            \tat java.io.BufferedInputStream.read1(BufferedInputStream.java:284)\n
+            \tat java.io.BufferedInputStream.read(BufferedInputStream.java:345)\n
+            \tat sun.net.www.MeteredStream.read(MeteredStream.java:134)\n
+            \tat java.io.FilterInputStream.read(FilterInputStream.java:133)\n
+            \tat sun.net.www.protocol.http.HttpURLConnection$HttpInputStream.read(HttpURLConnection.java:3393)\n
+            \tat java.nio.channels.Channels$ReadableByteChannelImpl.read(Channels.java:385)\n
+            \tat org.jboss.tools.rsp.foundation.core.transport.CallbackByteChannel.read(CallbackByteChannel.java:52)\n
+            \tat sun.nio.ch.FileChannelImpl.transferFromArbitraryChannel(FileChannelImpl.java:673)\n
+            \tat sun.nio.ch.FileChannelImpl.transferFrom(FileChannelImpl.java:711)\n
+            \tat org.jboss.tools.rsp.foundation.core.transport.URLTransportCache.download(URLTransportCache.java:423)\n
+            \tat org.jboss.tools.rsp.foundation.core.transport.URLTransportCache.download(URLTransportCache.java:382)\n
+            \tat org.jboss.tools.rsp.runtime.core.util.internal.DownloadRuntimeOperationUtility.downloadFileFromRemoteUrl(DownloadRuntimeOperationUtility.java:250)\n
+            \tat org.jboss.tools.rsp.runtime.core.util.internal.DownloadRuntimeOperationUtility.downloadRemoteRuntime(DownloadRuntimeOperationUtility.java:185)\n
+            \t... 8 more\n`,
+            ok: false
+        };
+        const jobRemovedTimeout: Protocol.JobRemoved = {
+            handle: job,
+            status: timeoutStatus
+        };
+        JobProgress.create(stubs.client);
+        callOnJobAddedListenerWith(job, stubs.incoming.onJobAdded);
+
+        // when
+        callOnJobRemovedListenerWith(jobRemovedTimeout, stubs.incoming.onJobRemoved);
+
+        // then
+        expect(promise).to.eventually.match(/Error while retrieving runtime from .+ Read timed out/g);
+    });
+
+    test('show error that contains only message if there is no trace if job removal ended with error', () => {
+      // given
+      sandbox.stub(vscode.window, 'showErrorMessage');
+      const timeoutStatus: Protocol.Status = {
+          severity: 4,
+          plugin: undefined,
+          code: 0,
+          message: 'Error',
+          trace: undefined,
+          ok: false
+      };
+      const jobRemovedTimeout: Protocol.JobRemoved = {
+          handle: job,
+          status: timeoutStatus
+      };
+      JobProgress.create(stubs.client);
+      callOnJobAddedListenerWith(job, stubs.incoming.onJobAdded);
+
+      // when
+      callOnJobRemovedListenerWith(jobRemovedTimeout, stubs.incoming.onJobRemoved);
+
+      // then
+      expect(promise).to.eventually.rejectedWith('Error');
+  });
+
+  test('dont show error if job removal ended with success', () => {
+      // given
+      const timeoutStatus: Protocol.Status = {
+          severity: 0,
+          plugin: undefined,
+          code: 0,
+          message: undefined,
+          trace: undefined,
+          ok: true
+      };
+      const jobRemovedTimeout: Protocol.JobRemoved = {
+          handle: job,
+          status: timeoutStatus
+      };
+      JobProgress.create(stubs.client);
+      callOnJobAddedListenerWith(job, stubs.incoming.onJobAdded);
+
+      // when
+      callOnJobRemovedListenerWith(jobRemovedTimeout, stubs.incoming.onJobRemoved);
+
+      // then
+      expect(promise).to.eventually.equal(job);
+    });
 });
 
 /**
@@ -193,6 +299,14 @@ function callOnJobChangedListenerWith(jobProgress: Protocol.JobProgress, spy: si
     const onJobChangedListener = spy.args[0][0];
     expect(onJobChangedListener).to.be.an.instanceof(Function);
     onJobChangedListener(jobProgress);
+}
+
+function callOnJobRemovedListenerWith(jobRemoved: Protocol.JobRemoved, spy: sinon.SinonStub<any[], any>) {
+    // verify that onJobRemoved (which added a listener) was called
+    expect(spy).calledOnce;
+    const onJobRemovedListener = spy.args[0][0];
+    expect(onJobRemovedListener).to.be.an.instanceof(Function);
+    onJobRemovedListener(jobRemoved);
 }
 
 function callOnCancellationRequestionListener(spy: sinon.SinonSpy<[(e: any) => any, any?, vscode.Disposable[]?], vscode.Disposable>) {
