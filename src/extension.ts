@@ -23,7 +23,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Extens
     const serverInfo = await server.start(onStdoutData, onStderrData);
 
     if (!serverInfo || !serverInfo.port) {
-      return Promise.reject('Failed to start the rsp server');
+        return Promise.reject('Failed to start the rsp server');
     }
     client = await initClient(serverInfo);
     serversData = new ServersViewTreeDataProvider(client);
@@ -35,50 +35,49 @@ export async function activate(context: vscode.ExtensionContext): Promise<Extens
 }
 
 async function initClient(serverInfo: server.ServerInfo): Promise<RSPClient> {
-  const client = new RSPClient('localhost', serverInfo.port);
-  await client.connect();
+    const client = new RSPClient('localhost', serverInfo.port);
+    await client.connect();
 
-  client.getIncomingHandler().onPromptString(event => {
-    return new Promise<string>((resolve, reject) => {
-      vscode.window.showInputBox({ prompt: event.prompt, password: true })
-        .then(value => {
-          if (value && value.trim().length) {
-            resolve(value);
-          } else {
-            reject(new Error('Cancelled by user'));
-          }
+    client.getIncomingHandler().onPromptString(event => {
+        return new Promise<string>((resolve, reject) => {
+            vscode.window.showInputBox({ prompt: event.prompt, password: true })
+                .then(value => {
+                    if (value && value.trim().length) {
+                        resolve(value);
+                    } else {
+                        reject(new Error('Cancelled by user'));
+                    }
+                });
         });
-      });
-    }
-  );
+    });
 
-  client.getOutgoingHandler().registerClientCapabilities({ map: { 'protocol.version': PROTOCOL_VERSION, 'prompt.string': 'true' } });
-  JobProgress.create(client);
+    client.getOutgoingHandler().registerClientCapabilities({ map: { 'protocol.version': PROTOCOL_VERSION, 'prompt.string': 'true' } });
+    JobProgress.create(client);
 
-  return client;
+    return client;
 }
 
 function registerCommands(commandHandler: CommandHandler, context: vscode.ExtensionContext) {
-  const newLocal = [
-    vscode.commands.registerCommand('server.start', context => executeCommand(commandHandler.startServer, commandHandler, 'run', context)),
-    vscode.commands.registerCommand('server.restart', context => executeCommand(commandHandler.restartServer, commandHandler, context)),
-    vscode.commands.registerCommand('server.debug', context => executeCommand(commandHandler.startServer, commandHandler, 'debug', context)),
-    vscode.commands.registerCommand('server.stop', context => executeCommand(commandHandler.stopServer, commandHandler, context)),
-    vscode.commands.registerCommand('server.remove', context => executeCommand(commandHandler.removeServer, commandHandler, context)),
-    vscode.commands.registerCommand('server.output', context => executeCommand(commandHandler.showServerOutput, commandHandler, context)),
-    vscode.commands.registerCommand('server.addDeployment', context => executeCommand(commandHandler.addDeployment, commandHandler, context)),
-    vscode.commands.registerCommand('server.removeDeployment', context => executeCommand(commandHandler.removeDeployment, commandHandler, context)),
-    vscode.commands.registerCommand('server.publishFull', context => executeCommand(commandHandler.fullPublishServer, commandHandler, context)),
-    vscode.commands.registerCommand('server.createServer', () => executeCommand(commandHandler.createServer, commandHandler)),
-    vscode.commands.registerCommand('server.addLocation', () => executeCommand(commandHandler.addLocation, commandHandler)),
-    vscode.commands.registerCommand('server.downloadRuntime', () => executeCommand(commandHandler.downloadRuntime, commandHandler)),
-    rspserverstdout,
-    rspserverstderr
-  ];
-  const subscriptions = newLocal;
-  subscriptions.forEach(element => {
-    context.subscriptions.push(element);
-  }, this);
+    const newLocal = [
+        vscode.commands.registerCommand('server.start', context => executeCommand(commandHandler.startServer, commandHandler, 'run', context)),
+        vscode.commands.registerCommand('server.restart', context => executeCommand(commandHandler.restartServer, commandHandler, context)),
+        vscode.commands.registerCommand('server.debug', context => executeCommand(commandHandler.startServer, commandHandler, 'debug', context)),
+        vscode.commands.registerCommand('server.stop', context => executeCommand(commandHandler.stopServer, commandHandler, context)),
+        vscode.commands.registerCommand('server.remove', context => executeCommand(commandHandler.removeServer, commandHandler, context)),
+        vscode.commands.registerCommand('server.output', context => executeCommand(commandHandler.showServerOutput, commandHandler, context)),
+        vscode.commands.registerCommand('server.addDeployment', context => executeCommand(commandHandler.addDeployment, commandHandler, context)),
+        vscode.commands.registerCommand('server.removeDeployment', context => executeCommand(commandHandler.removeDeployment, commandHandler, context)),
+        vscode.commands.registerCommand('server.publishFull', context => executeCommand(commandHandler.fullPublishServer, commandHandler, context)),
+        vscode.commands.registerCommand('server.createServer', () => executeCommand(commandHandler.createServer, commandHandler)),
+        vscode.commands.registerCommand('server.addLocation', () => executeCommand(commandHandler.addLocation, commandHandler)),
+        vscode.commands.registerCommand('server.downloadRuntime', () => executeCommand(commandHandler.downloadRuntime, commandHandler)),
+        rspserverstdout,
+        rspserverstderr
+    ];
+    const subscriptions = newLocal;
+    subscriptions.forEach(element => {
+        context.subscriptions.push(element);
+    }, this);
 }
 
 export function deactivate() {
@@ -93,13 +92,13 @@ export function deactivate() {
 }
 
 function stopServer(val: Protocol.ServerState) {
-  const oneStat: Protocol.ServerState = val;
-  const stateNum = oneStat.state;
-  if (stateNum !== ServerState.UNKNOWN
-    && stateNum !== ServerState.STOPPED
-    && stateNum !== ServerState.STOPPING) {
-    client.getOutgoingHandler().stopServerAsync({ id: oneStat.server.id, force: true });
-  }
+    const oneStat: Protocol.ServerState = val;
+    const stateNum = oneStat.state;
+    if (stateNum !== ServerState.UNKNOWN
+      && stateNum !== ServerState.STOPPED
+      && stateNum !== ServerState.STOPPING) {
+        client.getOutgoingHandler().stopServerAsync({ id: oneStat.server.id, force: true });
+    }
 }
 
 function onStdoutData(data: string) {

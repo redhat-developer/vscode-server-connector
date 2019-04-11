@@ -101,7 +101,7 @@ export class CommandHandler {
     private async removeStoppedServer(serverId: string, serverType: Protocol.ServerType): Promise<Protocol.Status> {
         const status1: Protocol.ServerState = this.serversData.serverStatus.get(serverId);
         if (status1.state !== ServerState.STOPPED) {
-          return Promise.reject(`Stop server ${serverId} before removing it.`);
+            return Promise.reject(`Stop server ${serverId} before removing it.`);
         }
         const status = await this.client.getOutgoingHandler().deleteServer({ id: serverId, type: serverType });
         if (!StatusSeverity.isOk(status)) {
@@ -204,23 +204,23 @@ export class CommandHandler {
     }
 
     async createServer(): Promise<Protocol.Status> {
-      this.assertServersDataExists();
-      const download: string = await vscode.window.showQuickPick(['Yes', 'No, use runtime on disk'],
-          { placeHolder: 'Download runtime?', ignoreFocusOut: true });
-      if (!download) {
-          return;
-      }
-      if (download.startsWith('Yes')) {
-          return this.downloadRuntime();
-      } else if (download.startsWith('No')) {
-          return this.addLocation();
-      }
-  }
+        this.assertServersDataExists();
+        const download: string = await vscode.window.showQuickPick(['Yes', 'No, use runtime on disk'],
+            { placeHolder: 'Download runtime?', ignoreFocusOut: true });
+        if (!download) {
+            return;
+        }
+        if (download.startsWith('Yes')) {
+            return this.downloadRuntime();
+        } else if (download.startsWith('No')) {
+            return this.addLocation();
+        }
+    }
 
-  private assertServersDataExists() {
-      if (!this.serversData) {
-        throw new Error('Runtime Server Protocol (RSP) Server is starting, please try again later.');
-      }
+    private assertServersDataExists() {
+        if (!this.serversData) {
+            throw new Error('Runtime Server Protocol (RSP) Server is starting, please try again later.');
+        }
     }
 
     async addLocation(): Promise<Protocol.Status> {
@@ -255,7 +255,7 @@ export class CommandHandler {
 
                 const canceled: boolean = await this.promptUser(item, workflowMap);
                 if (canceled) {
-                  return;
+                    return;
                 }
             }
             // Now we have a data map
@@ -287,45 +287,45 @@ export class CommandHandler {
     }
 
     private isMultilineText(content: string) {
-      return content && content.indexOf('\n') !== -1;
+        return content && content.indexOf('\n') !== -1;
     }
 
     async initDownloadRuntimeRequest(id: string, data1: {[index: string]: any}, reqId: number): Promise<Protocol.WorkflowResponse> {
-      const req: Protocol.DownloadSingleRuntimeRequest = {
-        requestId: reqId,
-        downloadRuntimeId: id,
-        data: data1
-      };
-      const resp: Promise<Protocol.WorkflowResponse> = this.client.getOutgoingHandler().downloadRuntime(req, 20000);
-      return resp;
+        const req: Protocol.DownloadSingleRuntimeRequest = {
+            requestId: reqId,
+            downloadRuntimeId: id,
+            data: data1
+        };
+        const resp: Promise<Protocol.WorkflowResponse> = this.client.getOutgoingHandler().downloadRuntime(req, 20000);
+        return resp;
     }
 
     async initEmptyDownloadRuntimeRequest(id: string): Promise<Protocol.WorkflowResponse> {
-      const req: Protocol.DownloadSingleRuntimeRequest = {
-        requestId: null,
-        downloadRuntimeId: id,
-        data: {}
-      };
-      const resp: Promise<Protocol.WorkflowResponse> = this.client.getOutgoingHandler().downloadRuntime(req);
-      return resp;
+        const req: Protocol.DownloadSingleRuntimeRequest = {
+            requestId: null,
+            downloadRuntimeId: id,
+            data: {}
+        };
+        const resp: Promise<Protocol.WorkflowResponse> = this.client.getOutgoingHandler().downloadRuntime(req);
+        return resp;
     }
 
     async promptDownloadableRuntimes(): Promise<string> {
         const newlist = this.client.getOutgoingHandler().listDownloadableRuntimes(5000)
-          .then(async (list: Protocol.ListDownloadRuntimeResponse) => {
-            const rts: Protocol.DownloadRuntimeDescription[] = list.runtimes;
-            const newlist: any[] = [];
-            for (const rt of rts) {
-                newlist.push({ label: rt.name, id: rt.id });
-            }
-            return newlist;
-        });
+            .then(async (list: Protocol.ListDownloadRuntimeResponse) => {
+                const rts: Protocol.DownloadRuntimeDescription[] = list.runtimes;
+                const newlist: any[] = [];
+                for (const rt of rts) {
+                    newlist.push({ label: rt.name, id: rt.id });
+                }
+                return newlist;
+            });
         const answer = await vscode.window.showQuickPick(newlist, { placeHolder: 'Please choose a runtime to download.' });
         console.log(`${answer} was chosen`);
         if (!answer) {
-          return null;
+            return null;
         } else {
-          return answer.id;
+            return answer.id;
         }
     }
 
