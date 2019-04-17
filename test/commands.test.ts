@@ -11,7 +11,6 @@ import { ServersViewTreeDataProvider } from '../src/serverExplorer';
 import { ServerState, Protocol } from 'rsp-client';
 import { CommandHandler } from '../src/extensionApi';
 import { Stubs } from './stubs';
-import { Test } from 'mocha';
 
 const expect = chai.expect;
 chai.use(sinonChai);
