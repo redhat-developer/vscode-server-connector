@@ -110,7 +110,8 @@ suite('Extension Tests', function() {
                 'server.publishFull',
                 'server.createServer',
                 'server.addLocation',
-                'server.downloadRuntime'
+                'server.downloadRuntime',
+                'server.infoServer'
             ];
             const foundServerCommands = commands.filter(value => {
                 return SERVER_COMMANDS.indexOf(value) >= 0 || value.startsWith('server.');

@@ -11,6 +11,7 @@ import { ServersViewTreeDataProvider } from '../src/serverExplorer';
 import { ServerState, Protocol } from 'rsp-client';
 import { CommandHandler } from '../src/extensionApi';
 import { Stubs } from './stubs';
+import { Test } from 'mocha';
 
 const expect = chai.expect;
 chai.use(sinonChai);
@@ -371,6 +372,20 @@ suite('Command Handler', () => {
 
             try {
                 await nullHandler.addLocation();
+                expect.fail();
+            } catch (err) {
+                expect(err).equals('Runtime Server Protocol (RSP) Server is starting, please try again later.');
+            }
+        });
+    });
+
+    suite('infoServer', () => {
+
+        test('errors if server explorer is not initialized', async () => {
+            const nullHandler = new CommandHandler(null, stubs.client);
+
+            try {
+                await nullHandler.infoServer();
                 expect.fail();
             } catch (err) {
                 expect(err).equals('Runtime Server Protocol (RSP) Server is starting, please try again later.');

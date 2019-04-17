@@ -10,6 +10,7 @@ import { Protocol, RSPClient, ServerState, StatusSeverity } from 'rsp-client';
 import { ServerInfo } from './server';
 import { ServersViewTreeDataProvider } from './serverExplorer';
 import * as vscode from 'vscode';
+import { MessageOptions } from 'child_process';
 export interface ExtensionAPI {
     readonly serverInfo: ServerInfo;
 }
@@ -261,6 +262,29 @@ export class CommandHandler {
             // Now we have a data map
             response1 = await this.initDownloadRuntimeRequest(rtId, workflowMap, response1.requestId);
         }
+    }
+
+    public async infoServer(context?: Protocol.ServerState): Promise<void> {
+
+        if (context === undefined) {
+            if (this.serversData) {
+                const serverId = await vscode.window.showQuickPick(Array.from(this.serversData.serverStatus.keys()),
+                { placeHolder: 'Select runtime/server you want to retrieve info about' });
+                if (!serverId) return Promise.reject('Please select a server from the Servers view.');
+                context = this.serversData.serverStatus.get(serverId);
+            } else {
+                return Promise.reject('Runtime Server Protocol (RSP) Server is starting, please try again later.');
+            }
+        }
+
+        const selectedServerType: Protocol.ServerType = context.server.type;
+        const selectedServerName: string = context.server.id;
+
+        const outputChannel = vscode.window.createOutputChannel("vscode-adapter");
+        outputChannel.show();
+        outputChannel.appendLine(`Server Name: ${selectedServerName}`);
+        outputChannel.appendLine(`Server Id: ${selectedServerType.id}`);
+        outputChannel.appendLine(`Server Description: ${selectedServerType.visibleName}`);
     }
 
     private async promptUser(item: Protocol.WorkflowResponseItem, workflowMap: {}): Promise<boolean> {
