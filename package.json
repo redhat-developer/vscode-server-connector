@@ -105,6 +105,11 @@
         "command": "server.publishFull",
         "title": "Publish Server (Full)",
         "category": "Servers"
+      },
+      {
+        "command": "server.infoServer",
+        "title": "Properties",
+        "category": "Servers"
       }
     ],
     "views": {
@@ -178,6 +183,11 @@
           "command": "server.addLocation",
           "when": "view == servers",
           "group": "5_rsp@2"
+        },
+        {
+          "command": "server.infoServer",
+          "when": "view == servers && viewItem =~ /(Starting|Started|Stopping|Stopped|Unknown)/'",
+          "group": "6_server-info@1"
         }
       ]
     },

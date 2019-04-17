@@ -4,7 +4,7 @@
  *  Licensed under the EPL v2.0 License. See LICENSE file in the project root for license information.
  *-----------------------------------------------------------------------------------------------*/
 
- import * as chai from 'chai';
+import * as chai from 'chai';
 import * as sinon from 'sinon';
 import * as sinonChai from 'sinon-chai';
 import { ServersViewTreeDataProvider } from '../src/serverExplorer';
@@ -257,7 +257,7 @@ suite('Server explorer', () => {
         const userSelectedPath = { fsPath: 'path/path' };
 
         const discoveryPath: Protocol.DiscoveryPath = {
-          filepath: userSelectedPath.fsPath
+        filepath: userSelectedPath.fsPath
         };
 
         setup(() => {
