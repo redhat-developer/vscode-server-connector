@@ -2,16 +2,16 @@
  *  Copyright (c) Red Hat, Inc. All rights reserved.
  *  Licensed under the EPL v2.0 License. See LICENSE file in the project root for license information.
  *-----------------------------------------------------------------------------------------------*/
-import { Uri } from 'vscode';
-import { Protocol } from 'rsp-client';
 import * as path from 'path';
+import { Protocol } from 'rsp-client';
+import { Uri } from 'vscode';
 
 export class ServerIcon {
 
     public static get(serverType: Protocol.ServerType): Uri {
         if (!serverType
             || !serverType.id) {
-                return null;
+            return null;
         }
 
         return Uri.file(path.join(__dirname, '..', '..', 'images', this.getFilename(serverType)));

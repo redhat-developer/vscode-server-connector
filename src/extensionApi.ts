@@ -10,7 +10,6 @@ import { Protocol, RSPClient, ServerState, StatusSeverity } from 'rsp-client';
 import { ServerInfo } from './server';
 import { ServersViewTreeDataProvider } from './serverExplorer';
 import * as vscode from 'vscode';
-import { MessageOptions } from 'child_process';
 export interface ExtensionAPI {
     readonly serverInfo: ServerInfo;
 }
