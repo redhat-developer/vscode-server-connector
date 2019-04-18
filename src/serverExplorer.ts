@@ -60,7 +60,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
     async insertServer(event: Protocol.ServerHandle) {
         const state = await this.client.getOutgoingHandler().getServerState(event);
         this.serverStatus.set(state.server.id, state);
-        this.refresh();
+        this.refresh(state);
     }
 
     updateServer(event: Protocol.ServerState): void {
@@ -104,6 +104,14 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
 
     refresh(data?: Protocol.ServerState): void {
         this._onDidChangeTreeData.fire(data);
+        if (data !== undefined) {
+            this.selectNode(data);
+        }
+    }
+
+    selectNode(data: Protocol.ServerState): void {
+        const view = window.createTreeView('servers', { treeDataProvider: this });
+        view.reveal(data, { focus: true, select: true });
     }
 
     addDeployment(server: Protocol.ServerHandle): Thenable<Protocol.Status> {
@@ -321,6 +329,12 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
         }
         if ((<Protocol.ServerState>element).deployableStates ) {
             return (<Protocol.ServerState>element).deployableStates;
+        }
+    }
+
+    getParent(item?:  Protocol.ServerState | Protocol.DeployableState): Protocol.ServerState | Protocol.DeployableState {
+        if(item === undefined || (<Protocol.ServerState>item).deployableStates) {
+            return undefined;
         }
     }
 }
