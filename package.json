@@ -244,7 +244,7 @@
     "tslint": "^5.11.0",
     "tslint-eslint-rules": "^5.4.0",
     "typescript": "^3.0.3",
-    "vscode": "^1.1.21"
+    "vscode": "^1.1.33"
   },
   "dependencies": {
     "expand-home-dir": "0.0.3",
@@ -257,7 +257,7 @@
     "path-exists": "^3.0.0",
     "pify": "4.0.0",
     "portfinder": "^1.0.17",
-    "rsp-client": "^0.14.1",
+    "rsp-client": "^0.15.0",
     "vscode-jsonrpc": "^4.0.0",
     "vscode-languageclient": "^5.1.0",
     "wait-on": "^3.0.1"
