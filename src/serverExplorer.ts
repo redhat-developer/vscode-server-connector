@@ -110,14 +110,37 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
         return window.showOpenDialog(<OpenDialogOptions>{
             canSelectFiles: true,
             canSelectMany: false,
-            canSelectFolders: false,
-            openLabel: 'Select Deployment'
+            canSelectFolders: true,
+            openLabel: 'Select Deployment file or folder'
         }).then(async file => {
             if (file && file.length === 1) {
+
+                const answer = await window.showQuickPick(['No', 'Yes'], {placeHolder: 
+                    'Do you want to edit optional deployment parameters?'});
+                const options = {};
+                if (answer === 'Yes') {
+                    const optionMap: Protocol.Attributes = await this.client.getOutgoingHandler().listDeploymentOptions(server);
+                    for (const key in optionMap.attributes) {
+                        const attribute = optionMap.attributes[key];
+                        const val = await window.showInputBox({prompt: attribute.description,
+                            value: attribute.defaultVal, password: attribute.secret});
+                        if (val) {
+                            options[key] = val;
+                        }
+                    }
+                }
+
                 // var fileUrl = require('file-url');
                 // const filePath : string = fileUrl(file[0].fsPath);
-                const deployableRef: Protocol.DeployableReference = { label: file[0].fsPath,  path: file[0].fsPath};
-                const req: Protocol.ModifyDeployableRequest = { server: server, deployable : deployableRef};
+                const deployableRef: Protocol.DeployableReference = { 
+                    label: file[0].fsPath,
+                    path: file[0].fsPath,
+                    options: options
+                };
+                const req: Protocol.ServerDeployableReference = { 
+                    server: server, 
+                    deployableReference : deployableRef
+                };
                 const status = await this.client.getOutgoingHandler().addDeployable(req);
                 if (!StatusSeverity.isOk(status)) {
                     return Promise.reject(status.message);
@@ -128,7 +151,10 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
     }
 
     async removeDeployment(server: Protocol.ServerHandle, deployableRef: Protocol.DeployableReference): Promise<Protocol.Status> {
-        const req: Protocol.ModifyDeployableRequest = { server: server, deployable : deployableRef};
+        const req: Protocol.ServerDeployableReference = { 
+            server: server, 
+            deployableReference : deployableRef
+        };
         const status = await this.client.getOutgoingHandler().removeDeployable(req);
         if (!StatusSeverity.isOk(status)) {
             return Promise.reject(status.message);
