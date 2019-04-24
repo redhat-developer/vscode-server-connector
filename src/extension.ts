@@ -84,7 +84,7 @@ function registerCommands(commandHandler: CommandHandler, context: vscode.Extens
             () => executeCommand(commandHandler.addLocation, commandHandler)),
         vscode.commands.registerCommand('server.downloadRuntime',
             () => executeCommand(commandHandler.downloadRuntime, commandHandler)),
-        vscode.commands.registerCommand("server.infoServer", 
+        vscode.commands.registerCommand('server.infoServer',
             context => executeCommand(commandHandler.infoServer, commandHandler, context)),
         rspserverstdout,
         rspserverstderr
