@@ -282,7 +282,7 @@ export class CommandHandler {
         const outputChannel = vscode.window.createOutputChannel("vscode-adapter");
         outputChannel.show();
         outputChannel.appendLine(`Server Name: ${selectedServerName}`);
-        outputChannel.appendLine(`Server Id: ${selectedServerType.id}`);
+        outputChannel.appendLine(`Server Type Id: ${selectedServerType.id}`);
         outputChannel.appendLine(`Server Description: ${selectedServerType.visibleName}`);
     }
 
