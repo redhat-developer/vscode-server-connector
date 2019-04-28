@@ -5,12 +5,12 @@
 
 'use strict';
 
-import { workspace, Uri } from 'vscode';
 import * as cp from 'child_process';
-import * as path from 'path';
-import * as pathExists from 'path-exists';
 import * as expandHomeDir from 'expand-home-dir';
 import * as findJavaHome from 'find-java-home';
+import * as path from 'path';
+import * as pathExists from 'path-exists';
+import { Uri, workspace } from 'vscode';
 
 const isWindows = process.platform.indexOf('win') === 0;
 const JAVAC_FILENAME = 'javac' + (isWindows ? '.exe' : '');
@@ -40,11 +40,11 @@ function checkJavaRuntime(): Promise<string> {
         if (javaHome) {
             source = 'The java.home variable defined in VS Code settings';
         } else {
-            javaHome = process.env['JDK_HOME'];
+            javaHome = process.env.JDK_HOME;
             if (javaHome) {
                 source = 'The JDK_HOME environment variable';
             } else {
-                javaHome = process.env['JAVA_HOME'];
+                javaHome = process.env.JAVA_HOME;
                 source = 'The JAVA_HOME environment variable';
             }
         }
@@ -59,13 +59,13 @@ function checkJavaRuntime(): Promise<string> {
             return resolve(javaHome);
         }
         // No settings, let's try to detect as last resort.
-        findJavaHome(function(err: any, home: string | PromiseLike<string>) {
-                if (err) {
-                    rejectWithDownloadUrl(reject, 'Java runtime could not be located');
-                } else {
-                    resolve(home);
-                }
-            });
+        findJavaHome((err: any, home: string | PromiseLike<string>) => {
+            if (err) {
+                rejectWithDownloadUrl(reject, 'Java runtime could not be located');
+            } else {
+                resolve(home);
+            }
+        });
     });
 }
 
@@ -76,11 +76,12 @@ function readJavaConfig(): string {
 
 function checkJavaVersion(javaHome: string): Promise<number> {
     return new Promise((resolve, reject) => {
-      const javaExecutable = path.resolve(javaHome, 'bin', JAVA_FILENAME);
-      cp.execFile(javaExecutable, ['-version'], {}, (error, stdout, stderr) => {
+        const javaExecutable = path.resolve(javaHome, 'bin', JAVA_FILENAME);
+        cp.execFile(javaExecutable, ['-version'], {}, (error, stdout, stderr) => {
             const javaVersion = parseMajorVersion(stderr);
             if (javaVersion < 8) {
-                rejectWithDownloadUrl(reject, `Java 8 or newer is required to run this extension. Java ${javaVersion} was found at ${javaHome}. Please download and install a recent JDK`);
+                rejectWithDownloadUrl(reject, `Java 8 or newer is required to run this extension.
+                Java ${javaVersion} was found at ${javaHome}. Please download and install a recent JDK`);
             } else {
                 resolve(javaVersion);
             }

@@ -4,13 +4,13 @@
  *-----------------------------------------------------------------------------------------------*/
 
 import * as chai from 'chai';
+import { CommandHandler } from '../src/extensionApi';
+import { Protocol, ServerState } from 'rsp-client';
+import { ServersViewTreeDataProvider } from '../src/serverExplorer';
 import * as sinon from 'sinon';
 import * as sinonChai from 'sinon-chai';
-import * as vscode from 'vscode';
-import { ServersViewTreeDataProvider } from '../src/serverExplorer';
-import { ServerState, Protocol } from 'rsp-client';
-import { CommandHandler } from '../src/extensionApi';
 import { Stubs } from './stubs';
+import * as vscode from 'vscode';
 
 const expect = chai.expect;
 chai.use(sinonChai);
@@ -73,7 +73,7 @@ suite('Command Handler', () => {
         serverExplorer = new ServersViewTreeDataProvider(stubs.client);
         handler = new CommandHandler(serverExplorer, stubs.client);
         sandbox.stub(serverExplorer);
-      });
+    });
 
     teardown(() => {
         sandbox.restore();
@@ -113,7 +113,7 @@ suite('Command Handler', () => {
             statusStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverState);
             startStub = sandbox.stub().resolves(response);
             stubs.outgoing.startServerAsync = startStub;
-          });
+        });
 
         test('works with injected context', async () => {
             const result = await handler.startServer('run', serverState);
@@ -281,12 +281,12 @@ suite('Command Handler', () => {
             statusStub.returns(ServerState.STARTED);
 
             try {
-              await handler.removeServer(serverState);
-              expect.fail();
-          } catch (err) {
-              expect(err).to.include(serverState.server.id);
-          }
-      });
+                await handler.removeServer(serverState);
+                expect.fail();
+            } catch (err) {
+                expect(err).to.include(serverState.server.id);
+            }
+        });
 
         test('throws any errors coming from the rsp client', async () => {
             sandbox.stub(vscode.window, 'showWarningMessage').resolves('Yes');
@@ -301,10 +301,10 @@ suite('Command Handler', () => {
         });
 
         test('wont remove if user does not confirm', async () => {
-          sandbox.stub(vscode.window, 'showWarningMessage').resolves();
-          expect(removeStub).not.called;
+            sandbox.stub(vscode.window, 'showWarningMessage').resolves();
+            expect(removeStub).not.called;
         });
-  });
+    });
 
     suite('restartServer', () => {
         let startStub: sinon.SinonStub;

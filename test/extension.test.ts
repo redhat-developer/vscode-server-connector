@@ -5,32 +5,32 @@
 
 // The module 'assert' provides assertion methods from node
 import * as assert from 'assert';
-import * as vscode from 'vscode';
 import * as chai from 'chai';
-import * as sinonChai from 'sinon-chai';
-import * as sinon from 'sinon';
-import { Protocol } from 'rsp-client';
-import * as server from '../src/server';
 import { activate, deactivate } from '../src/extension';
 import { CommandHandler } from '../src/extensionApi';
+import { Protocol } from 'rsp-client';
+import * as server from '../src/server';
+import * as sinon from 'sinon';
+import * as sinonChai from 'sinon-chai';
 import { Stubs } from './stubs';
+import * as vscode from 'vscode';
 
 const expect = chai.expect;
 chai.use(sinonChai);
 
 // Defines a Mocha test suite to group tests of similar kind together
-suite('Extension Tests', function() {
+suite('Extension Tests', () => {
     let sandbox: sinon.SinonSandbox;
     let startStub;
     let stubs: Stubs;
 
     class DummyMemento implements vscode.Memento {
-        get<T>(key: string): Promise<T|undefined> {
-          return Promise.resolve(undefined);
+        public get<T>(key: string): Promise<T|undefined> {
+            return Promise.resolve(undefined);
         }
 
-        update(key: string, value: any): Promise<void> {
-          return Promise.resolve();
+        public update(key: string, value: any): Promise<void> {
+            return Promise.resolve();
         }
     }
 
@@ -42,7 +42,7 @@ suite('Extension Tests', function() {
         globalState: new DummyMemento(),
         asAbsolutePath(relativePath: string): string {
             return '';
-          }
+        }
     };
 
     const serverdata = {
@@ -71,13 +71,13 @@ suite('Extension Tests', function() {
 
         stubs.outgoing.getServerHandles.resolves([]);
         const capab: Protocol.ServerCapabilitiesResponse = {
-          serverCapabilities: {
-          },
-          clientRegistrationStatus: undefined
+            serverCapabilities: {
+            },
+            clientRegistrationStatus: undefined
         };
         stubs.outgoing.registerClientCapabilities.resolves(capab);
         stubs.incoming.onPromptString.resolves();
-      });
+    });
 
     teardown(() => {
         sandbox.restore();
@@ -118,13 +118,14 @@ suite('Extension Tests', function() {
             });
             const t1 = foundServerCommands.length;
             const t2 = SERVER_COMMANDS.length;
-            assert.equal(t1, t2, 'Some server commands are not registered properly or a new command is not added to the test');
+            assert.equal(t1, t2,
+                'Some server commands are not registered properly or a new command is not added to the test');
         });
     });
 
     test('server has been stopped on deactivation', () => {
-      deactivate();
+        deactivate();
 
-      expect(stubs.clientStub.shutdownServer).calledOnce;
+        expect(stubs.clientStub.shutdownServer).calledOnce;
     });
 });

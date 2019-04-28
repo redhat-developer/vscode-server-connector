@@ -279,7 +279,7 @@ export class CommandHandler {
         const selectedServerType: Protocol.ServerType = context.server.type;
         const selectedServerName: string = context.server.id;
 
-        const outputChannel = vscode.window.createOutputChannel("vscode-adapter");
+        const outputChannel = vscode.window.createOutputChannel('vscode-adapter');
         outputChannel.show();
         outputChannel.appendLine(`Server Name: ${selectedServerName}`);
         outputChannel.appendLine(`Server Type Id: ${selectedServerType.id}`);

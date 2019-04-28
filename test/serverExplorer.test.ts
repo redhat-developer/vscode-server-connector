@@ -5,13 +5,13 @@
  *-----------------------------------------------------------------------------------------------*/
 
 import * as chai from 'chai';
+import * as path from 'path';
+import { Protocol } from 'rsp-client';
+import { ServersViewTreeDataProvider } from '../src/serverExplorer';
 import * as sinon from 'sinon';
 import * as sinonChai from 'sinon-chai';
-import { ServersViewTreeDataProvider } from '../src/serverExplorer';
-import { Protocol } from 'rsp-client';
-import { EventEmitter, window, Uri, OutputChannel, TreeItemCollapsibleState } from 'vscode';
-import * as path from 'path';
 import { Stubs } from './stubs';
+import { EventEmitter, OutputChannel, TreeItemCollapsibleState, Uri, window } from 'vscode';
 
 const expect = chai.expect;
 chai.use(sinonChai);
@@ -257,7 +257,7 @@ suite('Server explorer', () => {
         const userSelectedPath = { fsPath: 'path/path' };
 
         const discoveryPath: Protocol.DiscoveryPath = {
-        filepath: userSelectedPath.fsPath
+            filepath: userSelectedPath.fsPath
         };
 
         setup(() => {
