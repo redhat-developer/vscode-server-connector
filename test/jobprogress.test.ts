@@ -5,24 +5,25 @@
 
 import * as chai from 'chai';
 import * as chaipromise from 'chai-as-promised';
+import { JobProgress } from '../src/jobprogress';
+import { Protocol } from 'rsp-client';
 import * as sinon from 'sinon';
 import * as sinonChai from 'sinon-chai';
-import * as vscode from 'vscode';
-import { Protocol } from 'rsp-client';
 import { Stubs } from './stubs';
-import { JobProgress } from '../src/jobprogress';
+import * as vscode from 'vscode';
 
 const expect = chai.expect;
 chai.use(sinonChai);
 chai.use(chaipromise);
 
 class CancellationStub implements vscode.CancellationToken {
-    isCancellationRequested: boolean;
-    onCancellationRequested: vscode.Event<any> =
-      function() { return { dispose() { } }; };
+    public isCancellationRequested: boolean;
+    public onCancellationRequested: vscode.Event<any> = () => {
+        return {dispose() {}};
+    }
 }
 class ProgressStub implements vscode.Progress<{ message: string, increment: number }> {
-    report(value: { message: string, increment: number }): void {
+    public report(value: { message: string, increment: number }): void {
     }
 }
 
@@ -47,23 +48,23 @@ suite('Job Progress', () => {
     let withProgressFakeSpy;
 
     setup(() => {
-      sandbox = sinon.createSandbox();
-      stubs = new Stubs(sandbox);
+        sandbox = sinon.createSandbox();
+        stubs = new Stubs(sandbox);
 
-      stubs.incoming.onJobAdded = sandbox.stub();
-      stubs.incoming.onJobRemoved = sandbox.stub();
-      stubs.incoming.onJobChanged = sandbox.stub();
+        stubs.incoming.onJobAdded = sandbox.stub();
+        stubs.incoming.onJobRemoved = sandbox.stub();
+        stubs.incoming.onJobChanged = sandbox.stub();
 
-      cancellationStub = new CancellationStub();
-      progressStub = new ProgressStub();
-      progressStubReport = sandbox.spy(progressStub, 'report');
-      withProgressFake = (
+        cancellationStub = new CancellationStub();
+        progressStub = new ProgressStub();
+        progressStubReport = sandbox.spy(progressStub, 'report');
+        withProgressFake = (
           options: vscode.ProgressOptions,
           task: (progress: vscode.Progress<{ message: string; increment: number }>, token: vscode.CancellationToken) => Thenable<{}>) => {
-          promise = task(progressStub, cancellationStub);
-          return promise;
-      };
-      withProgressFakeSpy = sandbox.stub(vscode.window, 'withProgress').callsFake(withProgressFake);
+            promise = task(progressStub, cancellationStub);
+            return promise;
+        };
+        withProgressFakeSpy = sandbox.stub(vscode.window, 'withProgress').callsFake(withProgressFake);
     });
 
     teardown(() => {
@@ -104,12 +105,12 @@ suite('Job Progress', () => {
     test('onJobChanged notification should be reported incrementally', () => {
         // given
         const jobProgress10: Protocol.JobProgress = {
-          percent: 10,
-          handle: job
+            percent: 10,
+            handle: job
         };
         const jobProgress40: Protocol.JobProgress = {
-          percent: 40,
-          handle: job
+            percent: 40,
+            handle: job
         };
         JobProgress.create(stubs.client);
 
@@ -131,8 +132,8 @@ suite('Job Progress', () => {
     test('onJobChanged notification should not be reported if other job', () => {
         // given
         const otherJobProgress: Protocol.JobProgress = {
-          percent: 10,
-          handle: otherJob
+            percent: 10,
+            handle: otherJob
         };
         JobProgress.create(stubs.client);
 
@@ -158,9 +159,9 @@ suite('Job Progress', () => {
         // then
         // only initial progress report sets increment to 0, 2nd change is not reported bcs is different job
         expect(onCancellationSpy).calledOnce;
-      });
+    });
 
-      test('cancelling CancellationToke cancels job', () => {
+    test('cancelling CancellationToke cancels job', () => {
         // given
         const onCancellationSpy = sandbox.spy(cancellationStub, 'onCancellationRequested');
         stubs.outgoing.cancelJob = sinon.stub().withArgs(job).resolves();
@@ -230,51 +231,51 @@ suite('Job Progress', () => {
 
     test('show error that contains only message if there is no trace if job removal ended with error', () => {
       // given
-      sandbox.stub(vscode.window, 'showErrorMessage');
-      const timeoutStatus: Protocol.Status = {
-          severity: 4,
-          plugin: undefined,
-          code: 0,
-          message: 'Error',
-          trace: undefined,
-          ok: false
-      };
-      const jobRemovedTimeout: Protocol.JobRemoved = {
-          handle: job,
-          status: timeoutStatus
-      };
-      JobProgress.create(stubs.client);
-      callOnJobAddedListenerWith(job, stubs.incoming.onJobAdded);
+        sandbox.stub(vscode.window, 'showErrorMessage');
+        const timeoutStatus: Protocol.Status = {
+            severity: 4,
+            plugin: undefined,
+            code: 0,
+            message: 'Error',
+            trace: undefined,
+            ok: false
+        };
+        const jobRemovedTimeout: Protocol.JobRemoved = {
+            handle: job,
+            status: timeoutStatus
+        };
+        JobProgress.create(stubs.client);
+        callOnJobAddedListenerWith(job, stubs.incoming.onJobAdded);
 
       // when
-      callOnJobRemovedListenerWith(jobRemovedTimeout, stubs.incoming.onJobRemoved);
+        callOnJobRemovedListenerWith(jobRemovedTimeout, stubs.incoming.onJobRemoved);
 
       // then
-      expect(promise).to.eventually.rejectedWith('Error');
-  });
+        expect(promise).to.eventually.rejectedWith('Error');
+    });
 
-  test('dont show error if job removal ended with success', () => {
+    test('dont show error if job removal ended with success', () => {
       // given
-      const timeoutStatus: Protocol.Status = {
-          severity: 0,
-          plugin: undefined,
-          code: 0,
-          message: undefined,
-          trace: undefined,
-          ok: true
-      };
-      const jobRemovedTimeout: Protocol.JobRemoved = {
-          handle: job,
-          status: timeoutStatus
-      };
-      JobProgress.create(stubs.client);
-      callOnJobAddedListenerWith(job, stubs.incoming.onJobAdded);
+        const timeoutStatus: Protocol.Status = {
+            severity: 0,
+            plugin: undefined,
+            code: 0,
+            message: undefined,
+            trace: undefined,
+            ok: true
+        };
+        const jobRemovedTimeout: Protocol.JobRemoved = {
+            handle: job,
+            status: timeoutStatus
+        };
+        JobProgress.create(stubs.client);
+        callOnJobAddedListenerWith(job, stubs.incoming.onJobAdded);
 
       // when
-      callOnJobRemovedListenerWith(jobRemovedTimeout, stubs.incoming.onJobRemoved);
+        callOnJobRemovedListenerWith(jobRemovedTimeout, stubs.incoming.onJobRemoved);
 
       // then
-      expect(promise).to.eventually.equal(job);
+        expect(promise).to.eventually.equal(job);
     });
 });
 

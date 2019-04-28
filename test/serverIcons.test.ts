@@ -48,4 +48,4 @@ suite('Server Icons', () => {
         expect(icon).not.to.be.equal(defaultIcon);
     });
 
-  });
+});

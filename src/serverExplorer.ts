@@ -5,24 +5,24 @@
 
 'use strict';
 
-import {
-    TreeDataProvider,
-    Event,
-    TreeItem,
-    window,
-    OpenDialogOptions,
-    InputBoxOptions,
-    EventEmitter,
-    OutputChannel,
-    workspace,
-    Uri,
-    TreeItemCollapsibleState
-} from 'vscode';
 import * as path from 'path';
+import {
+    Event,
+    EventEmitter,
+    InputBoxOptions,
+    OpenDialogOptions,
+    OutputChannel,
+    TreeDataProvider,
+    TreeItem,
+    TreeItemCollapsibleState,
+    Uri,
+    window,
+    workspace
+} from 'vscode';
 
 import {
-    RSPClient,
     Protocol,
+    RSPClient,
     ServerState,
     StatusSeverity
 } from 'rsp-client';
@@ -31,13 +31,14 @@ import { ServerIcon } from './serverIcon';
 export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.ServerState | Protocol.DeployableState> {
 
     private _onDidChangeTreeData: EventEmitter<Protocol.ServerState | undefined> = new EventEmitter<Protocol.ServerState | undefined>();
-    readonly onDidChangeTreeData: Event<Protocol.ServerState | undefined> = this._onDidChangeTreeData.event;
+    public readonly onDidChangeTreeData: Event<Protocol.ServerState | undefined> = this._onDidChangeTreeData.event;
     private client: RSPClient;
     public serverStatus: Map<string, Protocol.ServerState> = new Map<string, Protocol.ServerState>();
     public serverOutputChannels: Map<string, OutputChannel> = new Map<string, OutputChannel>();
     public runStateEnum: Map<number, string> = new Map<number, string>();
     public publishStateEnum: Map<number, string> = new Map<number, string>();
-    private serverAttributes: Map<string, {required: Protocol.Attributes; optional: Protocol.Attributes}> = new Map<string, {required: Protocol.Attributes; optional: Protocol.Attributes}>();
+    private serverAttributes: Map<string, {required: Protocol.Attributes; optional: Protocol.Attributes}> = new
+        Map<string, {required: Protocol.Attributes; optional: Protocol.Attributes}>();
 
     constructor(client: RSPClient) {
         this.client = client;
@@ -57,13 +58,13 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
         client.getOutgoingHandler().getServerHandles().then(servers => servers.forEach(async server => this.insertServer(server)));
     }
 
-    async insertServer(event: Protocol.ServerHandle) {
+    public async insertServer(event: Protocol.ServerHandle) {
         const state = await this.client.getOutgoingHandler().getServerState(event);
         this.serverStatus.set(state.server.id, state);
         this.refresh(state);
     }
 
-    updateServer(event: Protocol.ServerState): void {
+    public updateServer(event: Protocol.ServerState): void {
         this.serverStatus.set(event.server.id, event);
         this.refresh();
         const channel: OutputChannel = this.serverOutputChannels.get(event.server.id);
@@ -72,7 +73,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
         }
     }
 
-    removeServer(handle: Protocol.ServerHandle): void {
+    public removeServer(handle: Protocol.ServerHandle): void {
         this.serverStatus.delete(handle.id);
         this.refresh();
         const channel: OutputChannel = this.serverOutputChannels.get(handle.id);
@@ -83,7 +84,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
         }
     }
 
-    addServerOutput(output: Protocol.ServerProcessOutput): void {
+    public addServerOutput(output: Protocol.ServerProcessOutput): void {
         let channel: OutputChannel = this.serverOutputChannels.get(output.server.id);
         if (channel === undefined) {
             channel = window.createOutputChannel(`Server: ${output.server.id}`);
@@ -95,58 +96,60 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
         }
     }
 
-    showOutput(state: Protocol.ServerState): void {
+    public showOutput(state: Protocol.ServerState): void {
         const channel: OutputChannel = this.serverOutputChannels.get(state.server.id);
         if (channel) {
             channel.show();
         }
     }
 
-    refresh(data?: Protocol.ServerState): void {
+    public refresh(data?: Protocol.ServerState): void {
         this._onDidChangeTreeData.fire(data);
         if (data !== undefined) {
             this.selectNode(data);
         }
     }
 
-    selectNode(data: Protocol.ServerState): void {
+    public selectNode(data: Protocol.ServerState): void {
         const view = window.createTreeView('servers', { treeDataProvider: this });
         view.reveal(data, { focus: true, select: true });
     }
 
-    addDeployment(server: Protocol.ServerHandle): Thenable<Protocol.Status> {
-        return window.showOpenDialog(<OpenDialogOptions>{
+    public addDeployment(server: Protocol.ServerHandle): Thenable<Protocol.Status> {
+        return window.showOpenDialog({
             canSelectFiles: true,
             canSelectMany: false,
             canSelectFolders: true,
             openLabel: 'Select Deployment file or folder'
-        }).then(async file => {
+        } as OpenDialogOptions).then(async file => {
             if (file && file.length === 1) {
 
-                const answer = await window.showQuickPick(['No', 'Yes'], {placeHolder: 
+                const answer = await window.showQuickPick(['No', 'Yes'], {placeHolder:
                     'Do you want to edit optional deployment parameters?'});
                 const options = {};
                 if (answer === 'Yes') {
                     const optionMap: Protocol.Attributes = await this.client.getOutgoingHandler().listDeploymentOptions(server);
                     for (const key in optionMap.attributes) {
-                        const attribute = optionMap.attributes[key];
-                        const val = await window.showInputBox({prompt: attribute.description,
-                            value: attribute.defaultVal, password: attribute.secret});
-                        if (val) {
-                            options[key] = val;
+                        if (key) {
+                            const attribute = optionMap.attributes[key];
+                            const val = await window.showInputBox({prompt: attribute.description,
+                                value: attribute.defaultVal, password: attribute.secret});
+                            if (val) {
+                                options[key] = val;
+                            }
                         }
                     }
                 }
 
                 // var fileUrl = require('file-url');
                 // const filePath : string = fileUrl(file[0].fsPath);
-                const deployableRef: Protocol.DeployableReference = { 
+                const deployableRef: Protocol.DeployableReference = {
                     label: file[0].fsPath,
                     path: file[0].fsPath,
                     options: options
                 };
-                const req: Protocol.ServerDeployableReference = { 
-                    server: server, 
+                const req: Protocol.ServerDeployableReference = {
+                    server: server,
                     deployableReference : deployableRef
                 };
                 const status = await this.client.getOutgoingHandler().addDeployable(req);
@@ -158,9 +161,9 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
         });
     }
 
-    async removeDeployment(server: Protocol.ServerHandle, deployableRef: Protocol.DeployableReference): Promise<Protocol.Status> {
-        const req: Protocol.ServerDeployableReference = { 
-            server: server, 
+    public async removeDeployment(server: Protocol.ServerHandle, deployableRef: Protocol.DeployableReference): Promise<Protocol.Status> {
+        const req: Protocol.ServerDeployableReference = {
+            server: server,
             deployableReference : deployableRef
         };
         const status = await this.client.getOutgoingHandler().removeDeployable(req);
@@ -170,7 +173,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
         return status;
     }
 
-    async publish(server: Protocol.ServerHandle, type: number): Promise<Protocol.Status> {
+    public async publish(server: Protocol.ServerHandle, type: number): Promise<Protocol.Status> {
         const req: Protocol.PublishServerRequest = { server: server, kind : type};
         const status = await this.client.getOutgoingHandler().publish(req);
         if (!StatusSeverity.isOk(status)) {
@@ -179,14 +182,14 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
         return status;
     }
 
-    async addLocation(): Promise<Protocol.Status> {
+    public async addLocation(): Promise<Protocol.Status> {
         const server: { name: string, bean: Protocol.ServerBean } = { name: null, bean: null };
-        const folders = await window.showOpenDialog(<OpenDialogOptions>{
+        const folders = await window.showOpenDialog({
             canSelectFiles: false,
             canSelectMany: false,
             canSelectFolders: true,
             openLabel: 'Select desired server location'
-        });
+        } as OpenDialogOptions);
 
         if (!folders
           || folders.length === 0) {
@@ -210,14 +213,14 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
     }
 
     private async createServer(bean: Protocol.ServerBean, name: string, attributes: any = {}): Promise<Protocol.Status> {
-      if (!bean || !name) {
-        throw new Error('Couldn\'t create server: no type or name provided.');
-      }
-      const response = await this.client.getServerCreation().createServerFromBeanAsync(bean, name, attributes);
-      if (!StatusSeverity.isOk(response.status)) {
-          throw new Error(response.status.message);
-      }
-      return response.status;
+        if (!bean || !name) {
+            throw new Error('Couldn\'t create server: no type or name provided.');
+        }
+        const response = await this.client.getServerCreation().createServerFromBeanAsync(bean, name, attributes);
+        if (!StatusSeverity.isOk(response.status)) {
+            throw new Error(response.status.message);
+        }
+        return response.status;
     }
 
     /**
@@ -258,16 +261,16 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
         if (serverAttribute.optional
               && serverAttribute.optional.attributes
               && Object.keys(serverAttribute.optional.attributes).length > 0) {
-          for (const key in serverAttribute.required.attributes) {
-            if (key !== 'server.home.dir' && key !== 'server.home.file') {
-                const attribute = serverAttribute.required.attributes[key];
-                const value = await window.showInputBox({prompt: attribute.description,
-                    value: attribute.defaultVal, password: attribute.secret});
-                if (value) {
-                    attributes[key] = value;
+            for (const key in serverAttribute.required.attributes) {
+                if (key !== 'server.home.dir' && key !== 'server.home.file') {
+                    const attribute = serverAttribute.required.attributes[key];
+                    const value = await window.showInputBox({prompt: attribute.description,
+                        value: attribute.defaultVal, password: attribute.secret});
+                    if (value) {
+                        attributes[key] = value;
+                    }
                 }
             }
-          }
         }
         return attributes;
     }
@@ -297,10 +300,10 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
         return attributes;
     }
 
-    getTreeItem(item: Protocol.ServerState |  Protocol.DeployableState): TreeItem {
-        if ((<Protocol.ServerState>item).deployableStates) {
+    public getTreeItem(item: Protocol.ServerState |  Protocol.DeployableState): TreeItem {
+        if ((item as Protocol.ServerState).deployableStates) {
             // item is a serverState
-            const state: Protocol.ServerState = <Protocol.ServerState>item;
+            const state: Protocol.ServerState = item as Protocol.ServerState;
             const handle: Protocol.ServerHandle = state.server;
             const id1: string = handle.id;
             const runState: string = this.runStateEnum.get(state.state);
@@ -310,8 +313,8 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
             treeItem.iconPath = ServerIcon.get(handle.type);
             treeItem.contextValue =  runState;
             return treeItem;
-        } else if ((<Protocol.DeployableState>item).reference ) {
-            const state: Protocol.DeployableState = <Protocol.DeployableState>item;
+        } else if ((item as Protocol.DeployableState).reference ) {
+            const state: Protocol.DeployableState = item as Protocol.DeployableState;
             const id1: string = state.reference.label;
             const runState: string = this.runStateEnum.get(state.state);
             const pubState: string = this.publishStateEnum.get(state.publishState);
@@ -323,17 +326,17 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
         }
     }
 
-    getChildren(element?:  Protocol.ServerState | Protocol.DeployableState):  Protocol.ServerState[] | Protocol.DeployableState[] {
+    public getChildren(element?:  Protocol.ServerState | Protocol.DeployableState):  Protocol.ServerState[] | Protocol.DeployableState[] {
         if (element === undefined) {
             return Array.from(this.serverStatus.values());
         }
-        if ((<Protocol.ServerState>element).deployableStates ) {
-            return (<Protocol.ServerState>element).deployableStates;
+        if ((element as Protocol.ServerState).deployableStates ) {
+            return (element as Protocol.ServerState).deployableStates;
         }
     }
 
-    getParent(item?:  Protocol.ServerState | Protocol.DeployableState): Protocol.ServerState | Protocol.DeployableState {
-        if(item === undefined || (<Protocol.ServerState>item).deployableStates) {
+    public getParent(item?:  Protocol.ServerState | Protocol.DeployableState): Protocol.ServerState | Protocol.DeployableState {
+        if (item === undefined || (item as Protocol.ServerState).deployableStates) {
             return undefined;
         }
     }
