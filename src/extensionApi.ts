@@ -5,6 +5,7 @@
 
 'use strict';
 
+import { CustomDebugConfiguration } from './customDebugConfiguration';
 import { EditorUtil } from './editorutil';
 import { Protocol, RSPClient, ServerState, StatusSeverity } from 'rsp-client';
 import { ServerInfo } from './server';
@@ -79,6 +80,36 @@ export class CommandHandler {
         } else {
             return Promise.reject('The server is already stopped.');
         }
+    }
+
+    public async debugServer(mode: string, context?: Protocol.ServerState): Promise<Protocol.StartServerResponse> {
+        if (vscode.extensions.getExtension('vscjava.vscode-java-debug') === undefined) {
+            vscode.window.showErrorMessage('Java Extension Pack extension is required. Install/Enable it before proceeding.');
+            return;
+        }
+
+        return this.startServer(mode, context).then(
+            status => {
+                const debugDetails = status.details.properties;
+                vscode.window.showOpenDialog({
+                    canSelectFiles: true,
+                    canSelectMany: false,
+                    canSelectFolders: true,
+                    openLabel: 'Open Project to debug'
+                } as vscode.OpenDialogOptions).then(
+                    folder => {
+                        if (folder != null && folder.length > 0) {
+                            vscode.commands.executeCommand('vscode.openFolder', folder[0]);
+                            const workspaceFolder = vscode.workspace.getWorkspaceFolder(folder[0]);
+                            vscode.debug.startDebugging(workspaceFolder, new CustomDebugConfiguration(debugDetails['debug.details.port']).provideDebugConfigurations(workspaceFolder)[0]);
+                        }
+                    }
+                );
+
+                return status;
+            }
+        );
+
     }
 
     public async removeServer(context?: Protocol.ServerState): Promise<Protocol.Status> {
