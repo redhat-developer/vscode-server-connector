@@ -84,7 +84,7 @@ export class CommandHandler {
 
     public async debugServer(mode: string, context?: Protocol.ServerState): Promise<Protocol.StartServerResponse> {
         if (vscode.extensions.getExtension('vscjava.vscode-java-debug') === undefined) {
-            vscode.window.showErrorMessage('Java Extension Pack extension is required. Install/Enable it before proceeding.');
+            vscode.window.showErrorMessage('Debugger for Java extension is required. Install/Enable it before proceeding.');
             return;
         }
 
