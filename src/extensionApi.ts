@@ -10,11 +10,14 @@ import { Protocol, RSPClient, ServerState, StatusSeverity } from 'rsp-client';
 import { ServerInfo } from './server';
 import { ServersViewTreeDataProvider } from './serverExplorer';
 import * as vscode from 'vscode';
+
 export interface ExtensionAPI {
     readonly serverInfo: ServerInfo;
 }
 
 export class CommandHandler {
+
+    private static readonly LIST_RUNTIMES_TIMEOUT: number = 20000;
 
     private client: RSPClient;
     private serversData: ServersViewTreeDataProvider;
@@ -338,7 +341,7 @@ export class CommandHandler {
     }
 
     private async promptDownloadableRuntimes(): Promise<string> {
-        const newlist = this.client.getOutgoingHandler().listDownloadableRuntimes(5000)
+        const newlist = this.client.getOutgoingHandler().listDownloadableRuntimes(CommandHandler.LIST_RUNTIMES_TIMEOUT)
             .then(async (list: Protocol.ListDownloadRuntimeResponse) => {
                 const rts: Protocol.DownloadRuntimeDescription[] = list.runtimes;
                 const newlist: any[] = [];
