@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 
-const debugConfig = {
-    type: 'vscode-adapter',
+const debugConfig: vscode.DebugConfiguration = {
+    type: 'java',
     request: 'attach',
     name: 'Debug (Remote)',
     hostName: 'localhost',
@@ -19,7 +19,7 @@ export class CustomDebugConfiguration implements vscode.DebugConfigurationProvid
     }
 
     public provideDebugConfigurations(folder: vscode.WorkspaceFolder | undefined, token?: vscode.CancellationToken): vscode.ProviderResult<vscode.DebugConfiguration[]> {
-        return Promise.resolve([debugConfig]);
+        return [debugConfig];
     }
 
 }

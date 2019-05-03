@@ -31,7 +31,7 @@
     "onCommand:server.addLocation",
     "onCommand:server.downloadRuntime",
     "onCommand:server.start",
-    "onCommand:server.debug",
+    "onCommand:server.debug",    
     "onCommand:server.stop",
     "onCommand:server.restart",
     "onCommand:server.remove",
@@ -70,7 +70,7 @@
         "command": "server.debug",
         "title": "Debug",
         "category": "Servers"
-      },
+      },      
       {
         "command": "server.stop",
         "title": "Stop",
