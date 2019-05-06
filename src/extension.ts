@@ -65,7 +65,7 @@ function registerCommands(commandHandler: CommandHandler, context: vscode.Extens
         vscode.commands.registerCommand('server.restart',
             context => executeCommand(commandHandler.restartServer, commandHandler, context)),
         vscode.commands.registerCommand('server.debug',
-            context => executeCommand(commandHandler.debugServer, commandHandler, 'debug', context)),
+            context => executeCommand(commandHandler.debugServer, commandHandler, context)),
         vscode.commands.registerCommand('server.stop',
             context => executeCommand(commandHandler.stopServer, commandHandler, context)),
         vscode.commands.registerCommand('server.remove',

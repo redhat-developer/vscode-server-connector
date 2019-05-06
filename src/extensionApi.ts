@@ -5,7 +5,6 @@
 
 'use strict';
 
-import { CustomDebugConfiguration } from './customDebugConfiguration';
 import { EditorUtil } from './editorutil';
 import { Protocol, RSPClient, ServerState, StatusSeverity } from 'rsp-client';
 import { ServerInfo } from './server';
@@ -82,34 +81,57 @@ export class CommandHandler {
         }
     }
 
-    public async debugServer(mode: string, context?: Protocol.ServerState): Promise<Protocol.StartServerResponse> {
-
-        const folderProject = await vscode.window.showOpenDialog({
-            canSelectFiles: true,
-            canSelectMany: false,
-            canSelectFolders: true,
-            openLabel: 'Open Project to debug'
-        } as vscode.OpenDialogOptions).then(
-            folder => {
-                if (folder != null && folder.length > 0) {
-                    vscode.commands.executeCommand('vscode.openFolder', folder[0]);
-                    return folder[0];
-                }
-            }
-        );
-
-        if (!folderProject) return;
+    public async debugServer(context?: Protocol.ServerState): Promise<Protocol.StartServerResponse> {
 
         if (vscode.extensions.getExtension('vscjava.vscode-java-debug') === undefined) {
             vscode.window.showErrorMessage('Debugger for Java extension is required. Install/Enable it before proceeding.');
             return;
         }
 
-        return this.startServer(mode, context).then(
+        // list all projects that belong to the current workspace allowing the user choose among them or pick a new one
+        let optionsQuickPick: Array<{label: string, description: string}>  = [{ label: 'Add a new project', description: undefined}];
+        if (vscode.workspace.workspaceFolders !== undefined) {
+            optionsQuickPick = optionsQuickPick.concat(vscode.workspace.workspaceFolders.map(x => ({label: x.name, description: x.uri.toString()})));
+        }
+
+        let folderProject: vscode.Uri =  await vscode.window.showQuickPick(optionsQuickPick,
+                                                { placeHolder: 'Select the project you want to debug', ignoreFocusOut: true }
+                                        ).then(folder => {
+                                            return (!folder || folder.description === undefined ? undefined : vscode.Uri.parse(folder.description));
+                                        });
+
+        if (!folderProject) {
+            folderProject = await vscode.window.showOpenDialog({
+                canSelectFiles: true,
+                canSelectMany: false,
+                canSelectFolders: true,
+                openLabel: 'Open Project to debug'
+            } as vscode.OpenDialogOptions).then(
+                folder => {
+                    if (folder != null && folder.length > 0) {
+                        vscode.workspace.updateWorkspaceFolders(vscode.workspace.workspaceFolders ? vscode.workspace.workspaceFolders.length : 0,
+                                                                null,
+                                                                { uri: vscode.Uri.parse(folder[0].path) });
+                        return folder[0];
+                    }
+                }
+            );
+        }
+
+        if (!folderProject) return;
+
+        return this.startServer('debug', context).then(
             status => {
-                const debugDetails = status.details.properties;
                 const workspaceFolder = vscode.workspace.getWorkspaceFolder(folderProject);
-                vscode.debug.startDebugging(workspaceFolder, new CustomDebugConfiguration(debugDetails['debug.details.port']).provideDebugConfigurations(workspaceFolder)[0]);
+                vscode.debug.startDebugging(workspaceFolder,
+                    {
+                        type: 'java',
+                        request: 'attach',
+                        name: 'Debug (Remote)',
+                        hostName: 'localhost',
+                        port: `${status.details.properties['debug.details.port']}`
+                    }
+                );
 
                 return status;
             }
