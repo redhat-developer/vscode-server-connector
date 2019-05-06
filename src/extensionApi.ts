@@ -164,6 +164,7 @@ export class CommandHandler {
                 return value.reference.label;
             });
             deploymentId = await vscode.window.showQuickPick(deployables, { placeHolder: 'Select deployment to remove' });
+            if (!deploymentId) return null;
         } else {
             serverId = context.server.id;
             deploymentId = context.reference.label;
@@ -187,7 +188,7 @@ export class CommandHandler {
     public async fullPublishServer(context?: Protocol.ServerState): Promise<Protocol.Status> {
         let serverId: string;
         if (context === undefined) {
-            serverId = await this.selectServer('Select runtime to publish');
+            serverId = await this.selectServer('Select server to publish');
             if (!serverId) return null;
         } else {
             serverId = context.server.id;
@@ -203,8 +204,8 @@ export class CommandHandler {
 
     public async createServer(): Promise<Protocol.Status> {
         this.assertServersDataExists();
-        const download: string = await vscode.window.showQuickPick(['Yes', 'No, use runtime on disk'],
-            { placeHolder: 'Download runtime?', ignoreFocusOut: true });
+        const download: string = await vscode.window.showQuickPick(['Yes', 'No, use server on disk'],
+            { placeHolder: 'Download server?', ignoreFocusOut: true });
         if (!download) {
             return;
         }
@@ -262,12 +263,10 @@ export class CommandHandler {
     }
 
     public async infoServer(context?: Protocol.ServerState): Promise<void> {
-
         if (context === undefined) {
             if (this.serversData) {
-                const serverId = await vscode.window.showQuickPick(Array.from(this.serversData.serverStatus.keys()),
-                { placeHolder: 'Select runtime/server you want to retrieve info about' });
-                if (!serverId) return Promise.reject('Please select a server from the Servers view.');
+                const serverId = await this.selectServer('Select server you want to retrieve info about');
+                if (!serverId) return null;
                 context = this.serversData.serverStatus.get(serverId);
             } else {
                 return Promise.reject('Runtime Server Protocol (RSP) Server is starting, please try again later.');
@@ -360,7 +359,7 @@ export class CommandHandler {
                 return newlist;
             });
         const answer = await vscode.window.showQuickPick(newlist,
-            { placeHolder: 'Please choose a runtime to download.' });
+            { placeHolder: 'Please choose a server to download.' });
         console.log(`${answer} was chosen`);
         if (!answer) {
             return null;
