@@ -73,6 +73,7 @@ suite('Command Handler', () => {
         serverExplorer = new ServersViewTreeDataProvider(stubs.client);
         handler = new CommandHandler(serverExplorer, stubs.client);
         sandbox.stub(serverExplorer);
+        serverExplorer.serverStatus.set('server', serverState);
     });
 
     teardown(() => {
@@ -309,9 +310,16 @@ suite('Command Handler', () => {
     suite('restartServer', () => {
         let startStub: sinon.SinonStub;
         let stopStub: sinon.SinonStub;
+        const startedState: Protocol.ServerState = {
+            deployableStates: [],
+            publishState: 0, server:
+            serverHandle,
+            state: ServerState.STARTED
+        };
 
         setup(() => {
-            sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverState);
+            serverExplorer.serverStatus.set('server', startedState);
+            sandbox.stub(serverExplorer.serverStatus, 'get').returns(startedState);
             startStub = stubs.outgoing.startServerAsync.resolves(status);
             stopStub = stubs.outgoingSync.stopServerSync.resolves(status);
             sandbox.stub(vscode.window, 'showQuickPick').resolves('id');
