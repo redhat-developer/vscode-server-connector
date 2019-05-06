@@ -340,7 +340,8 @@ export class CommandHandler {
     private async promptDownloadableRuntimes(): Promise<string> {
         const newlist = this.client.getOutgoingHandler().listDownloadableRuntimes(5000)
             .then(async (list: Protocol.ListDownloadRuntimeResponse) => {
-                const rts: Protocol.DownloadRuntimeDescription[] = list.runtimes;
+                const collator = new Intl.Collator(undefined, {numeric: true, sensitivity: 'base'});
+                const rts: Protocol.DownloadRuntimeDescription[] = list.runtimes.sort((runtimeA, runtimeB) => collator.compare(runtimeA.name, runtimeB.name));
                 const newlist: any[] = [];
                 for (const rt of rts) {
                     newlist.push({ label: rt.name, id: rt.id });
