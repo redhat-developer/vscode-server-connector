@@ -21,6 +21,7 @@ export class CommandHandler {
 
     private client: RSPClient;
     private serversData: ServersViewTreeDataProvider;
+    private static readonly NO_SERVERS_FILTER: number = -1;
 
     constructor(serversData: ServersViewTreeDataProvider, client: RSPClient) {
         this.client = client;
@@ -32,8 +33,7 @@ export class CommandHandler {
         let selectedServerId: string;
 
         if (context === undefined) {
-            selectedServerId = await vscode.window.showQuickPick(Array.from(this.serversData.serverStatus.keys()),
-                { placeHolder: 'Select runtime/server to start' });
+            selectedServerId = await this.selectServer('Select server to start.');
             if (!selectedServerId) return null;
             selectedServerType = this.serversData.serverStatus.get(selectedServerId).server.type;
         } else {
@@ -63,8 +63,7 @@ export class CommandHandler {
     public async stopServer(context?: Protocol.ServerState): Promise<Protocol.Status> {
         let serverId: string;
         if (context === undefined) {
-            serverId = await vscode.window.showQuickPick(Array.from(this.serversData.serverStatus.keys()),
-                { placeHolder: 'Select runtime/server to stop' });
+            serverId = await this.selectServer('Select server to stop.');
             if (!serverId) return null;
         } else {
             serverId = context.server.id;
@@ -86,9 +85,7 @@ export class CommandHandler {
         let serverId: string;
         let selectedServerType: Protocol.ServerType;
         if (context === undefined) {
-            serverId = await vscode.window.showQuickPick(
-                Array.from(this.serversData.serverStatus.keys()),
-                { placeHolder: 'Select runtime/server to remove' });
+            serverId = await this.selectServer('Select server to remove');
             if (!serverId) return null;
             selectedServerType = this.serversData.serverStatus.get(serverId).server.type;
         } else {
@@ -115,8 +112,7 @@ export class CommandHandler {
 
     public async showServerOutput(context?: Protocol.ServerState): Promise<void> {
         if (context === undefined) {
-            const serverId = await vscode.window.showQuickPick(Array.from(this.serversData.serverStatus.keys()),
-                { placeHolder: 'Select runtime/server to show output channel' });
+            const serverId = await this.selectServer('Select server to show output channel');
             if (!serverId) return null;
             context = this.serversData.serverStatus.get(serverId);
         }
@@ -125,12 +121,7 @@ export class CommandHandler {
 
     public async restartServer(context?: Protocol.ServerState): Promise<void> {
         if (context === undefined) {
-            const serverId: string = await vscode.window.showQuickPick(
-                Array
-                  .from(this.serversData.serverStatus.keys())
-                  .filter(item => this.serversData.serverStatus.get(item).state === ServerState.STARTED),
-                    { placeHolder: 'Select runtime/server to restart' }
-            );
+            const serverId: string = await this.selectServer('Select server to restart', ServerState.STARTED);
             if (!serverId) return null;
             context = this.serversData.serverStatus.get(serverId);
         }
@@ -151,7 +142,8 @@ export class CommandHandler {
     public async addDeployment(context?: Protocol.ServerState): Promise<Protocol.Status> {
         let serverId: string;
         if (context === undefined) {
-            return Promise.reject('Please select a server from the Servers view.');
+            serverId = await this.selectServer('Select server to deploy to');
+            if (!serverId) return null;
         } else {
             serverId = context.server.id;
         }
@@ -165,18 +157,24 @@ export class CommandHandler {
     }
 
     public async removeDeployment(context?: Protocol.DeployableState): Promise<Protocol.Status> {
+        let serverId: string;
+        let deploymentId: string;
         if (context === undefined) {
-            return Promise.reject('Please select a deployment from the Servers view to run this action.');
-        }
+            serverId = await this.selectServer('Select server to remove deployment from');
+            if (!serverId) return null;
 
-        const serverId: string = context.server.id;
-        const deploymentId: string = context.reference.label;
+            const deployables = this.serversData.serverStatus.get(serverId).deployableStates.map(value => {
+                return value.reference.label;
+            });
+            deploymentId = await vscode.window.showQuickPick(deployables, { placeHolder: 'Select deployment to remove' });
+            if (!deploymentId) return null;
+        } else {
+            serverId = context.server.id;
+            deploymentId = context.reference.label;
+        }
 
         if (this.serversData) {
             const serverState: Protocol.ServerState = this.serversData.serverStatus.get(serverId);
-            if (serverState === undefined) {
-                return Promise.reject('Please select a deployment from the Servers view to run this action.');
-            }
             const serverHandle: Protocol.ServerHandle = serverState.server;
             const states: Protocol.DeployableState[] = serverState.deployableStates;
             for (const entry of states) {
@@ -193,7 +191,8 @@ export class CommandHandler {
     public async fullPublishServer(context?: Protocol.ServerState): Promise<Protocol.Status> {
         let serverId: string;
         if (context === undefined) {
-            return Promise.reject('Please select a server from the Servers view.');
+            serverId = await this.selectServer('Select server to publish');
+            if (!serverId) return null;
         } else {
             serverId = context.server.id;
         }
@@ -208,8 +207,8 @@ export class CommandHandler {
 
     public async createServer(): Promise<Protocol.Status> {
         this.assertServersDataExists();
-        const download: string = await vscode.window.showQuickPick(['Yes', 'No, use runtime on disk'],
-            { placeHolder: 'Download runtime?', ignoreFocusOut: true });
+        const download: string = await vscode.window.showQuickPick(['Yes', 'No, use server on disk'],
+            { placeHolder: 'Download server?', ignoreFocusOut: true });
         if (!download) {
             return;
         }
@@ -267,12 +266,10 @@ export class CommandHandler {
     }
 
     public async infoServer(context?: Protocol.ServerState): Promise<void> {
-
         if (context === undefined) {
             if (this.serversData) {
-                const serverId = await vscode.window.showQuickPick(Array.from(this.serversData.serverStatus.keys()),
-                { placeHolder: 'Select runtime/server you want to retrieve info about' });
-                if (!serverId) return Promise.reject('Please select a server from the Servers view.');
+                const serverId = await this.selectServer('Select server you want to retrieve info about');
+                if (!serverId) return null;
                 context = this.serversData.serverStatus.get(serverId);
             } else {
                 return Promise.reject('Runtime Server Protocol (RSP) Server is starting, please try again later.');
@@ -287,6 +284,20 @@ export class CommandHandler {
         outputChannel.appendLine(`Server Name: ${selectedServerName}`);
         outputChannel.appendLine(`Server Type Id: ${selectedServerType.id}`);
         outputChannel.appendLine(`Server Description: ${selectedServerType.visibleName}`);
+    }
+
+    private async selectServer(message: string, stateFilter: number = CommandHandler.NO_SERVERS_FILTER): Promise<string> {
+        let servers = Array.from(this.serversData.serverStatus.keys());
+        if (stateFilter >= 0) {
+            servers = servers.filter(value => {
+                return this.serversData.serverStatus.get(value).state === stateFilter;
+            });
+        }
+        if (servers.length < 1) {
+            return Promise.reject('There are no servers to choose from.');
+        }
+
+        return vscode.window.showQuickPick(servers, { placeHolder: message });
     }
 
     private async promptUser(item: Protocol.WorkflowResponseItem, workflowMap: {}): Promise<boolean> {
@@ -352,7 +363,7 @@ export class CommandHandler {
                 return newlist;
             });
         const answer = await vscode.window.showQuickPick(newlist,
-            { placeHolder: 'Please choose a runtime to download.' });
+            { placeHolder: 'Please choose a server to download.' });
         console.log(`${answer} was chosen`);
         if (!answer) {
             return null;
