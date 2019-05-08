@@ -224,6 +224,19 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
         return this.createServer(server.bean, server.name, attrs);
     }
 
+    public async retrieveDebugInfo(server: Protocol.ServerHandle): Promise<Protocol.CommandLineDetails> {
+        const debugInfo = await this.client.getOutgoingHandler().getLaunchCommand({
+            mode: 'debug',
+            params: {
+                id: server.id,
+                serverType: server.type.id,
+                attributes: undefined
+            }
+        });
+
+        return debugInfo;
+    }
+
     private async createServer(bean: Protocol.ServerBean, name: string, attributes: any = {}): Promise<Protocol.Status> {
         if (!bean || !name) {
             throw new Error('Couldn\'t create server: no type or name provided.');

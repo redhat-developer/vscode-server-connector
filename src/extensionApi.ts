@@ -83,8 +83,15 @@ export class CommandHandler {
 
     public async debugServer(context?: Protocol.ServerState): Promise<Protocol.StartServerResponse> {
 
-        if (vscode.extensions.getExtension('vscjava.vscode-java-debug') === undefined) {
-            vscode.window.showErrorMessage('Debugger for Java extension is required. Install/Enable it before proceeding.');
+        const debugInfo = await this.serversData.retrieveDebugInfo(context.server);
+
+        if (debugInfo && debugInfo.properties['debug.details.type'].indexOf('java') >= 0) {
+            if (vscode.extensions.getExtension('vscjava.vscode-java-debug') === undefined) {
+                vscode.window.showErrorMessage('Debugger for Java extension is required. Install/Enable it before proceeding.');
+                return;
+            }
+        } else {
+            vscode.window.showErrorMessage(`Vscode-Adapters doesn\'t support debugging with ${debugInfo.properties['debug.details.type']} language at this time.`);
             return;
         }
 
@@ -94,7 +101,7 @@ export class CommandHandler {
             optionsQuickPick = optionsQuickPick.concat(vscode.workspace.workspaceFolders.map(x => ({label: x.name, description: x.uri.toString()})));
         }
 
-        let folderProject: vscode.Uri =  await vscode.window.showQuickPick(optionsQuickPick,
+        let folderProject: vscode.Uri = await vscode.window.showQuickPick(optionsQuickPick,
                                                 { placeHolder: 'Select the project you want to debug', ignoreFocusOut: true }
                                         ).then(folder => {
                                             return (!folder || folder.description === undefined ? undefined : vscode.Uri.parse(folder.description));
