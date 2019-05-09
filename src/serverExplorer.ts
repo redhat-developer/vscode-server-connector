@@ -117,17 +117,20 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
 
     public async addDeployment(server: Protocol.ServerHandle): Promise<Protocol.Status> {
         // quickpick to solve a vscode api bug in windows that only opens file-picker dialog either in file or folder mode
-        const filePickerType = await window.showQuickPick(['File', 'Exploded'], {placeHolder:
-            'Which deployment do you want to add?'});
-
-        if (!filePickerType) {
-            return;
+        const isWindows: boolean = process.platform.indexOf('win') >= 0;
+        let filePickerType = 'file or exploded';
+        if (isWindows) {
+            filePickerType = await window.showQuickPick(['File', 'Exploded'], {placeHolder:
+                'Which deployment do you want to add?'});
+            if (!filePickerType) {
+                return;
+            }
         }
 
         return window.showOpenDialog({
-            canSelectFiles: filePickerType === 'File',
+            canSelectFiles: (isWindows ? filePickerType === 'File' : true),
             canSelectMany: false,
-            canSelectFolders: filePickerType === 'Exploded',
+            canSelectFolders: (isWindows ? filePickerType === 'Exploded' : true),
             openLabel: `Select ${filePickerType} Deployment`
         } as OpenDialogOptions).then(async file => {
             if (file && file.length === 1) {
