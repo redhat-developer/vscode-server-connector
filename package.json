@@ -252,7 +252,7 @@
     "find-java-home": "^0.2.0",
     "fs-extra": "7.0.0",
     "fstream": "^1.0.11",
-    "mkdirp": "0.5.1",
+    "mkdirp": "0.5.1",    
     "path": "0.12.7",
     "path-exists": "^3.0.0",
     "pify": "4.0.0",
