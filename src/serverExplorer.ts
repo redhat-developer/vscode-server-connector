@@ -200,6 +200,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
           await this.client.getOutgoingHandler().findServerBeans({ filepath: folders[0].fsPath });
 
         if (!serverBeans
+          || serverBeans.length === 0
           || !serverBeans[0].serverAdapterTypeId
           || !serverBeans[0].typeCategory
           || serverBeans[0].typeCategory === 'UNKNOWN') {
