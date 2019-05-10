@@ -197,7 +197,7 @@
       "properties": {
         "vscodeAdapters.showChannelOnServerOutput": {
           "type": "boolean",
-          "default": false,
+          "default": true,
           "description": "Show Server's output channel when new text added to output stream."
         },
         "java.home": {

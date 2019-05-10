@@ -212,6 +212,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
 
         if (!serverBeans
           || serverBeans.length === 0
+          || !serverBeans[0].serverAdapterTypeId
           || !serverBeans[0].typeCategory
           || serverBeans[0].typeCategory === 'UNKNOWN') {
             throw new Error(`Could not detect any server at ${folders[0].fsPath}!`);

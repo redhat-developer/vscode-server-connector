@@ -236,6 +236,16 @@ suite('Server explorer', () => {
             version: '7.1'
         };
 
+        const serverBeanWithoutType: Protocol.ServerBean = {
+            fullVersion: 'version',
+            location: 'path',
+            name: 'EAP',
+            serverAdapterTypeId: '',
+            specificType: 'EAP',
+            typeCategory: 'EAP',
+            version: '7.1'
+        };
+
         const noAttributes: Protocol.Attributes = {
             attributes: { }
         };
@@ -277,7 +287,6 @@ suite('Server explorer', () => {
             stubs.outgoing.getRequiredAttributes.resolves(noAttributes);
 
             await serverExplorer.addLocation();
-
             expect(findServerStub).calledOnceWith(discoveryPath);
             expect(showOpenDialogStub).calledOnce;
             expect(createServerStub).calledOnceWith(serverBean, 'eap');
@@ -285,6 +294,17 @@ suite('Server explorer', () => {
 
         test('should error if no server detected in provided location', async () => {
             findServerStub.resolves([]);
+
+            try {
+                await serverExplorer.addLocation();
+                expect.fail();
+            } catch (err) {
+                expect(err.message).length > 0;
+            }
+        });
+
+        test('should error if adapter type is empty', async () => {
+            findServerStub.resolves([serverBeanWithoutType]);
 
             try {
                 await serverExplorer.addLocation();
