@@ -83,6 +83,12 @@ export class CommandHandler {
 
     public async debugServer(context?: Protocol.ServerState): Promise<Protocol.StartServerResponse> {
 
+        if (context === undefined) {
+            const selectedServerId = await this.selectServer('Select server to start.');
+            if (!selectedServerId) return;
+            context = this.serversData.serverStatus.get(selectedServerId);
+        }
+
         const debugInfo = await this.serversData.retrieveDebugInfo(context.server);
 
         if (debugInfo && debugInfo.properties['debug.details.type'].indexOf('java') >= 0) {
