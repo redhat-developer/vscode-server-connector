@@ -28,6 +28,11 @@ import {
 } from 'rsp-client';
 import { ServerIcon } from './serverIcon';
 
+enum deploymentStatus {
+    file = 'File',
+    exploded = 'Exploded'
+}
+
 export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.ServerState | Protocol.DeployableState> {
 
     private _onDidChangeTreeData: EventEmitter<Protocol.ServerState | undefined> = new EventEmitter<Protocol.ServerState | undefined>();
@@ -116,21 +121,16 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
     }
 
     public async addDeployment(server: Protocol.ServerHandle): Promise<Protocol.Status> {
-        // quickpick to solve a vscode api bug in windows that only opens file-picker dialog either in file or folder mode
         const isWindows: boolean = process.platform.indexOf('win') >= 0;
         let filePickerType = 'file or exploded';
         if (isWindows) {
-            filePickerType = await window.showQuickPick(['File', 'Exploded'], {placeHolder:
-                'Which deployment do you want to add?'});
-            if (!filePickerType) {
-                return;
-            }
+            filePickerType = await this.quickPickDeploymentType();
         }
 
         return window.showOpenDialog({
-            canSelectFiles: (isWindows ? filePickerType === 'File' : true),
+            canSelectFiles: (!isWindows ? filePickerType === deploymentStatus.file : true),
             canSelectMany: false,
-            canSelectFolders: (isWindows ? filePickerType === 'Exploded' : true),
+            canSelectFolders: (!isWindows ? filePickerType === deploymentStatus.exploded : true),
             openLabel: `Select ${filePickerType} Deployment`
         } as OpenDialogOptions).then(async file => {
             if (file && file.length === 1) {
@@ -310,6 +310,16 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
             }
         }
         return attributes;
+    }
+
+    private async quickPickDeploymentType(): Promise<string> {
+        // quickPick to solve a vscode api bug in windows that only opens file-picker dialog either in file or folder mode
+        const filePickerType = await window.showQuickPick([deploymentStatus.file, deploymentStatus.exploded], {placeHolder:
+                'Which deployment do you want to add?'});
+        if (!filePickerType) {
+            return;
+        }
+        return filePickerType;
     }
 
     public getTreeItem(item: Protocol.ServerState |  Protocol.DeployableState): TreeItem {
