@@ -122,15 +122,15 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
 
     public async addDeployment(server: Protocol.ServerHandle): Promise<Protocol.Status> {
         const isWindows: boolean = process.platform.indexOf('win') >= 0;
-        let filePickerType = 'file or exploded';
-        if (isWindows) {
-            filePickerType = await this.quickPickDeploymentType();
+        const filePickerType = await this.quickPickDeploymentType();
+        if (!filePickerType) {
+            return;
         }
 
         return window.showOpenDialog({
-            canSelectFiles: (!isWindows ? filePickerType === deploymentStatus.file : true),
+            canSelectFiles: (isWindows ? filePickerType === deploymentStatus.file : true),
             canSelectMany: false,
-            canSelectFolders: (!isWindows ? filePickerType === deploymentStatus.exploded : true),
+            canSelectFolders: (isWindows ? filePickerType === deploymentStatus.exploded : true),
             openLabel: `Select ${filePickerType} Deployment`
         } as OpenDialogOptions).then(async file => {
             if (file && file.length === 1) {
@@ -314,12 +314,12 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
 
     private async quickPickDeploymentType(): Promise<string> {
         // quickPick to solve a vscode api bug in windows that only opens file-picker dialog either in file or folder mode
-        const filePickerType = await window.showQuickPick([deploymentStatus.file, deploymentStatus.exploded], {placeHolder:
+        const isWindows: boolean = process.platform.indexOf('win') >= 0;
+        if (isWindows) {
+            return await window.showQuickPick([deploymentStatus.file, deploymentStatus.exploded], {placeHolder:
                 'Which deployment do you want to add?'});
-        if (!filePickerType) {
-            return;
         }
-        return filePickerType;
+        return 'file or exploded';
     }
 
     public getTreeItem(item: Protocol.ServerState |  Protocol.DeployableState): TreeItem {
