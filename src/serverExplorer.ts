@@ -122,7 +122,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
 
     public async addDeployment(server: Protocol.ServerHandle): Promise<Protocol.Status> {
         const isWindows: boolean = process.platform.indexOf('win') >= 0;
-        const filePickerType = await this.quickPickDeploymentType();
+        const filePickerType = await this.quickPickDeploymentType(isWindows);
         if (!filePickerType) {
             return;
         }
@@ -312,9 +312,8 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
         return attributes;
     }
 
-    private async quickPickDeploymentType(): Promise<string> {
+    private async quickPickDeploymentType(isWindows: boolean): Promise<string> {
         // quickPick to solve a vscode api bug in windows that only opens file-picker dialog either in file or folder mode
-        const isWindows: boolean = process.platform.indexOf('win') >= 0;
         if (isWindows) {
             return await window.showQuickPick([deploymentStatus.file, deploymentStatus.exploded], {placeHolder:
                 'Which deployment do you want to add?'});
