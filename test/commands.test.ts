@@ -178,7 +178,6 @@ suite('Command Handler', () => {
     });
 
     suite('debugServer', () => {
-        let statusStub: sinon.SinonStub;
         let startStub: sinon.SinonStub;
 
         const cmdDetails: Protocol.CommandLineDetails = {
@@ -196,7 +195,7 @@ suite('Command Handler', () => {
         };
 
         setup(() => {
-            statusStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverState);
+            startStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverState);
             startStub = sandbox.stub().resolves(response);
             stubs.outgoing.startServerAsync = startStub;
         });
