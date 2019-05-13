@@ -17,6 +17,7 @@ chai.use(sinonChai);
 
 suite('Command Handler', () => {
     let sandbox: sinon.SinonSandbox;
+    let sandboxDebug: sinon.SinonSandbox;
     let stubs: Stubs;
     let handler: CommandHandler;
     let serverExplorer: ServersViewTreeDataProvider;
@@ -67,17 +68,19 @@ suite('Command Handler', () => {
 
     setup(() => {
         sandbox = sinon.createSandbox();
+        sandboxDebug = sinon.createSandbox();
 
         stubs = new Stubs(sandbox);
         stubs.outgoing.getServerHandles.resolves([serverHandle]);
         serverExplorer = new ServersViewTreeDataProvider(stubs.client);
         handler = new CommandHandler(serverExplorer, stubs.client);
-        sandbox.stub(serverExplorer);
+
         serverExplorer.serverStatus.set('server', serverState);
     });
 
     teardown(() => {
         sandbox.restore();
+        sandboxDebug.restore();
     });
 
     test('activate registers event listeners', async () => {
@@ -172,6 +175,70 @@ suite('Command Handler', () => {
                 expect(err).equals(errorStatus.message);
             }
         });
+    });
+
+    suite('debugServer', () => {
+        let statusStub: sinon.SinonStub;
+        let startStub: sinon.SinonStub;
+
+        const cmdDetails: Protocol.CommandLineDetails = {
+            cmdLine: [''],
+            envp: [],
+            properties: {
+                'debug.details.type': 'c#'
+            },
+            workingDir: 'dir'
+        };
+
+        const response: Protocol.StartServerResponse = {
+            details: cmdDetails,
+            status: status
+        };
+
+        setup(() => {
+            statusStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverState);
+            startStub = sandbox.stub().resolves(response);
+            stubs.outgoing.startServerAsync = startStub;
+        });
+
+        test('display error if no extension found', async () => {
+            const stubM = sinon.stub(handler, 'checkExtension' as any);
+            stubM.resolves('Debugger for Java extension is required. Install/Enable it before proceeding.');
+            const sinonSpy = sandbox.spy(vscode.window, 'showErrorMessage');
+            await handler.debugServer(serverState);
+            sinon.assert.calledOnce(sinonSpy);
+        });
+
+        test('display error if language is not supported', async () => {
+            sandbox.stub(serverExplorer, 'retrieveDebugInfo').resolves(cmdDetails);
+            const sinonSpy = sandbox.spy(vscode.window, 'showErrorMessage');
+            await handler.debugServer(serverState);
+            sandbox.assert.calledOnce(sinonSpy);
+        });
+
+        test('works with injected context', async () => {
+            sandbox.stub(handler, 'checkExtension' as any).resolves(undefined);
+            sandbox.stub(handler, 'openProjectToDebug' as any).resolves(vscode.Uri);
+            const sinonSpy = sandbox.spy(handler, 'startServer');
+            const sinonSpyDebug = sandbox.spy(vscode.debug, 'startDebugging');
+
+            await handler.debugServer(serverState);
+            sandbox.assert.calledOnce(sinonSpy);
+            sandbox.assert.calledOnce(sinonSpyDebug);
+        });
+
+        test('works without injected context', async () => {
+            sandbox.stub(vscode.window, 'showQuickPick').resolves('id');
+            sandbox.stub(handler, 'checkExtension' as any).resolves(undefined);
+            sandbox.stub(handler, 'openProjectToDebug' as any).resolves(vscode.Uri);
+            const sinonSpy = sandbox.spy(handler, 'startServer');
+            const sinonSpyDebug = sandbox.spy(vscode.debug, 'startDebugging');
+
+            await handler.debugServer(undefined);
+            sandbox.assert.calledOnce(sinonSpy);
+            sandbox.assert.calledOnce(sinonSpyDebug);
+        });
+
     });
 
     suite('stopServer', () => {
@@ -369,8 +436,8 @@ suite('Command Handler', () => {
     suite('addLocation', () => {
 
         test('calls addLocation from server explorer', async () => {
+            sandbox.stub(serverExplorer, 'addLocation').resolves(undefined);
             await handler.addLocation();
-
             expect(serverExplorer.addLocation).calledOnce;
         });
 
