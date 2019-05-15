@@ -34,7 +34,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Extens
 }
 
 async function initClient(serverInfo: server.ServerInfo): Promise<RSPClient> {
-    const client = new RSPClient('localhost', serverInfo.port);
+    const client = new RSPClient('localhost', 27511); //serverInfo.port);
     await client.connect();
 
     client.getIncomingHandler().onPromptString(event => {
@@ -133,8 +133,13 @@ function displayLog(outputPanel: vscode.OutputChannel, message: string, show: bo
 }
 
 function executeCommand(command: (...args: any[]) => Promise<any>, thisArg: any, ...params: any[]) {
+    const commandName = command.name;
     return command.call(thisArg, ...params).catch((err: string | Error) => {
         const error = typeof err === 'string' ? new Error(err) : err;
-        vscode.window.showErrorMessage(error.message);
+        let msg = error.message;
+        if (error.message.startsWith('Connection is closed')) {
+            msg = `Operation ${commandName} failed. ` + msg;
+        }
+        vscode.window.showErrorMessage(msg);
     });
 }
