@@ -217,7 +217,6 @@ suite('Command Handler', () => {
 
         test('works with injected context', async () => {
             sandbox.stub(handler, 'checkExtension' as any).resolves(undefined);
-            sandbox.stub(handler, 'openProjectToDebug' as any).resolves(vscode.Uri);
             const sinonSpy = sandbox.spy(handler, 'startServer');
             const sinonSpyDebug = sandbox.spy(vscode.debug, 'startDebugging');
 
@@ -229,7 +228,6 @@ suite('Command Handler', () => {
         test('works without injected context', async () => {
             sandbox.stub(vscode.window, 'showQuickPick').resolves('id');
             sandbox.stub(handler, 'checkExtension' as any).resolves(undefined);
-            sandbox.stub(handler, 'openProjectToDebug' as any).resolves(vscode.Uri);
             const sinonSpy = sandbox.spy(handler, 'startServer');
             const sinonSpyDebug = sandbox.spy(vscode.debug, 'startDebugging');
 

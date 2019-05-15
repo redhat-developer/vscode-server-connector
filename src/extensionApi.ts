@@ -98,14 +98,9 @@ export class CommandHandler {
             return;
         }
 
-        const folderProject = await this.openProjectToDebug();
-
-        if (!folderProject) return;
-
         return this.startServer('debug', context).then(
             status => {
-                const workspaceFolder = vscode.workspace.getWorkspaceFolder(folderProject);
-                vscode.debug.startDebugging(workspaceFolder,
+                vscode.debug.startDebugging(undefined,
                     {
                         type: 'java',
                         request: 'attach',
@@ -420,48 +415,6 @@ export class CommandHandler {
         } else {
             return `Vscode-Adapters doesn\'t support debugging with ${debugInfo.properties['debug.details.type']} language at this time.`;
         }
-    }
-
-    private async openProjectToDebug(): Promise<vscode.Uri> {
-        let folderProject: vscode.Uri;
-
-        // list all projects that belong to the current workspace allowing the user choose among them or pick a new one
-        let optionsQuickPick: Array<{label: string, description: string}>  = [{ label: 'Add a new project', description: ''}];
-        if (vscode.workspace.workspaceFolders !== undefined) {
-            optionsQuickPick = optionsQuickPick.concat(vscode.workspace.workspaceFolders.map(x => ({label: x.name, description: x.uri.toString()})));
-        }
-
-        const projectSelected: string = await vscode.window.showQuickPick(optionsQuickPick,
-                                                { placeHolder: 'Select the project you want to debug', ignoreFocusOut: true }
-                                        ).then(folder => {
-                                            return (folder === undefined ? undefined : folder.description);
-                                        });
-
-        if (projectSelected === undefined) {
-            return;
-        }
-
-        if (projectSelected === '') {
-            folderProject = await vscode.window.showOpenDialog({
-                canSelectFiles: false,
-                canSelectMany: false,
-                canSelectFolders: true,
-                openLabel: 'Open Project to debug'
-            } as vscode.OpenDialogOptions).then(
-                folder => {
-                    if (folder != null && folder.length > 0) {
-                        vscode.workspace.updateWorkspaceFolders(vscode.workspace.workspaceFolders ? vscode.workspace.workspaceFolders.length : 0,
-                                                                null,
-                                                                { uri: vscode.Uri.parse(folder[0].path) });
-                        return folder[0];
-                    }
-                }
-            );
-        } else {
-            folderProject = vscode.Uri.parse(projectSelected);
-        }
-
-        return folderProject;
     }
 
     public async activate(): Promise<void> {
