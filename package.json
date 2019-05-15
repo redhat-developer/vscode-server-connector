@@ -34,6 +34,7 @@
     "onCommand:server.debug",
     "onCommand:server.stop",
     "onCommand:server.restart",
+    "onCommand:server.restartDebug",
     "onCommand:server.remove",
     "onCommand:server.output",
     "onCommand:server.add",
@@ -78,7 +79,12 @@
       },
       {
         "command": "server.restart",
-        "title": "Restart",
+        "title": "Restart in Run Mode",
+        "category": "Servers"
+      },
+      {
+        "command": "server.restartDebug",
+        "title": "Restart in Debug Mode",
         "category": "Servers"
       },
       {
@@ -148,6 +154,11 @@
           "command": "server.restart",
           "when": "view == servers && viewItem == 'Started'",
           "group": "1_server-startstop@4"
+        },
+        {
+          "command": "server.restartDebug",
+          "when": "view == servers && viewItem == 'Started'",
+          "group": "1_server-startstop@5"
         },
         {
           "command": "server.remove",

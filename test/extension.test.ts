@@ -102,6 +102,7 @@ suite('Extension Tests', () => {
                 'server.start',
                 'server.restart',
                 'server.debug',
+                'server.restartDebug',
                 'server.stop',
                 'server.remove',
                 'server.output',
