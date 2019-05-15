@@ -376,8 +376,8 @@ suite('Command Handler', () => {
         let stopStub: sinon.SinonStub;
         const startedState: Protocol.ServerState = {
             deployableStates: [],
-            publishState: 0, server:
-            serverHandle,
+            publishState: 0,
+            server: serverHandle,
             state: ServerState.STARTED
         };
 
@@ -390,7 +390,7 @@ suite('Command Handler', () => {
         });
 
         test('works with injected context', async () => {
-            await handler.restartServer(serverState);
+            await handler.restartServer('run', serverState);
             const stopArgs: Protocol.StopServerAttributes = {
                 id: context.id,
                 force: true
@@ -410,7 +410,7 @@ suite('Command Handler', () => {
         });
 
         test('works without injected context', async () => {
-            await handler.restartServer();
+            await handler.restartServer('run');
             const stopArgs: Protocol.StopServerAttributes = {
                 id: 'id',
                 force: true
@@ -427,6 +427,49 @@ suite('Command Handler', () => {
             expect(stopStub).calledOnceWith(stopArgs);
             expect(startStub).calledAfter(stopStub);
             expect(startStub).calledOnceWith(startArgs);
+        });
+    });
+
+    suite('restartInDebugServer', () => {
+        let stopStub: sinon.SinonStub;
+        const startedState: Protocol.ServerState = {
+            deployableStates: [],
+            publishState: 0,
+            server: serverHandle,
+            state: ServerState.STARTED
+        };
+
+        setup(() => {
+            serverExplorer.serverStatus.set('server', startedState);
+            sandbox.stub(serverExplorer.serverStatus, 'get').returns(startedState);
+            stopStub = stubs.outgoingSync.stopServerSync.resolves(status);
+            sandbox.stub(vscode.window, 'showQuickPick').resolves('id');
+        });
+
+        test('works with injected context', async () => {
+            const debugStub = sandbox.stub(handler, 'debugServer' as any).resolves(undefined);
+            await handler.restartServer('debug', serverState);
+            const stopArgs: Protocol.StopServerAttributes = {
+                id: context.id,
+                force: true
+            };
+
+            expect(stopStub).calledOnceWith(stopArgs);
+            expect(debugStub).calledOnceWith(serverState);
+            expect(debugStub).calledAfter(stopStub);
+        });
+
+        test('works without injected context', async () => {
+            const debugStub = sandbox.stub(handler, 'debugServer' as any).resolves(undefined);
+            await handler.restartServer('debug');
+            const stopArgs: Protocol.StopServerAttributes = {
+                id: 'id',
+                force: true
+            };
+
+            expect(stopStub).calledOnceWith(stopArgs);
+            expect(debugStub).calledAfter(stopStub);
+            expect(debugStub).calledOnceWith(startedState);
         });
     });
 

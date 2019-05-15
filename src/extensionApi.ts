@@ -154,24 +154,29 @@ export class CommandHandler {
         this.serversData.showOutput(context);
     }
 
-    public async restartServer(context?: Protocol.ServerState): Promise<void> {
+    public async restartServer(mode: string, context?: Protocol.ServerState): Promise<void> {
         if (context === undefined) {
             const serverId: string = await this.selectServer('Select server to restart', ServerState.STARTED);
             if (!serverId) return null;
             context = this.serversData.serverStatus.get(serverId);
         }
 
-        const params: Protocol.LaunchParameters = {
-            mode: 'run',
-            params: {
-                id: context.server.id,
-                serverType: context.server.type.id,
-                attributes: new Map<string, any>()
-            }
-        };
-
         await this.client.getOutgoingSyncHandler().stopServerSync({ id: context.server.id, force: true });
-        await this.client.getOutgoingHandler().startServerAsync(params);
+
+        if (mode === 'debug') {
+            await this.debugServer(context);
+        } else {
+            const params: Protocol.LaunchParameters = {
+                mode: mode,
+                params: {
+                    id: context.server.id,
+                    serverType: context.server.type.id,
+                    attributes: new Map<string, any>()
+                }
+            };
+
+            await this.client.getOutgoingHandler().startServerAsync(params);
+        }
     }
 
     public async addDeployment(context?: Protocol.ServerState): Promise<Protocol.Status> {

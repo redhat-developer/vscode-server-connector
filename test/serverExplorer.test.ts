@@ -114,7 +114,8 @@ suite('Server explorer', () => {
         const fireStub = sandbox.stub(EventEmitter.prototype, 'fire');
         serverExplorer.refresh(serverState);
 
-        expect(fireStub).calledOnceWith(serverState);
+        // then
+        expect(fireStub).calledOnce;
     });
 
     suite('updateServer', () => {
