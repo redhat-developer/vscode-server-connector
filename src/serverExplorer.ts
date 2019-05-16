@@ -121,55 +121,60 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
     }
 
     public async addDeployment(server: Protocol.ServerHandle): Promise<Protocol.Status> {
-        const isWindows: boolean = process.platform.indexOf('win') >= 0;
+        return this.createOpenDialogOptions()
+            .then(options => window.showOpenDialog(options))
+            .then(async file => {
+                if (file && file.length === 1) {
+
+                    const answer = await window.showQuickPick(['No', 'Yes'], {placeHolder:
+                        'Do you want to edit optional deployment parameters?'});
+                    const options = {};
+                    if (answer === 'Yes') {
+                        const optionMap: Protocol.Attributes = await this.client.getOutgoingHandler().listDeploymentOptions(server);
+                        for (const key in optionMap.attributes) {
+                            if (key) {
+                                const attribute = optionMap.attributes[key];
+                                const val = await window.showInputBox({prompt: attribute.description,
+                                    value: attribute.defaultVal, password: attribute.secret});
+                                if (val) {
+                                    options[key] = val;
+                                }
+                            }
+                        }
+                    }
+
+                    // var fileUrl = require('file-url');
+                    // const filePath : string = fileUrl(file[0].fsPath);
+                    const deployableRef: Protocol.DeployableReference = {
+                        label: file[0].fsPath,
+                        path: file[0].fsPath,
+                        options: options
+                    };
+                    const req: Protocol.ServerDeployableReference = {
+                        server: server,
+                        deployableReference : deployableRef
+                    };
+                    const status = await this.client.getOutgoingHandler().addDeployable(req);
+                    if (!StatusSeverity.isOk(status)) {
+                        return Promise.reject(status.message);
+                    }
+                    return status;
+                }
+            });
+    }
+
+    private async createOpenDialogOptions(): Promise<OpenDialogOptions> {
+        const isWindows: boolean = process.platform === 'win32';
         const filePickerType = await this.quickPickDeploymentType(isWindows);
         if (!filePickerType) {
-            return;
+            return Promise.reject();
         }
-
-        return window.showOpenDialog({
+        return {
             canSelectFiles: (isWindows ? filePickerType === deploymentStatus.file : true),
             canSelectMany: false,
             canSelectFolders: (isWindows ? filePickerType === deploymentStatus.exploded : true),
             openLabel: `Select ${filePickerType} Deployment`
-        } as OpenDialogOptions).then(async file => {
-            if (file && file.length === 1) {
-
-                const answer = await window.showQuickPick(['No', 'Yes'], {placeHolder:
-                    'Do you want to edit optional deployment parameters?'});
-                const options = {};
-                if (answer === 'Yes') {
-                    const optionMap: Protocol.Attributes = await this.client.getOutgoingHandler().listDeploymentOptions(server);
-                    for (const key in optionMap.attributes) {
-                        if (key) {
-                            const attribute = optionMap.attributes[key];
-                            const val = await window.showInputBox({prompt: attribute.description,
-                                value: attribute.defaultVal, password: attribute.secret});
-                            if (val) {
-                                options[key] = val;
-                            }
-                        }
-                    }
-                }
-
-                // var fileUrl = require('file-url');
-                // const filePath : string = fileUrl(file[0].fsPath);
-                const deployableRef: Protocol.DeployableReference = {
-                    label: file[0].fsPath,
-                    path: file[0].fsPath,
-                    options: options
-                };
-                const req: Protocol.ServerDeployableReference = {
-                    server: server,
-                    deployableReference : deployableRef
-                };
-                const status = await this.client.getOutgoingHandler().addDeployable(req);
-                if (!StatusSeverity.isOk(status)) {
-                    return Promise.reject(status.message);
-                }
-                return status;
-            }
-        });
+        };
     }
 
     public async removeDeployment(server: Protocol.ServerHandle, deployableRef: Protocol.DeployableReference): Promise<Protocol.Status> {
