@@ -329,7 +329,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
         // quickPick to solve a vscode api bug in windows that only opens file-picker dialog either in file or folder mode
         if (isWindows) {
             return await window.showQuickPick([deploymentStatus.file, deploymentStatus.exploded], {placeHolder:
-                'Which deployment do you want to add?'});
+                'What type of deployment do you want to add?'});
         }
         return 'file or exploded';
     }
