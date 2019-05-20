@@ -15,6 +15,7 @@ import {
     TreeDataProvider,
     TreeItem,
     TreeItemCollapsibleState,
+    TreeView,
     Uri,
     window,
     workspace
@@ -33,7 +34,7 @@ enum deploymentStatus {
     exploded = 'Exploded'
 }
 
-export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.ServerState | Protocol.DeployableState> {
+export class ServerExplorer implements TreeDataProvider< Protocol.ServerState | Protocol.DeployableState> {
 
     private _onDidChangeTreeData: EventEmitter<Protocol.ServerState | undefined> = new EventEmitter<Protocol.ServerState | undefined>();
     public readonly onDidChangeTreeData: Event<Protocol.ServerState | undefined> = this._onDidChangeTreeData.event;
@@ -42,25 +43,31 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
     public serverOutputChannels: Map<string, OutputChannel> = new Map<string, OutputChannel>();
     public runStateEnum: Map<number, string> = new Map<number, string>();
     public publishStateEnum: Map<number, string> = new Map<number, string>();
-    private serverAttributes: Map<string, {required: Protocol.Attributes; optional: Protocol.Attributes}> = new
-        Map<string, {required: Protocol.Attributes; optional: Protocol.Attributes}>();
+    private serverAttributes: Map<string, {required: Protocol.Attributes, optional: Protocol.Attributes}> =
+        new Map<string, {required: Protocol.Attributes, optional: Protocol.Attributes}>();
+    private readonly viewer: TreeView< Protocol.ServerState | Protocol.DeployableState>;
 
     constructor(client: RSPClient) {
         this.client = client;
-        this.runStateEnum.set(0, 'Unknown');
-        this.runStateEnum.set(1, 'Starting');
-        this.runStateEnum.set(2, 'Started');
-        this.runStateEnum.set(3, 'Stopping');
-        this.runStateEnum.set(4, 'Stopped');
+        this.viewer = window.createTreeView('servers', { treeDataProvider: this }) ;
 
-        this.publishStateEnum.set(1, 'Synchronized');
-        this.publishStateEnum.set(2, 'Publish Required');
-        this.publishStateEnum.set(3, 'Full Publish Required');
-        this.publishStateEnum.set(4, '+ Publish Required');
-        this.publishStateEnum.set(5, '- Publish Required');
-        this.publishStateEnum.set(6, 'Unknown');
+        this.runStateEnum
+            .set(0, 'Unknown')
+            .set(1, 'Starting')
+            .set(2, 'Started')
+            .set(3, 'Stopping')
+            .set(4, 'Stopped');
 
-        client.getOutgoingHandler().getServerHandles().then(servers => servers.forEach(async server => this.insertServer(server)));
+        this.publishStateEnum
+            .set(1, 'Synchronized')
+            .set(2, 'Publish Required')
+            .set(3, 'Full Publish Required')
+            .set(4, '+ Publish Required')
+            .set(5, '- Publish Required')
+            .set(6, 'Unknown');
+
+        client.getOutgoingHandler().getServerHandles()
+            .then(servers => servers.forEach(async server => this.insertServer(server)));
     }
 
     public async insertServer(event: Protocol.ServerHandle) {
@@ -109,15 +116,14 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
     }
 
     public refresh(data?: Protocol.ServerState): void {
-        this._onDidChangeTreeData.fire(data);
+        this._onDidChangeTreeData.fire();
         if (data !== undefined) {
             this.selectNode(data);
         }
     }
 
     public selectNode(data: Protocol.ServerState): void {
-        const view = window.createTreeView('servers', { treeDataProvider: this });
-        view.reveal(data, { focus: true, select: true });
+        this.viewer.reveal(data, { focus: true, select: true });
     }
 
     public async addDeployment(server: Protocol.ServerHandle): Promise<Protocol.Status> {
@@ -170,10 +176,10 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
         if (!filePickerType) {
             return Promise.reject();
         }
-        //dialog behavior on different OS
-        //Windows -> if both options (canSelectFiles and canSelectFolders) are true, fs only shows folders
-        //Linux(fedora) -> if both options are true, fs shows both files and folders but files are unselectable
-        //Mac OS -> if both options are true, it works correctly
+        // dialog behavior on different OS
+        // Windows -> if both options (canSelectFiles and canSelectFolders) are true, fs only shows folders
+        // Linux(fedora) -> if both options are true, fs shows both files and folders but files are unselectable
+        // Mac OS -> if both options are true, it works correctly
         return {
             canSelectFiles: (showQuickPick ? filePickerType === deploymentStatus.file : true),
             canSelectMany: false,
@@ -232,19 +238,6 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
         const attrs = await this.getRequiredParameters(server.bean);
         await this.getOptionalParameters(server.bean, attrs);
         return this.createServer(server.bean, server.name, attrs);
-    }
-
-    public async retrieveDebugInfo(server: Protocol.ServerHandle): Promise<Protocol.CommandLineDetails> {
-        const debugInfo = await this.client.getOutgoingHandler().getLaunchCommand({
-            mode: 'debug',
-            params: {
-                id: server.id,
-                serverType: server.type.id,
-                attributes: undefined
-            }
-        });
-
-        return debugInfo;
     }
 
     private async createServer(bean: Protocol.ServerBean, name: string, attributes: any = {}): Promise<Protocol.Status> {
@@ -345,7 +338,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
     }
 
     public getTreeItem(item: Protocol.ServerState |  Protocol.DeployableState): TreeItem {
-        if ((item as Protocol.ServerState).deployableStates) {
+        if (this.isServerElement(item)) {
             // item is a serverState
             const state: Protocol.ServerState = item as Protocol.ServerState;
             const handle: Protocol.ServerHandle = state.server;
@@ -353,35 +346,58 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
             const runState: string = this.runStateEnum.get(state.state);
             const pubState: string = this.publishStateEnum.get(state.publishState);
             const depStr = `${id1} (${runState}) (${pubState})`;
-            const treeItem: TreeItem = new TreeItem(`${depStr}`, TreeItemCollapsibleState.Expanded);
-            treeItem.iconPath = ServerIcon.get(handle.type);
-            treeItem.contextValue =  runState;
-            return treeItem;
-        } else if ((item as Protocol.DeployableState).reference ) {
+            return { label: `${depStr}`,
+                iconPath: ServerIcon.get(handle.type),
+                contextValue: runState,
+                collapsibleState: TreeItemCollapsibleState.Expanded
+            };
+        } else if (this.isDeployableElement(item)) {
             const state: Protocol.DeployableState = item as Protocol.DeployableState;
             const id1: string = state.reference.label;
             const runState: string = this.runStateEnum.get(state.state);
             const pubState: string = this.publishStateEnum.get(state.publishState);
             const depStr = `${id1} (${runState}) (${pubState})`;
-            const treeItem: TreeItem = new TreeItem(`${depStr}`);
-            treeItem.iconPath = Uri.file(path.join(__dirname, '../../images/server-light.png'));
-            treeItem.contextValue =  pubState;
-            return treeItem;
+            return { label: `${depStr}`,
+                iconPath: Uri.file(path.join(__dirname, '../../images/server-light.png')),
+                contextValue: pubState,
+                collapsibleState: TreeItemCollapsibleState.None
+            };
+        } else {
+            return undefined;
         }
     }
 
     public getChildren(element?:  Protocol.ServerState | Protocol.DeployableState):  Protocol.ServerState[] | Protocol.DeployableState[] {
         if (element === undefined) {
+            // no parent, root node -> return servers
             return Array.from(this.serverStatus.values());
-        }
-        if ((element as Protocol.ServerState).deployableStates ) {
+        } else if (this.isServerElement(element)) {
+            // server parent -> return deployables
             return (element as Protocol.ServerState).deployableStates;
+        } else {
+            return [];
         }
     }
 
-    public getParent(item?:  Protocol.ServerState | Protocol.DeployableState): Protocol.ServerState | Protocol.DeployableState {
-        if (item === undefined || (item as Protocol.ServerState).deployableStates) {
+    public getParent(element?:  Protocol.ServerState | Protocol.DeployableState): Protocol.ServerState | Protocol.DeployableState {
+        if (this.isDeployableElement(element)) {
+            return this.getServerState(element as Protocol.DeployableState);
+        } else {
             return undefined;
         }
     }
+
+    private getServerState(element: Protocol.DeployableState): Protocol.ServerState {
+        const serverId: string = element.server.id;
+        return this.serverStatus.get(serverId);
+    }
+
+    private isServerElement(element: Protocol.ServerState | Protocol.DeployableState): boolean {
+        return (element as Protocol.ServerState).deployableStates !== undefined;
+    }
+
+    private isDeployableElement(element: Protocol.ServerState | Protocol.DeployableState): boolean {
+        return (element as Protocol.DeployableState).reference !== undefined;
+    }
+
 }

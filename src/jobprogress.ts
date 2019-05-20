@@ -20,21 +20,23 @@ export class JobProgress {
 
     public static create(client: RSPClient) {
         client.getIncomingHandler().onJobAdded((jobHandle: Protocol.JobHandle) => {
-            vscode.window.withProgress({
-                location: vscode.ProgressLocation.Notification,
-                title: `Job ${jobHandle.name} started`,
-                cancellable: true
-            }, (progress, token) => {
-                return new Promise<Protocol.JobHandle>((resolve, reject) => {
-                    new JobProgress(jobHandle, client, progress, token, reject, resolve);
-                })
-              .catch(error => {
-                  if (error) {
-                      vscode.window.showErrorMessage(error);
-                  }
-                  return Promise.reject(error);
-              });
-            });
+            vscode.window.withProgress(
+                {
+                    location: vscode.ProgressLocation.Notification,
+                    title: `Job ${jobHandle.name} started`,
+                    cancellable: true
+                },
+                (progress, token) => {
+                    return new Promise<Protocol.JobHandle>((resolve, reject) => {
+                        new JobProgress(jobHandle, client, progress, token, reject, resolve);
+                    })
+                    .catch(error => {
+                        if (error) {
+                            vscode.window.showErrorMessage(error);
+                        }
+                        return Promise.reject(error);
+                    });
+                });
         });
     }
 
@@ -94,7 +96,7 @@ export class JobProgress {
             if (status.trace) {
                 const match = /Caused by:([^\n]+)/gm.exec(status.trace);
                 if (match && match.length && match.length > 1) {
-                    message += ':\n' + match[1];
+                    message += ':' + match[1];
                 }
             }
         }

@@ -5,10 +5,12 @@
 
 'use strict';
 
+import { DebugInfo } from './debugInfo';
+import { DebugInfoProvider } from './debugInfoProvider';
 import { EditorUtil } from './editorutil';
 import { Protocol, RSPClient, ServerState, StatusSeverity } from 'rsp-client';
 import { ServerInfo } from './server';
-import { ServersViewTreeDataProvider } from './serverExplorer';
+import { ServerExplorer } from './serverExplorer';
 import * as vscode from 'vscode';
 
 export interface ExtensionAPI {
@@ -20,12 +22,12 @@ export class CommandHandler {
     private static readonly LIST_RUNTIMES_TIMEOUT: number = 20000;
 
     private client: RSPClient;
-    private serversData: ServersViewTreeDataProvider;
+    private explorer: ServerExplorer;
     private static readonly NO_SERVERS_FILTER: number = -1;
 
-    constructor(serversData: ServersViewTreeDataProvider, client: RSPClient) {
+    constructor(explorer: ServerExplorer, client: RSPClient) {
         this.client = client;
-        this.serversData = serversData;
+        this.explorer = explorer;
     }
 
     public async startServer(mode: string, context?: Protocol.ServerState): Promise<Protocol.StartServerResponse> {
@@ -35,13 +37,13 @@ export class CommandHandler {
         if (context === undefined) {
             selectedServerId = await this.selectServer('Select server to start.');
             if (!selectedServerId) return null;
-            selectedServerType = this.serversData.serverStatus.get(selectedServerId).server.type;
+            selectedServerType = this.explorer.serverStatus.get(selectedServerId).server.type;
         } else {
             selectedServerType = context.server.type;
             selectedServerId = context.server.id;
         }
 
-        const serverState = this.serversData.serverStatus.get(selectedServerId).state;
+        const serverState = this.explorer.serverStatus.get(selectedServerId).state;
         if (serverState === ServerState.STOPPED || serverState === ServerState.UNKNOWN) {
             const response = await this.client.getOutgoingHandler().startServerAsync({
                 params: {
@@ -69,7 +71,7 @@ export class CommandHandler {
             serverId = context.server.id;
         }
 
-        const stateObj: Protocol.ServerState = this.serversData.serverStatus.get(serverId);
+        const stateObj: Protocol.ServerState = this.explorer.serverStatus.get(serverId);
         if (stateObj.state === ServerState.STARTED) {
             const status = await this.client.getOutgoingHandler().stopServerAsync({ id: serverId, force: true });
             if (!StatusSeverity.isOk(status)) {
@@ -82,15 +84,13 @@ export class CommandHandler {
     }
 
     public async debugServer(context?: Protocol.ServerState): Promise<Protocol.StartServerResponse> {
-
         if (context === undefined) {
             const selectedServerId = await this.selectServer('Select server to start.');
             if (!selectedServerId) return;
-            context = this.serversData.serverStatus.get(selectedServerId);
+            context = this.explorer.serverStatus.get(selectedServerId);
         }
 
-        const debugInfo = await this.serversData.retrieveDebugInfo(context.server);
-
+        const debugInfo: DebugInfo = await DebugInfoProvider.retrieve(context.server, this.client);
         const extensionIsRequired = await this.checkExtension(debugInfo);
 
         if (extensionIsRequired) {
@@ -98,22 +98,22 @@ export class CommandHandler {
             return;
         }
 
-        return this.startServer('debug', context).then(
-            status => {
-                vscode.debug.startDebugging(undefined,
-                    {
-                        type: 'java',
-                        request: 'attach',
-                        name: 'Debug (Remote)',
-                        hostName: 'localhost',
-                        port: `${status.details.properties['debug.details.port']}`
-                    }
-                );
-
-                return status;
-            }
-        );
-
+        this.startServer('debug', context)
+            .then(serverStarted => {
+                if (!serverStarted
+                    || !serverStarted.details) {
+                    return Promise.reject(`Failed to start server ${context.server.id}`);
+                }
+                const debugConfig: vscode.DebugConfiguration = {
+                    type: 'java',
+                    request: 'attach',
+                    name: 'Debug (Remote)',
+                    hostName: 'localhost',
+                    port: DebugInfoProvider.create(serverStarted.details).getPort()
+                };
+                vscode.debug.startDebugging(undefined, debugConfig);
+                return Promise.resolve(serverStarted);
+            });
     }
 
     public async removeServer(context?: Protocol.ServerState): Promise<Protocol.Status> {
@@ -122,7 +122,7 @@ export class CommandHandler {
         if (context === undefined) {
             serverId = await this.selectServer('Select server to remove');
             if (!serverId) return null;
-            selectedServerType = this.serversData.serverStatus.get(serverId).server.type;
+            selectedServerType = this.explorer.serverStatus.get(serverId).server.type;
         } else {
             serverId = context.server.id;
             selectedServerType = context.server.type;
@@ -134,7 +134,7 @@ export class CommandHandler {
     }
 
     private async removeStoppedServer(serverId: string, serverType: Protocol.ServerType): Promise<Protocol.Status> {
-        const status1: Protocol.ServerState = this.serversData.serverStatus.get(serverId);
+        const status1: Protocol.ServerState = this.explorer.serverStatus.get(serverId);
         if (status1.state !== ServerState.STOPPED) {
             return Promise.reject(`Stop server ${serverId} before removing it.`);
         }
@@ -149,34 +149,37 @@ export class CommandHandler {
         if (context === undefined) {
             const serverId = await this.selectServer('Select server to show output channel');
             if (!serverId) return null;
-            context = this.serversData.serverStatus.get(serverId);
+            context = this.explorer.serverStatus.get(serverId);
         }
-        this.serversData.showOutput(context);
+        this.explorer.showOutput(context);
     }
 
     public async restartServer(mode: string, context?: Protocol.ServerState): Promise<void> {
         if (context === undefined) {
             const serverId: string = await this.selectServer('Select server to restart', ServerState.STARTED);
             if (!serverId) return null;
-            context = this.serversData.serverStatus.get(serverId);
+            context = this.explorer.serverStatus.get(serverId);
         }
 
-        await this.client.getOutgoingSyncHandler().stopServerSync({ id: context.server.id, force: true });
+        await this.client.getOutgoingSyncHandler().stopServerSync({ id: context.server.id, force: true })
+            .then(() => {
+                if (mode === 'debug') {
+                    return this.debugServer(context);
+                } else if (mode === 'run') {
+                    const params: Protocol.LaunchParameters = {
+                        mode: mode,
+                        params: {
+                            id: context.server.id,
+                            serverType: context.server.type.id,
+                            attributes: new Map<string, any>()
+                        }
+                    };
 
-        if (mode === 'debug') {
-            await this.debugServer(context);
-        } else {
-            const params: Protocol.LaunchParameters = {
-                mode: mode,
-                params: {
-                    id: context.server.id,
-                    serverType: context.server.type.id,
-                    attributes: new Map<string, any>()
+                    return this.client.getOutgoingHandler().startServerAsync(params);
+                } else {
+                    return Promise.reject(`Could not restart server: unknown mode ${mode}`);
                 }
-            };
-
-            await this.client.getOutgoingHandler().startServerAsync(params);
-        }
+            });
     }
 
     public async addDeployment(context?: Protocol.ServerState): Promise<Protocol.Status> {
@@ -188,9 +191,9 @@ export class CommandHandler {
             serverId = context.server.id;
         }
 
-        if (this.serversData) {
-            const serverHandle: Protocol.ServerHandle = this.serversData.serverStatus.get(serverId).server;
-            return this.serversData.addDeployment(serverHandle);
+        if (this.explorer) {
+            const serverHandle: Protocol.ServerHandle = this.explorer.serverStatus.get(serverId).server;
+            return this.explorer.addDeployment(serverHandle);
         } else {
             return Promise.reject('Runtime Server Protocol (RSP) Server is starting, please try again later.');
         }
@@ -203,7 +206,7 @@ export class CommandHandler {
             serverId = await this.selectServer('Select server to remove deployment from');
             if (!serverId) return null;
 
-            const deployables = this.serversData.serverStatus.get(serverId).deployableStates.map(value => {
+            const deployables = this.explorer.serverStatus.get(serverId).deployableStates.map(value => {
                 return value.reference.label;
             });
             deploymentId = await vscode.window.showQuickPick(deployables, { placeHolder: 'Select deployment to remove' });
@@ -213,13 +216,13 @@ export class CommandHandler {
             deploymentId = context.reference.label;
         }
 
-        if (this.serversData) {
-            const serverState: Protocol.ServerState = this.serversData.serverStatus.get(serverId);
+        if (this.explorer) {
+            const serverState: Protocol.ServerState = this.explorer.serverStatus.get(serverId);
             const serverHandle: Protocol.ServerHandle = serverState.server;
             const states: Protocol.DeployableState[] = serverState.deployableStates;
             for (const entry of states) {
                 if ( entry.reference.label === deploymentId) {
-                    return this.serversData.removeDeployment(serverHandle, entry.reference);
+                    return this.explorer.removeDeployment(serverHandle, entry.reference);
                 }
             }
             return Promise.reject(`Cannot find deployment ${deploymentId}`);
@@ -237,16 +240,16 @@ export class CommandHandler {
             serverId = context.server.id;
         }
 
-        if (this.serversData) {
-            const serverHandle: Protocol.ServerHandle = this.serversData.serverStatus.get(serverId).server;
-            return this.serversData.publish(serverHandle, 2); // TODO use constant? Where is it?
+        if (this.explorer) {
+            const serverHandle: Protocol.ServerHandle = this.explorer.serverStatus.get(serverId).server;
+            return this.explorer.publish(serverHandle, 2); // TODO use constant? Where is it?
         } else {
             return Promise.reject('Runtime Server Protocol (RSP) Server is starting, please try again later.');
         }
     }
 
     public async createServer(): Promise<Protocol.Status> {
-        this.assertServersDataExists();
+        this.assertExplorerExists();
         const download: string = await vscode.window.showQuickPick(['Yes', 'No, use server on disk'],
             { placeHolder: 'Download server?', ignoreFocusOut: true });
         if (!download) {
@@ -259,15 +262,15 @@ export class CommandHandler {
         }
     }
 
-    private assertServersDataExists() {
-        if (!this.serversData) {
+    private assertExplorerExists() {
+        if (!this.explorer) {
             throw new Error('Runtime Server Protocol (RSP) Server is starting, please try again later.');
         }
     }
 
     public async addLocation(): Promise<Protocol.Status> {
-        if (this.serversData) {
-            return this.serversData.addLocation();
+        if (this.explorer) {
+            return this.explorer.addLocation();
         } else {
             return Promise.reject('Runtime Server Protocol (RSP) Server is starting, please try again later.');
         }
@@ -307,10 +310,10 @@ export class CommandHandler {
 
     public async infoServer(context?: Protocol.ServerState): Promise<void> {
         if (context === undefined) {
-            if (this.serversData) {
+            if (this.explorer) {
                 const serverId = await this.selectServer('Select server you want to retrieve info about');
                 if (!serverId) return null;
-                context = this.serversData.serverStatus.get(serverId);
+                context = this.explorer.serverStatus.get(serverId);
             } else {
                 return Promise.reject('Runtime Server Protocol (RSP) Server is starting, please try again later.');
             }
@@ -327,10 +330,10 @@ export class CommandHandler {
     }
 
     private async selectServer(message: string, stateFilter: number = CommandHandler.NO_SERVERS_FILTER): Promise<string> {
-        let servers = Array.from(this.serversData.serverStatus.keys());
+        let servers = Array.from(this.explorer.serverStatus.keys());
         if (stateFilter >= 0) {
             servers = servers.filter(value => {
-                return this.serversData.serverStatus.get(value).state === stateFilter;
+                return this.explorer.serverStatus.get(value).state === stateFilter;
             });
         }
         if (servers.length < 1) {
@@ -412,31 +415,39 @@ export class CommandHandler {
         }
     }
 
-    private async checkExtension(debugInfo: Protocol.CommandLineDetails): Promise<string> {
-        if (debugInfo && debugInfo.properties['debug.details.type'].indexOf('java') >= 0) {
-            if (vscode.extensions.getExtension('vscjava.vscode-java-debug') === undefined) {
-                return 'Debugger for Java extension is required. Install/Enable it before proceeding.';
-            }
-        } else {
-            return `Vscode-Adapters doesn\'t support debugging with ${debugInfo.properties['debug.details.type']} language at this time.`;
+    private async checkExtension(debugInfo: DebugInfo): Promise<string> {
+        if (!debugInfo) {
+            return `Could not find server debug info.`;
         }
+
+        if (!debugInfo.isJavaType()) {
+            return `Vscode-Adapters doesn\'t support debugging with ${debugInfo.getType()} language at this time.`;
+        }
+
+        if (this.hasJavaDebugExtension()) {
+            return 'Debugger for Java extension is required. Install/Enable it before proceeding.';
+        }
+    }
+
+    private hasJavaDebugExtension(): boolean {
+        return vscode.extensions.getExtension('vscjava.vscode-java-debug') === undefined;
     }
 
     public async activate(): Promise<void> {
         this.client.getIncomingHandler().onServerAdded(handle => {
-            this.serversData.insertServer(handle);
+            this.explorer.insertServer(handle);
         });
 
         this.client.getIncomingHandler().onServerRemoved(handle => {
-            this.serversData.removeServer(handle);
+            this.explorer.removeServer(handle);
         });
 
         this.client.getIncomingHandler().onServerStateChanged(event => {
-            this.serversData.updateServer(event);
+            this.explorer.updateServer(event);
         });
 
         this.client.getIncomingHandler().onServerProcessOutputAppended(event => {
-            this.serversData.addServerOutput(event);
+            this.explorer.addServerOutput(event);
         });
     }
 }

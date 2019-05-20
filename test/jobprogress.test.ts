@@ -5,12 +5,13 @@
 
 import * as chai from 'chai';
 import * as chaipromise from 'chai-as-promised';
+import { ClientStubs } from './clientstubs';
 import { JobProgress } from '../src/jobprogress';
 import { Protocol } from 'rsp-client';
 import * as sinon from 'sinon';
 import * as sinonChai from 'sinon-chai';
-import { Stubs } from './stubs';
 import * as vscode from 'vscode';
+import { fail } from 'assert';
 
 const expect = chai.expect;
 chai.use(sinonChai);
@@ -22,14 +23,10 @@ class CancellationStub implements vscode.CancellationToken {
         return {dispose() {}};
     }
 }
-class ProgressStub implements vscode.Progress<{ message: string, increment: number }> {
-    public report(value: { message: string, increment: number }): void {
-    }
-}
 
 suite('Job Progress', () => {
     let sandbox: sinon.SinonSandbox;
-    let stubs: Stubs;
+    let stubs: ClientStubs;
     const job: Protocol.JobHandle = {
         name: 'papa smurf',
         id: 'papa.smurf.id'
@@ -41,7 +38,7 @@ suite('Job Progress', () => {
     let cancellationStub: vscode.CancellationToken;
     let progressStub: vscode.Progress<{ message: string, increment: number }>;
     let progressStubReport: sinon.SinonSpy<[{ message: string; increment: number; }], void>;
-    let promise: Thenable<{}>;
+    let progressTaskPromise: Thenable<{}>;
     let withProgressFake: (
         options: vscode.ProgressOptions,
         task: (progress: vscode.Progress<{ message: string; increment: number }>, token: vscode.CancellationToken) => Thenable<{}>) => Thenable<{}>;
@@ -49,20 +46,24 @@ suite('Job Progress', () => {
 
     setup(() => {
         sandbox = sinon.createSandbox();
-        stubs = new Stubs(sandbox);
+        stubs = new ClientStubs(sandbox);
 
         stubs.incoming.onJobAdded = sandbox.stub();
         stubs.incoming.onJobRemoved = sandbox.stub();
         stubs.incoming.onJobChanged = sandbox.stub();
 
         cancellationStub = new CancellationStub();
-        progressStub = new ProgressStub();
+        progressStub = {
+            report: (value: { message: string, increment: number }) => void {
+            }
+        };
         progressStubReport = sandbox.spy(progressStub, 'report');
         withProgressFake = (
-          options: vscode.ProgressOptions,
-          task: (progress: vscode.Progress<{ message: string; increment: number }>, token: vscode.CancellationToken) => Thenable<{}>) => {
-            promise = task(progressStub, cancellationStub);
-            return promise;
+            options: vscode.ProgressOptions, task: (
+            progress: vscode.Progress<{ message: string; increment: number }>, token: vscode.CancellationToken)
+            => Thenable<{}>) => {
+            progressTaskPromise = task(progressStub, cancellationStub);
+            return progressTaskPromise;
         };
         withProgressFakeSpy = sandbox.stub(vscode.window, 'withProgress').callsFake(withProgressFake);
     });
@@ -161,10 +162,10 @@ suite('Job Progress', () => {
         expect(onCancellationSpy).calledOnce;
     });
 
-    test('cancelling CancellationToke cancels job', () => {
+    test('cancelling CancellationToken cancels job', () => {
         // given
         const onCancellationSpy = sandbox.spy(cancellationStub, 'onCancellationRequested');
-        stubs.outgoing.cancelJob = sinon.stub().withArgs(job).resolves();
+        stubs.outgoing.cancelJob = sandbox.stub().withArgs(job).resolves();
 
         JobProgress.create(stubs.client);
         callOnJobAddedListenerWith(job, stubs.incoming.onJobAdded);
@@ -174,6 +175,7 @@ suite('Job Progress', () => {
 
         // then
         expect(stubs.outgoing.cancelJob).calledOnceWith(job);
+        expect(progressTaskPromise).to.be.rejected;
     });
 
     test('show error that contains message & (start of) trace if job removal ended with error', () => {
@@ -226,11 +228,17 @@ suite('Job Progress', () => {
         callOnJobRemovedListenerWith(jobRemovedTimeout, stubs.incoming.onJobRemoved);
 
         // then
-        expect(promise).to.eventually.match(/Error while retrieving runtime from .+ Read timed out/g);
+        progressTaskPromise.then(
+            () => {
+                fail('task promise expected to be rejected but was resolved.');
+            },
+            (reason: string) => {
+                expect(reason).to.match(/Error while retrieving runtime from .+: Read timed out/g);
+            });
     });
 
     test('show error that contains only message if there is no trace if job removal ended with error', () => {
-      // given
+        // given
         sandbox.stub(vscode.window, 'showErrorMessage');
         const timeoutStatus: Protocol.Status = {
             severity: 4,
@@ -247,15 +255,15 @@ suite('Job Progress', () => {
         JobProgress.create(stubs.client);
         callOnJobAddedListenerWith(job, stubs.incoming.onJobAdded);
 
-      // when
+        // when
         callOnJobRemovedListenerWith(jobRemovedTimeout, stubs.incoming.onJobRemoved);
 
-      // then
-        expect(promise).to.eventually.rejectedWith('Error');
+        // then
+        expect(progressTaskPromise).to.eventually.rejectedWith('Error');
     });
 
     test('dont show error if job removal ended with success', () => {
-      // given
+        // given
         const timeoutStatus: Protocol.Status = {
             severity: 0,
             plugin: undefined,
@@ -271,11 +279,11 @@ suite('Job Progress', () => {
         JobProgress.create(stubs.client);
         callOnJobAddedListenerWith(job, stubs.incoming.onJobAdded);
 
-      // when
+        // when
         callOnJobRemovedListenerWith(jobRemovedTimeout, stubs.incoming.onJobRemoved);
 
-      // then
-        expect(promise).to.eventually.equal(job);
+        // then
+        expect(progressTaskPromise).to.eventually.equal(job);
     });
 });
 

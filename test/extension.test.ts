@@ -6,13 +6,13 @@
 // The module 'assert' provides assertion methods from node
 import * as assert from 'assert';
 import * as chai from 'chai';
+import { ClientStubs } from './clientstubs';
 import { activate, deactivate } from '../src/extension';
 import { CommandHandler } from '../src/extensionApi';
 import { Protocol } from 'rsp-client';
 import * as server from '../src/server';
 import * as sinon from 'sinon';
 import * as sinonChai from 'sinon-chai';
-import { Stubs } from './stubs';
 import * as vscode from 'vscode';
 
 const expect = chai.expect;
@@ -22,7 +22,7 @@ chai.use(sinonChai);
 suite('Extension Tests', () => {
     let sandbox: sinon.SinonSandbox;
     let startStub;
-    let stubs: Stubs;
+    let stubs: ClientStubs;
 
     class DummyMemento implements vscode.Memento {
         public get<T>(key: string): Promise<T|undefined> {
@@ -50,12 +50,12 @@ suite('Extension Tests', () => {
         host: 'localhost',
         process: {
             stdout: {
-                on: (event: string, callback: Function) => {
+                on: (event: string, callback: (name: string) => void) => {
                     return callback('some output');
                 }
             },
             stderr: {
-                on: (event: string, callback: Function) => {
+                on: (event: string, callback: (name: string) => void) => {
                     return callback('some error');
                 }
             }
@@ -65,7 +65,7 @@ suite('Extension Tests', () => {
     setup(() => {
         sandbox = sinon.createSandbox();
 
-        stubs = new Stubs(sandbox);
+        stubs = new ClientStubs(sandbox);
 
         startStub = sandbox.stub(server, 'start').resolves(serverdata);
 
@@ -89,11 +89,11 @@ suite('Extension Tests', () => {
 
     test('Server is started at extension activation time', async () => {
         sandbox.stub(CommandHandler.prototype, 'activate').resolves();
-        const registerTreeDataProviderStub = sandbox.stub(vscode.window, 'registerTreeDataProvider');
+        const createTreeViewStub = sandbox.stub(vscode.window, 'createTreeView');
         const result = await activate(context);
         expect(startStub).calledOnce;
         expect(result).deep.equals({serverInfo: serverdata});
-        expect(registerTreeDataProviderStub).calledOnce;
+        expect(createTreeViewStub).calledOnce;
     });
 
     test('should register all server commands', async () => {
