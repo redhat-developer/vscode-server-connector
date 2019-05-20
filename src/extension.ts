@@ -8,11 +8,11 @@ import { CommandHandler, ExtensionAPI } from './extensionApi';
 import { JobProgress } from './jobprogress';
 import { Protocol, RSPClient, ServerState } from 'rsp-client';
 import * as server from './server';
-import { ServersViewTreeDataProvider } from './serverExplorer';
+import { ServerExplorer as ServersExplorer } from './serverExplorer';
 import * as vscode from 'vscode';
 
 let client: RSPClient;
-let serversData: ServersViewTreeDataProvider;
+let serversExplorer: ServersExplorer;
 
 const rspserverstdout = vscode.window.createOutputChannel('RSP Server (stdout)');
 const rspserverstderr = vscode.window.createOutputChannel('RSP Server (stderr)');
@@ -26,9 +26,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<Extens
         return Promise.reject('Failed to start the rsp server');
     }
     client = await initClient(serverInfo);
-    serversData = new ServersViewTreeDataProvider(client);
-    vscode.window.registerTreeDataProvider('servers', serversData);
-    const commandHandler = new CommandHandler(serversData, client);
+    serversExplorer = new ServersExplorer(client);
+    const commandHandler = new CommandHandler(serversExplorer, client);
     await commandHandler.activate();
     registerCommands(commandHandler, context);
     return { serverInfo };
@@ -99,8 +98,8 @@ function registerCommands(commandHandler: CommandHandler, context: vscode.Extens
 
 export function deactivate() {
     if (client) {
-        if (serversData) {
-            for (const val of serversData.serverStatus.values()) {
+        if (serversExplorer) {
+            for (const val of serversExplorer.serverStatus.values()) {
                 stopServer(val);
             }
         }

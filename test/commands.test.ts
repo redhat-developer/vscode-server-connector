@@ -4,12 +4,15 @@
  *-----------------------------------------------------------------------------------------------*/
 
 import * as chai from 'chai';
+import { ClientStubs } from './clientstubs';
+import { DebugInfo } from '../src/debugInfo';
+import { DebugInfoProvider } from '../src/debugInfoProvider';
 import { CommandHandler } from '../src/extensionApi';
+import { ProtocolStubs } from './protocolstubs';
 import { Protocol, ServerState } from 'rsp-client';
-import { ServersViewTreeDataProvider } from '../src/serverExplorer';
+import { ServerExplorer } from '../src/serverExplorer';
 import * as sinon from 'sinon';
 import * as sinonChai from 'sinon-chai';
-import { Stubs } from './stubs';
 import * as vscode from 'vscode';
 
 const expect = chai.expect;
@@ -18,64 +21,29 @@ chai.use(sinonChai);
 suite('Command Handler', () => {
     let sandbox: sinon.SinonSandbox;
     let sandboxDebug: sinon.SinonSandbox;
-    let stubs: Stubs;
+    let stubs: ClientStubs;
     let handler: CommandHandler;
-    let serverExplorer: ServersViewTreeDataProvider;
-
-    const serverType: Protocol.ServerType = {
-        id: 'type',
-        description: 'a type',
-        visibleName: 'the type'
-    };
-
-    const serverHandle: Protocol.ServerHandle = {
-        id: 'id',
-        type: serverType
-    };
-
-    const serverState: Protocol.ServerState =  {
-        server: serverHandle,
-        deployableStates: [],
-        publishState: 0,
-        state: 0
-    };
-
-    const status: Protocol.Status = {
-        code: 0,
-        message: 'ok',
-        severity: 0,
-        ok: true,
-        plugin: 'unknown',
-        trace: ''
-    };
-
-    const errorStatus: Protocol.Status = {
-        code: 0,
-        message: 'Critical Error',
-        ok: false,
-        plugin: 'plugin',
-        severity: 4,
-        trace: ''
-    };
+    let serverExplorer: ServerExplorer;
 
     const simpleContext = {
         id: 'id'
     };
     const context = {
         id: 'id',
-        type: serverType
+        type: ProtocolStubs.serverType
     };
 
     setup(() => {
         sandbox = sinon.createSandbox();
         sandboxDebug = sinon.createSandbox();
 
-        stubs = new Stubs(sandbox);
-        stubs.outgoing.getServerHandles.resolves([serverHandle]);
-        serverExplorer = new ServersViewTreeDataProvider(stubs.client);
+        stubs = new ClientStubs(sandbox);
+        stubs.outgoing.getServerHandles = sandbox.stub().resolves([ProtocolStubs.serverHandle]);
+        stubs.outgoing.getServerState = sandbox.stub().resolves(ProtocolStubs.serverState);
+        serverExplorer = new ServerExplorer(stubs.client);
         handler = new CommandHandler(serverExplorer, stubs.client);
 
-        serverExplorer.serverStatus.set('server', serverState);
+        serverExplorer.serverStatus.set('server', ProtocolStubs.serverState);
     });
 
     teardown(() => {
@@ -84,10 +52,10 @@ suite('Command Handler', () => {
     });
 
     test('activate registers event listeners', async () => {
-        sinon.spy(stubs.incoming.onServerAdded);
-        sinon.spy(stubs.incoming.onServerRemoved);
-        sinon.spy(stubs.incoming.onServerStateChanged);
-        sinon.spy(stubs.incoming.onServerProcessOutputAppended);
+        stubs.incoming.onServerAdded.reset();
+        stubs.incoming.onServerRemoved.reset();
+        stubs.incoming.onServerStateChanged.reset();
+        stubs.incoming.onServerProcessOutputAppended.reset();
 
         await handler.activate();
 
@@ -110,17 +78,17 @@ suite('Command Handler', () => {
 
         const response: Protocol.StartServerResponse = {
             details: cmdDetails,
-            status: status
+            status: ProtocolStubs.status
         };
 
         setup(() => {
-            statusStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverState);
+            statusStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(ProtocolStubs.serverState);
             startStub = sandbox.stub().resolves(response);
             stubs.outgoing.startServerAsync = startStub;
         });
 
         test('works with injected context', async () => {
-            const result = await handler.startServer('run', serverState);
+            const result = await handler.startServer('run', ProtocolStubs.serverState);
             const args: Protocol.LaunchParameters = {
                 mode: 'run',
                 params: {
@@ -140,7 +108,7 @@ suite('Command Handler', () => {
             const args: Protocol.LaunchParameters = {
                 mode: 'run',
                 params: {
-                    serverType: serverType.id,
+                    serverType: ProtocolStubs.serverType.id,
                     id: 'id',
                     attributes: new Map<string, any>()
                 }
@@ -154,7 +122,7 @@ suite('Command Handler', () => {
             statusStub.returns(ServerState.STARTED);
 
             try {
-                await handler.startServer('run', serverState);
+                await handler.startServer('run', ProtocolStubs.serverState);
                 expect.fail();
             } catch (err) {
                 expect(err).equals('The server is already running.');
@@ -164,15 +132,15 @@ suite('Command Handler', () => {
         test('throws any errors coming from the rsp client', async () => {
             const result: Protocol.StartServerResponse = {
                 details: cmdDetails,
-                status: errorStatus
+                status: ProtocolStubs.errorStatus
             };
             startStub.resolves(result);
 
             try {
-                await handler.startServer('run', serverState);
+                await handler.startServer('run', ProtocolStubs.serverState);
                 expect.fail();
             } catch (err) {
-                expect(err).equals(errorStatus.message);
+                expect(err).equals(ProtocolStubs.errorStatus.message);
             }
         });
     });
@@ -191,11 +159,11 @@ suite('Command Handler', () => {
 
         const response: Protocol.StartServerResponse = {
             details: cmdDetails,
-            status: status
+            status: ProtocolStubs.status
         };
 
         setup(() => {
-            startStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverState);
+            startStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(ProtocolStubs.serverState);
             startStub = sandbox.stub().resolves(response);
             stubs.outgoing.startServerAsync = startStub;
         });
@@ -203,37 +171,41 @@ suite('Command Handler', () => {
         test('display error if no extension found', async () => {
             const stubM = sinon.stub(handler, 'checkExtension' as any);
             stubM.resolves('Debugger for Java extension is required. Install/Enable it before proceeding.');
-            const sinonSpy = sandbox.spy(vscode.window, 'showErrorMessage');
-            await handler.debugServer(serverState);
-            sinon.assert.calledOnce(sinonSpy);
+            const showErrorMessageStub = sandbox.stub(vscode.window, 'showErrorMessage');
+            await handler.debugServer(ProtocolStubs.serverState);
+            sinon.assert.calledOnce(showErrorMessageStub);
         });
 
         test('display error if language is not supported', async () => {
-            sandbox.stub(serverExplorer, 'retrieveDebugInfo').resolves(cmdDetails);
-            const sinonSpy = sandbox.spy(vscode.window, 'showErrorMessage');
-            await handler.debugServer(serverState);
-            sandbox.assert.calledOnce(sinonSpy);
+            const debugInfo: DebugInfo = new DebugInfo(sandbox.stub() as unknown as Protocol.CommandLineDetails);
+            sandbox.stub(debugInfo, 'isJavaType').returns(false);
+            sandbox.stub(DebugInfoProvider, 'retrieve').resolves(debugInfo);
+            const startServerStub = givenServerStarted(sandbox, handler);
+            const showErrorMessageStub = sandbox.stub(vscode.window, 'showErrorMessage');
+            await handler.debugServer(ProtocolStubs.serverState);
+            sandbox.assert.calledOnce(showErrorMessageStub);
+            sandbox.assert.notCalled(startServerStub);
         });
 
-        test('works with injected context', async () => {
-            sandbox.stub(handler, 'checkExtension' as any).resolves(undefined);
-            const sinonSpy = sandbox.spy(handler, 'startServer');
-            const sinonSpyDebug = sandbox.spy(vscode.debug, 'startDebugging');
+        test('starts server & debugging with injected context', async () => {
+            givenDebugTypeIsSupported(sandbox, handler);
+            const startServerStub = givenServerStarted(sandbox, handler);
+            const startDebuggingStub = sandbox.stub(vscode.debug, 'startDebugging');
 
-            await handler.debugServer(serverState);
-            sandbox.assert.calledOnce(sinonSpy);
-            sandbox.assert.calledOnce(sinonSpyDebug);
+            await handler.debugServer(ProtocolStubs.serverState);
+            sandbox.assert.calledOnce(startServerStub);
+            sandbox.assert.calledOnce(startDebuggingStub);
         });
 
-        test('works without injected context', async () => {
+        test('starts server & debugging without injected context', async () => {
             sandbox.stub(vscode.window, 'showQuickPick').resolves('id');
-            sandbox.stub(handler, 'checkExtension' as any).resolves(undefined);
-            const sinonSpy = sandbox.spy(handler, 'startServer');
-            const sinonSpyDebug = sandbox.spy(vscode.debug, 'startDebugging');
+            givenDebugTypeIsSupported(sandbox, handler);
+            const startServerStub = givenServerStarted(sandbox, handler);
+            const startDebuggingStub = sandbox.stub(vscode.debug, 'startDebugging');
 
             await handler.debugServer(undefined);
-            sandbox.assert.calledOnce(sinonSpy);
-            sandbox.assert.calledOnce(sinonSpyDebug);
+            sandbox.assert.calledOnce(startServerStub);
+            sandbox.assert.calledOnce(startDebuggingStub);
         });
 
     });
@@ -244,25 +216,25 @@ suite('Command Handler', () => {
 
         setup(() => {
             const serverStateInternal: Protocol.ServerState =  {
-                server: serverHandle,
+                server: ProtocolStubs.serverHandle,
                 deployableStates: [],
                 publishState: 0,
                 state: ServerState.STARTED
             };
 
             statusStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverStateInternal);
-            stopStub = stubs.outgoing.stopServerAsync.resolves(status);
+            stopStub = stubs.outgoing.stopServerAsync.resolves(ProtocolStubs.status);
             sandbox.stub(vscode.window, 'showQuickPick').resolves('id');
         });
 
         test('works with injected context', async () => {
-            const result = await handler.stopServer(serverState);
+            const result = await handler.stopServer(ProtocolStubs.serverState);
             const args: Protocol.StopServerAttributes = {
                 id: simpleContext.id,
                 force: true
             };
 
-            expect(result).equals(status);
+            expect(result).equals(ProtocolStubs.status);
             expect(stopStub).calledOnceWith(args);
         });
 
@@ -273,7 +245,7 @@ suite('Command Handler', () => {
                 force: true
             };
 
-            expect(result).equals(status);
+            expect(result).equals(ProtocolStubs.status);
             expect(stopStub).calledOnceWith(args);
         });
 
@@ -281,7 +253,7 @@ suite('Command Handler', () => {
             statusStub.returns(ServerState.STOPPED);
 
             try {
-                await handler.stopServer(serverState);
+                await handler.stopServer(ProtocolStubs.serverState);
                 expect.fail();
             } catch (err) {
                 expect(err).equals('The server is already stopped.');
@@ -289,13 +261,13 @@ suite('Command Handler', () => {
         });
 
         test('throws any errors coming from the rsp client', async () => {
-            stopStub.resolves(errorStatus);
+            stopStub.resolves(ProtocolStubs.errorStatus);
 
             try {
-                await handler.stopServer(serverState);
+                await handler.stopServer(ProtocolStubs.serverState);
                 expect.fail();
             } catch (err) {
-                expect(err).equals(errorStatus.message);
+                expect(err).equals(ProtocolStubs.errorStatus.message);
             }
         });
     });
@@ -306,26 +278,26 @@ suite('Command Handler', () => {
 
         setup(() => {
             const serverStateInternal: Protocol.ServerState =  {
-                server: serverHandle,
+                server: ProtocolStubs.serverHandle,
                 deployableStates: [],
                 publishState: 0,
                 state: ServerState.STOPPED
             };
 
             statusStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverStateInternal);
-            removeStub = stubs.outgoing.deleteServer.resolves(status);
+            removeStub = stubs.outgoing.deleteServer.resolves(ProtocolStubs.status);
             sandbox.stub(vscode.window, 'showQuickPick').resolves('id');
         });
 
         test('works with injected context', async () => {
             sandbox.stub(vscode.window, 'showWarningMessage').resolves('Yes');
-            const result = await handler.removeServer(serverState);
+            const result = await handler.removeServer(ProtocolStubs.serverState);
             const args: Protocol.ServerHandle = {
                 id: context.id,
                 type: context.type
             };
 
-            expect(result).equals(status);
+            expect(result).equals(ProtocolStubs.status);
             expect(removeStub).calledOnceWith(args);
         });
 
@@ -334,10 +306,10 @@ suite('Command Handler', () => {
             const result = await handler.removeServer();
             const args: Protocol.ServerHandle = {
                 id: 'id',
-                type: serverType
+                type: ProtocolStubs.serverType
             };
 
-            expect(result).equals(status);
+            expect(result).equals(ProtocolStubs.status);
             expect(removeStub).calledOnceWith(args);
         });
 
@@ -346,22 +318,22 @@ suite('Command Handler', () => {
             statusStub.returns(ServerState.STARTED);
 
             try {
-                await handler.removeServer(serverState);
+                await handler.removeServer(ProtocolStubs.serverState);
                 expect.fail();
             } catch (err) {
-                expect(err).to.include(serverState.server.id);
+                expect(err).to.include(ProtocolStubs.serverState.server.id);
             }
         });
 
         test('throws any errors coming from the rsp client', async () => {
             sandbox.stub(vscode.window, 'showWarningMessage').resolves('Yes');
-            removeStub.resolves(errorStatus);
+            removeStub.resolves(ProtocolStubs.errorStatus);
 
             try {
-                await handler.removeServer(serverState);
+                await handler.removeServer(ProtocolStubs.serverState);
                 expect.fail();
             } catch (err) {
-                expect(err).equals(errorStatus.message);
+                expect(err).equals(ProtocolStubs.errorStatus.message);
             }
         });
 
@@ -377,20 +349,20 @@ suite('Command Handler', () => {
         const startedState: Protocol.ServerState = {
             deployableStates: [],
             publishState: 0,
-            server: serverHandle,
+            server: ProtocolStubs.serverHandle,
             state: ServerState.STARTED
         };
 
         setup(() => {
             serverExplorer.serverStatus.set('server', startedState);
             sandbox.stub(serverExplorer.serverStatus, 'get').returns(startedState);
-            startStub = stubs.outgoing.startServerAsync.resolves(status);
-            stopStub = stubs.outgoingSync.stopServerSync.resolves(status);
+            startStub = stubs.outgoing.startServerAsync.resolves(ProtocolStubs.status);
+            stopStub = stubs.outgoingSync.stopServerSync.resolves(ProtocolStubs.status);
             sandbox.stub(vscode.window, 'showQuickPick').resolves('id');
         });
 
         test('works with injected context', async () => {
-            await handler.restartServer('run', serverState);
+            await handler.restartServer('run', ProtocolStubs.serverState);
             const stopArgs: Protocol.StopServerAttributes = {
                 id: context.id,
                 force: true
@@ -419,7 +391,7 @@ suite('Command Handler', () => {
                 mode: 'run',
                 params: {
                     id: 'id',
-                    serverType: serverType.id,
+                    serverType: ProtocolStubs.serverType.id,
                     attributes: new Map<string, any>()
                 }
             };
@@ -435,27 +407,27 @@ suite('Command Handler', () => {
         const startedState: Protocol.ServerState = {
             deployableStates: [],
             publishState: 0,
-            server: serverHandle,
+            server: ProtocolStubs.serverHandle,
             state: ServerState.STARTED
         };
 
         setup(() => {
             serverExplorer.serverStatus.set('server', startedState);
             sandbox.stub(serverExplorer.serverStatus, 'get').returns(startedState);
-            stopStub = stubs.outgoingSync.stopServerSync.resolves(status);
+            stopStub = stubs.outgoingSync.stopServerSync.resolves(ProtocolStubs.status);
             sandbox.stub(vscode.window, 'showQuickPick').resolves('id');
         });
 
         test('works with injected context', async () => {
             const debugStub = sandbox.stub(handler, 'debugServer' as any).resolves(undefined);
-            await handler.restartServer('debug', serverState);
+            await handler.restartServer('debug', ProtocolStubs.serverState);
             const stopArgs: Protocol.StopServerAttributes = {
                 id: context.id,
                 force: true
             };
 
             expect(stopStub).calledOnceWith(stopArgs);
-            expect(debugStub).calledOnceWith(serverState);
+            expect(debugStub).calledOnceWith(ProtocolStubs.serverState);
             expect(debugStub).calledAfter(stopStub);
         });
 
@@ -507,3 +479,36 @@ suite('Command Handler', () => {
         });
     });
 });
+
+function givenServerStarted(sandbox: sinon.SinonSandbox, handler: CommandHandler, responseStub = createServerStartedResponse()) {
+    return sandbox.stub(handler, 'startServer')
+        .resolves(responseStub);
+}
+
+function givenDebugTypeIsSupported(sandbox: sinon.SinonSandbox, handler: CommandHandler) {
+    const debugInfo: DebugInfo = new DebugInfo(sandbox.stub() as unknown as Protocol.CommandLineDetails);
+    sandbox.stub(DebugInfoProvider, 'retrieve').resolves(debugInfo);
+    sandbox.stub(handler, 'checkExtension' as any).resolves(undefined);
+}
+
+function createServerStartedResponse() {
+    return {
+        status: {
+            severity: 2, // STARTED
+            plugin: undefined,
+            code: undefined,
+            message: undefined,
+            trace: undefined,
+            ok: true
+        },
+        details: {
+            cmdLine: undefined,
+            workingDir: undefined,
+            envp: undefined,
+            properties: {
+                ['debug.details.type']: 'java',
+                ['debug.details.port']: 'javaPort'
+            }
+        }
+    };
+}

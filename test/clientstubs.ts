@@ -4,7 +4,7 @@
  *-----------------------------------------------------------------------------------------------*/
 import { Incoming, Outgoing, OutgoingSynchronous, RSPClient, ServerCreation } from 'rsp-client';
 
-export class Stubs {
+export class ClientStubs {
 
     public clientStub: sinon.SinonStubbedInstance<RSPClient>;
     public get client(): RSPClient { return this.clientStub as unknown as RSPClient; }
