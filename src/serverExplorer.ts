@@ -164,15 +164,20 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
     }
 
     private async createOpenDialogOptions(): Promise<OpenDialogOptions> {
-        const isWindows: boolean = process.platform === 'win32';
-        const filePickerType = await this.quickPickDeploymentType(isWindows);
+        const showQuickPick: boolean = process.platform === 'win32' ||
+                                       process.platform === 'linux';
+        const filePickerType = await this.quickPickDeploymentType(showQuickPick);
         if (!filePickerType) {
             return Promise.reject();
         }
+        //dialog behavior on different OS
+        //Windows -> if both options (canSelectFiles and canSelectFolders) are true, fs only shows folders
+        //Linux(fedora) -> if both options are true, fs shows both files and folders but files are unselectable
+        //Mac OS -> if both options are true, it works correctly
         return {
-            canSelectFiles: (isWindows ? filePickerType === deploymentStatus.file : true),
+            canSelectFiles: (showQuickPick ? filePickerType === deploymentStatus.file : true),
             canSelectMany: false,
-            canSelectFolders: (isWindows ? filePickerType === deploymentStatus.exploded : true),
+            canSelectFolders: (showQuickPick ? filePickerType === deploymentStatus.exploded : true),
             openLabel: `Select ${filePickerType} Deployment`
         };
     }
@@ -330,9 +335,9 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
         return attributes;
     }
 
-    private async quickPickDeploymentType(isWindows: boolean): Promise<string> {
+    private async quickPickDeploymentType(showQuickPick: boolean): Promise<string> {
         // quickPick to solve a vscode api bug in windows that only opens file-picker dialog either in file or folder mode
-        if (isWindows) {
+        if (showQuickPick) {
             return await window.showQuickPick([deploymentStatus.file, deploymentStatus.exploded], {placeHolder:
                 'What type of deployment do you want to add?'});
         }
