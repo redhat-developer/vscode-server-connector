@@ -73,7 +73,8 @@ export class CommandHandler {
 
         const stateObj: Protocol.ServerState = this.explorer.serverStatus.get(serverId);
         if ((!forced && stateObj.state === ServerState.STARTED)
-            || (forced && stateObj.state === ServerState.STARTING)) {
+            || (forced && (stateObj.state === ServerState.STARTING
+                            || stateObj.state === ServerState.STOPPING))) {
             const status = await this.client.getOutgoingHandler().stopServerAsync({ id: serverId, force: true });
             if (!StatusSeverity.isOk(status)) {
                 return Promise.reject(status.message);
