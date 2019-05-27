@@ -134,11 +134,13 @@ function displayLog(outputPanel: vscode.OutputChannel, message: string, show: bo
 }
 
 function executeCommand(command: (...args: any[]) => Promise<any>, thisArg: any, ...params: any[]) {
-    const errorMessage = typeof params[params.length - 1] === 'string' ? params[params.length - 1] : '';
+    const commandErrorLabel = typeof params[params.length - 1] === 'string' ? params[params.length - 1] : '';
     return command.call(thisArg, ...params).catch((err: string | Error) => {
         const error = typeof err === 'string' ? new Error(err) : err;
-        let msg = error.hasOwnProperty('message') ? error.message : '';
-        msg = `${errorMessage} Extension backend error - ${msg.toLowerCase()}`;
-        vscode.window.showErrorMessage(msg);
+        const msg = error.hasOwnProperty('message') ? error.message : '';
+        if (commandErrorLabel === '' && msg === '') {
+            return;
+        }
+        vscode.window.showErrorMessage(`${commandErrorLabel} Extension backend error - ${msg.toLowerCase()}`);
     });
 }
