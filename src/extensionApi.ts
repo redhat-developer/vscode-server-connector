@@ -12,6 +12,7 @@ import { ServerInfo } from './server';
 import { ServerEditorAdapter } from './serverEditorAdapter';
 import { ServerExplorer } from './serverExplorer';
 import * as vscode from 'vscode';
+import { JavaDebugSession } from './debug/javaDebugSession';
 
 export interface ExtensionAPI {
     readonly serverInfo: ServerInfo;
@@ -20,14 +21,16 @@ export interface ExtensionAPI {
 export class CommandHandler {
 
     private static readonly LIST_RUNTIMES_TIMEOUT: number = 20000;
+    private static readonly NO_SERVERS_FILTER: number = -1;
 
     private client: RSPClient;
     private explorer: ServerExplorer;
-    private static readonly NO_SERVERS_FILTER: number = -1;
+    private debugSession: JavaDebugSession;
 
     constructor(explorer: ServerExplorer, client: RSPClient) {
         this.client = client;
         this.explorer = explorer;
+        this.debugSession = new JavaDebugSession(client);
     }
 
     public async startServer(mode: string, context?: Protocol.ServerState): Promise<Protocol.StartServerResponse> {
@@ -76,6 +79,7 @@ export class CommandHandler {
             || (forced && (stateObj.state === ServerState.STARTING
                             || stateObj.state === ServerState.STOPPING))) {
             const status = await this.client.getOutgoingHandler().stopServerAsync({ id: serverId, force: true });
+            await this.debugSession.stop(context.server);
             if (!StatusSeverity.isOk(status)) {
                 return Promise.reject(status.message);
             }
@@ -94,7 +98,6 @@ export class CommandHandler {
 
         const debugInfo: DebugInfo = await DebugInfoProvider.retrieve(context.server, this.client);
         const extensionIsRequired = await this.checkExtension(debugInfo);
-
         if (extensionIsRequired) {
             vscode.window.showErrorMessage(extensionIsRequired);
             return;
@@ -163,7 +166,7 @@ export class CommandHandler {
             context = this.explorer.serverStatus.get(serverId);
         }
 
-        await this.client.getOutgoingSyncHandler().stopServerSync({ id: context.server.id, force: true })
+        this.stopServer(context)
             .then(() => {
                 if (mode === 'debug') {
                     return this.debugServer(context);
