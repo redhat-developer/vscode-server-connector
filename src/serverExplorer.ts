@@ -129,6 +129,9 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
                     const answer = await window.showQuickPick(['No', 'Yes'], {placeHolder:
                         'Do you want to edit optional deployment parameters?'});
                     const options = {};
+                    if (!answer) {
+                        return;
+                    }
                     if (answer === 'Yes') {
                         const optionMap: Protocol.Attributes = await this.client.getOutgoingHandler().listDeploymentOptions(server);
                         for (const key in optionMap.attributes) {
