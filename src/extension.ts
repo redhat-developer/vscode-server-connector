@@ -75,7 +75,7 @@ function registerCommands(commandHandler: CommandHandler, context: vscode.Extens
         vscode.commands.registerCommand('server.remove',
             context => executeCommand(commandHandler.removeServer, commandHandler, context, errorMessage.replace('%ACTION%', 'remove'))),
         vscode.commands.registerCommand('server.output',
-            context => executeCommand(commandHandler.showServerOutput, commandHandler, context, '')),
+            context => executeCommand(commandHandler.showServerOutput, commandHandler, context, 'Unable to show server output channel')),
         vscode.commands.registerCommand('server.addDeployment',
             context => executeCommand(commandHandler.addDeployment, commandHandler, context, errorMessage.replace('%ACTION%', 'add deployment to'))),
         vscode.commands.registerCommand('server.removeDeployment',
@@ -87,9 +87,9 @@ function registerCommands(commandHandler: CommandHandler, context: vscode.Extens
         vscode.commands.registerCommand('server.addLocation',
             () => executeCommand(commandHandler.addLocation, commandHandler, 'Unable to detect any server: ')),
         vscode.commands.registerCommand('server.downloadRuntime',
-            () => executeCommand(commandHandler.downloadRuntime, commandHandler, 'Unable to download the runtime: ')),
+            () => executeCommand(commandHandler.downloadRuntime, commandHandler, 'Unable to detect any runtime: ')),
         vscode.commands.registerCommand('server.infoServer',
-            context => executeCommand(commandHandler.infoServer, commandHandler, context, '')),
+            context => executeCommand(commandHandler.infoServer, commandHandler, context, 'Unable to retrieve server property')),
         rspserverstdout,
         rspserverstderr
     ];
@@ -134,15 +134,11 @@ function displayLog(outputPanel: vscode.OutputChannel, message: string, show: bo
 }
 
 function executeCommand(command: (...args: any[]) => Promise<any>, thisArg: any, ...params: any[]) {
-    const errorMessage = params[params.length - 1];
+    const errorMessage = typeof params[params.length - 1] === 'string' ? params[params.length - 1] : '';
     return command.call(thisArg, ...params).catch((err: string | Error) => {
         const error = typeof err === 'string' ? new Error(err) : err;
-        let msg = error.message;
-        if (typeof err !== 'string') {
-            msg = `${errorMessage} Extension backend error - ${msg.toLowerCase()}`;
-        } else {
-            msg = `${errorMessage} ${msg.toLowerCase()}`;
-        }
+        let msg = error.hasOwnProperty('message') ? error.message : '';
+        msg = `${errorMessage} Extension backend error - ${msg.toLowerCase()}`;
         vscode.window.showErrorMessage(msg);
     });
 }
