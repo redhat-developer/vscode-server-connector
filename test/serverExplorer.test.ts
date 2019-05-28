@@ -12,7 +12,7 @@ import { Protocol } from 'rsp-client';
 import { ServerExplorer } from '../src/serverExplorer';
 import * as sinon from 'sinon';
 import * as sinonChai from 'sinon-chai';
-import { EventEmitter, OutputChannel, TreeItemCollapsibleState, Uri, window } from 'vscode';
+import { EventEmitter, OpenDialogOptions, OutputChannel, TreeItemCollapsibleState, Uri, window } from 'vscode';
 
 const expect = chai.expect;
 chai.use(sinonChai);
@@ -293,6 +293,119 @@ suite('Server explorer', () => {
                 expect.fail();
             } catch (err) {
                 expect(err.message).length > 0;
+            }
+        });
+    });
+
+    suite('addDeployment', () => {
+        const enum deploymentStatus {
+            file = 'File',
+            exploded = 'Exploded'
+        }
+
+        test('check dialog options are set up correctly when choosing file in Windows', async () => {
+            Object.defineProperty(process, 'platform', {
+                value: 'win32'
+            });
+            sandbox.stub(serverExplorer, 'quickPickDeploymentType' as any).resolves(deploymentStatus.file);
+
+            const filePickerResponseWindows = {
+                canSelectFiles: true,
+                canSelectMany: false,
+                canSelectFolders: false,
+                openLabel: `Select File Deployment`
+            };
+            const stubDialog = sandbox.stub(window, 'showOpenDialog');
+            await serverExplorer.addDeployment(undefined);
+
+            const filePickerResult = stubDialog.getCall(0).args[0];
+            expect(JSON.stringify(filePickerResult)).equals(JSON.stringify(filePickerResponseWindows));
+        });
+
+        test('check dialog options are set up correctly when choosing folder in Windows', async () => {
+            Object.defineProperty(process, 'platform', {
+                value: 'win32'
+            });
+            sandbox.stub(serverExplorer, 'quickPickDeploymentType' as any).resolves(deploymentStatus.exploded);
+
+            const folderPickerResponseWindows = {
+                canSelectFiles: false,
+                canSelectMany: false,
+                canSelectFolders: true,
+                openLabel: `Select Exploded Deployment`
+            };
+            const stubDialog = sandbox.stub(window, 'showOpenDialog');
+            await serverExplorer.addDeployment(undefined);
+
+            const folderPickerResult = stubDialog.getCall(0).args[0];
+            expect(JSON.stringify(folderPickerResult)).equals(JSON.stringify(folderPickerResponseWindows));
+        });
+
+        test('check dialog options are set up correctly when choosing file in Linux', async () => {
+            Object.defineProperty(process, 'platform', {
+                value: 'linux'
+            });
+            sandbox.stub(serverExplorer, 'quickPickDeploymentType' as any).resolves(deploymentStatus.file);
+
+            const filePickerResponseLinux = {
+                canSelectFiles: true,
+                canSelectMany: false,
+                canSelectFolders: false,
+                openLabel: `Select File Deployment`
+            };
+            const stubDialog = sandbox.stub(window, 'showOpenDialog');
+            await serverExplorer.addDeployment(undefined);
+
+            const filePickerResult = stubDialog.getCall(0).args[0];
+            expect(JSON.stringify(filePickerResult)).equals(JSON.stringify(filePickerResponseLinux));
+        });
+
+        test('check dialog options are set up correctly when choosing folder in Linux', async () => {
+            Object.defineProperty(process, 'platform', {
+                value: 'linux'
+            });
+            sandbox.stub(serverExplorer, 'quickPickDeploymentType' as any).resolves(deploymentStatus.exploded);
+
+            const folderPickerResponseLinux: OpenDialogOptions = {
+                canSelectFiles: false,
+                canSelectMany: false,
+                canSelectFolders: true,
+                openLabel: `Select Exploded Deployment`
+            };
+            const stubDialog = sandbox.stub(window, 'showOpenDialog');
+            await serverExplorer.addDeployment(undefined);
+
+            const folderPickerResult = stubDialog.getCall(0).args[0];
+            expect(JSON.stringify(folderPickerResult)).equals(JSON.stringify(folderPickerResponseLinux));
+        });
+
+        test('check dialog options are set up correctly when opening dialog with different OSes (like MAC OS)', async () => {
+            Object.defineProperty(process, 'platform', {
+                value: 'darwin'
+            });
+            sandbox.stub(serverExplorer, 'quickPickDeploymentType' as any).resolves('file or exploded');
+
+            const pickerResponseDialog: OpenDialogOptions = {
+                canSelectFiles: true,
+                canSelectMany: false,
+                canSelectFolders: true,
+                openLabel: `Select file or exploded Deployment`
+            };
+            const stubDialog = sandbox.stub(window, 'showOpenDialog');
+            await serverExplorer.addDeployment(undefined);
+
+            const pickerResult = stubDialog.getCall(0).args[0];
+            expect(JSON.stringify(pickerResult)).equals(JSON.stringify(pickerResponseDialog));
+        });
+
+        test('check promise get rejected if dialog is closed without choosing', async () => {
+            sandbox.stub(serverExplorer, 'quickPickDeploymentType' as any).resolves(undefined);
+
+            try {
+                await serverExplorer.addDeployment(undefined);
+                expect.fail();
+            } catch (err) {
+                expect(err).equals(undefined);
             }
         });
     });
