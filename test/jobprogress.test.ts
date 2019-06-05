@@ -59,9 +59,12 @@ suite('Job Progress', () => {
         };
         progressStubReport = sandbox.spy(progressStub, 'report');
         withProgressFake = (
-            options: vscode.ProgressOptions, task: (
-            progress: vscode.Progress<{ message: string; increment: number }>, token: vscode.CancellationToken)
-            => Thenable<{}>) => {
+            options: vscode.ProgressOptions, 
+            task: (
+                progress: vscode.Progress<{ message: string; increment: number }>, 
+                token: vscode.CancellationToken
+            ) => Thenable<{}>
+        ) => {
             progressTaskPromise = task(progressStub, cancellationStub);
             return progressTaskPromise;
         };

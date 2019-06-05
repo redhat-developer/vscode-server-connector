@@ -11,7 +11,7 @@ export class DebugInfo {
     }
 
     public isJavaType(): boolean {
-        return this.getType()
+        return this.getType() != null
             && this.getType().indexOf('java') >= 0;
     }
 
@@ -24,7 +24,8 @@ export class DebugInfo {
     }
 
     private getDetailsProperty(identifier: string) {
-        if (!this.details) {
+        if (!this.details
+            || !this.details.properties) {
             return null;
         }
         return this.details.properties[identifier];

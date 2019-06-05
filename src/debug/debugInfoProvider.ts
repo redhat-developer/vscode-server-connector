@@ -8,6 +8,10 @@ import { Protocol, RSPClient } from 'rsp-client';
 
 export class DebugInfoProvider {
     public static async retrieve(server: Protocol.ServerHandle, client: RSPClient): Promise<DebugInfo> {
+        if (!server
+                || !client) {
+            return;
+        }
         const launchCommand: Protocol.CommandLineDetails = await client.getOutgoingHandler().getLaunchCommand({
             mode: 'debug',
             params: {
@@ -21,6 +25,9 @@ export class DebugInfoProvider {
     }
 
     public static create(details: Protocol.CommandLineDetails): DebugInfo {
+        if (!details) {
+            return;
+        }
         return new DebugInfo(details);
     }
 

@@ -39,7 +39,7 @@ suite('Server explorer', () => {
 
         stubs = new ClientStubs(sandbox);
         stubs.outgoing.getServerHandles = sandbox.stub().resolves([]);
-        stubs.outgoing.getServerState = sandbox.stub().resolves(ProtocolStubs.serverState);
+        stubs.outgoing.getServerState = sandbox.stub().resolves(ProtocolStubs.unknownServerState);
 
         serverExplorer = new ServerExplorer(stubs.client);
         getStub = sandbox.stub(serverExplorer.serverOutputChannels, 'get').returns(fakeChannel);
@@ -49,31 +49,34 @@ suite('Server explorer', () => {
         sandbox.restore();
     });
 
-    test('insertServer call should add server to tree data model', async () => {
-        const refreshStub = sandbox.stub(serverExplorer, 'refresh');
+    test('insertServer call should add server', async () => {
+        // given
+        sandbox.stub(serverExplorer, 'refresh');
+        stubs.outgoing.getServerState = sandbox.stub().resolves(ProtocolStubs.startedServerState);
+        const insertStub = serverExplorer.serverStatus.set = sandbox.stub();
+        // when
         await serverExplorer.insertServer(ProtocolStubs.serverHandle);
-        const children = serverExplorer.getChildren();
-
-        expect(refreshStub).calledOnce;
-        expect(children.length).equals(1);
-        expect(children[0].server).exist;
-        expect(children[0].server).deep.equals(ProtocolStubs.serverHandle);
+        // then
+        expect(insertStub).to.be.calledOnceWith(ProtocolStubs.startedServerState.server.id, ProtocolStubs.startedServerState);
     });
 
-    test('removeServer call should remove server from tree data model', () => {
-        const children = serverExplorer.getChildren();
-        sandbox.stub(serverExplorer, 'refresh');
-        serverExplorer.insertServer(ProtocolStubs.serverHandle);
+    test('removeServer call should remove server', () => {
+        // given
+        serverExplorer.serverStatus.set(ProtocolStubs.startedServerState.server.id, ProtocolStubs.startedServerState);
+        const deleteStub = serverExplorer.serverStatus.delete = sandbox.stub();
+        sandbox.stub(serverExplorer, 'refresh')
+        // when
         serverExplorer.removeServer(ProtocolStubs.serverHandle);
-
-        expect(getStub).calledOnce;
-        expect(children).empty;
+        // then
+        expect(deleteStub).to.be.calledOnceWith(ProtocolStubs.serverHandle.id);
     });
 
     test('showOutput call should show servers output channel', () => {
+        // given
         const spy = sandbox.spy(fakeChannel, 'show');
-        serverExplorer.showOutput(ProtocolStubs.serverState);
-
+        // when
+        serverExplorer.showOutput(ProtocolStubs.unknownServerState);
+        // then
         expect(getStub).calledOnce;
         expect(spy).calledOnce;
     });
@@ -90,10 +93,9 @@ suite('Server explorer', () => {
         // given
         const fireStub = sandbox.stub(EventEmitter.prototype, 'fire');
         serverExplorer.selectNode = sandbox.stub();
-
+        serverExplorer.serverStatus.set(ProtocolStubs.unknownServerState.server.id, ProtocolStubs.unknownServerState);
         // when
-        serverExplorer.refresh(ProtocolStubs.serverState);
-
+        serverExplorer.refresh(ProtocolStubs.unknownServerState);
         // then
         expect(fireStub).calledOnce;
     });
@@ -154,14 +156,14 @@ suite('Server explorer', () => {
 
         const serverStop = {
             collapsibleState: TreeItemCollapsibleState.Expanded,
-            label: `id (Stopped) (undefined)`,
+            label: `id (Stopped) (Unknown)`,
             contextValue: 'Stopped',
             iconPath: Uri.file(path.join(__dirname, '../../images/server-light.png'))
         };
 
         const serverStart = {
             collapsibleState: TreeItemCollapsibleState.Expanded,
-            label: 'id (Started) (undefined)',
+            label: 'id (Started) (Unknown)',
             contextValue: 'Started',
             iconPath: Uri.file(path.join(__dirname, '../../images/server-light.png'))
         };
@@ -175,13 +177,13 @@ suite('Server explorer', () => {
 
         const serverUnknown = {
             collapsibleState: TreeItemCollapsibleState.Expanded,
-            label: 'id (Unknown) (undefined)',
+            label: 'id (Unknown) (Unknown)',
             contextValue: 'Unknown',
             iconPath: Uri.file(path.join(__dirname, '../../images/server-light.png'))
         };
 
         setup(() => {
-            serverExplorer.serverStatus =  new Map<string, Protocol.ServerState>([['server', ProtocolStubs.serverState]]);
+            serverExplorer.serverStatus =  new Map<string, Protocol.ServerState>([['server', ProtocolStubs.unknownServerState]]);
             setStatusStub = sandbox.stub(serverExplorer.serverStatus, 'set');
         });
 
@@ -189,14 +191,14 @@ suite('Server explorer', () => {
             sandbox.stub(serverExplorer.runStateEnum, 'get').returns('Stopped');
             serverExplorer.selectNode = sandbox.stub();
             const children = serverExplorer.getChildren();
-            const treeItem = serverExplorer.getTreeItem(ProtocolStubs.serverState);
+            const treeItem = serverExplorer.getTreeItem(ProtocolStubs.unknownServerState);
 
             serverExplorer.updateServer(stateChangeStopping);
             serverExplorer.updateServer(stateChangeStopped);
 
             expect(setStatusStub).calledTwice;
             expect(getStub).calledTwice;
-            expect(children).deep.equals([ProtocolStubs.serverState]);
+            expect(children).deep.equals([ProtocolStubs.unknownServerState]);
             expect(treeItem).deep.equals(serverStop);
         });
 
@@ -204,14 +206,14 @@ suite('Server explorer', () => {
             sandbox.stub(serverExplorer.runStateEnum, 'get').returns('Started');
             serverExplorer.selectNode = sandbox.stub();
             const children = serverExplorer.getChildren();
-            const treeItem = serverExplorer.getTreeItem(ProtocolStubs.serverState);
+            const treeItem = serverExplorer.getTreeItem(ProtocolStubs.unknownServerState);
 
             serverExplorer.updateServer(stateChangeStarting);
             serverExplorer.updateServer(stateChangeStarted);
 
             expect(setStatusStub).calledTwice;
             expect(getStub).calledTwice;
-            expect(children).deep.equals([ProtocolStubs.serverState]);
+            expect(children).deep.equals([ProtocolStubs.unknownServerState]);
             expect(treeItem).deep.equals(serverStart);
         });
 
@@ -232,13 +234,13 @@ suite('Server explorer', () => {
             sandbox.stub(serverExplorer.runStateEnum, 'get').returns('Unknown');
             serverExplorer.selectNode = sandbox.stub();
             const children = serverExplorer.getChildren();
-            const treeItem = serverExplorer.getTreeItem(ProtocolStubs.serverState);
+            const treeItem = serverExplorer.getTreeItem(ProtocolStubs.unknownServerState);
 
             serverExplorer.updateServer(stateChangeUnknown);
 
             expect(setStatusStub).calledOnce;
             expect(getStub).calledOnce;
-            expect(children).deep.equals([ProtocolStubs.serverState]);
+            expect(children).deep.equals([ProtocolStubs.unknownServerState]);
             expect(treeItem).deep.equals(serverUnknown);
         });
     });

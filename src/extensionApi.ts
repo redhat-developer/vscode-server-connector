@@ -5,14 +5,14 @@
 
 'use strict';
 
-import { DebugInfo } from './debugInfo';
-import { DebugInfoProvider } from './debugInfoProvider';
+import { DebugInfo } from './debug/debugInfo';
+import { DebugInfoProvider } from './debug/debugInfoProvider';
+import { JavaDebugSession } from './debug/javaDebugSession';
 import { Protocol, RSPClient, ServerState, StatusSeverity } from 'rsp-client';
 import { ServerInfo } from './server';
 import { ServerEditorAdapter } from './serverEditorAdapter';
 import { ServerExplorer } from './serverExplorer';
 import * as vscode from 'vscode';
-import { JavaDebugSession } from './debug/javaDebugSession';
 
 export interface ExtensionAPI {
     readonly serverInfo: ServerInfo;
@@ -23,46 +23,37 @@ export class CommandHandler {
     private static readonly LIST_RUNTIMES_TIMEOUT: number = 20000;
     private static readonly NO_SERVERS_FILTER: number = -1;
 
-    private client: RSPClient;
-    private explorer: ServerExplorer;
     private debugSession: JavaDebugSession;
 
-    constructor(explorer: ServerExplorer, client: RSPClient) {
-        this.client = client;
-        this.explorer = explorer;
+    constructor(private explorer: ServerExplorer, private client: RSPClient) {
         this.debugSession = new JavaDebugSession(client);
     }
 
     public async startServer(mode: string, context?: Protocol.ServerState): Promise<Protocol.StartServerResponse> {
-        let selectedServerType: Protocol.ServerType;
-        let selectedServerId: string;
-
         if (context === undefined) {
-            selectedServerId = await this.selectServer('Select server to start.');
+            const selectedServerId = await this.selectServer('Select server to start.');
             if (!selectedServerId) return null;
-            selectedServerType = this.explorer.serverStatus.get(selectedServerId).server.type;
-        } else {
-            selectedServerType = context.server.type;
-            selectedServerId = context.server.id;
+            context = this.explorer.serverStatus.get(selectedServerId);
         }
 
-        const serverState = this.explorer.serverStatus.get(selectedServerId).state;
-        if (serverState === ServerState.STOPPED || serverState === ServerState.UNKNOWN) {
-            const response = await this.client.getOutgoingHandler().startServerAsync({
-                params: {
-                    serverType: selectedServerType.id,
-                    id: selectedServerId,
-                    attributes: new Map<string, any>()
-                },
-                mode: mode
-            });
-            if (!StatusSeverity.isOk(response.status)) {
-                return Promise.reject(response.status.message);
-            }
-            return response;
-        } else {
+        const serverState = await this.explorer.serverStatus.get(context.server.id).state;
+        if (!(serverState === ServerState.STOPPED
+            || serverState === ServerState.UNKNOWN)) {
             return Promise.reject('The server is already running.');
         }
+
+        const response = await this.client.getOutgoingHandler().startServerAsync({
+            params: {
+                serverType: context.server.type.id,
+                id: context.server.id,
+                attributes: new Map<string, any>()
+            },
+            mode: mode
+        });
+        if (!StatusSeverity.isOk(response.status)) {
+            return Promise.reject(response.status.message);
+        }
+        return response;
     }
 
     public async stopServer(forced: boolean, context?: Protocol.ServerState): Promise<Protocol.Status> {
@@ -79,7 +70,9 @@ export class CommandHandler {
             || (forced && (stateObj.state === ServerState.STARTING
                             || stateObj.state === ServerState.STOPPING))) {
             const status = await this.client.getOutgoingHandler().stopServerAsync({ id: serverId, force: true });
-            await this.debugSession.stop(context.server);
+            if (this.debugSession.isDebuggerStarted()) {
+                await this.debugSession.stop();
+            }
             if (!StatusSeverity.isOk(status)) {
                 return Promise.reject(status.message);
             }
@@ -109,14 +102,8 @@ export class CommandHandler {
                     || !serverStarted.details) {
                     return Promise.reject(`Failed to start server ${context.server.id}`);
                 }
-                const debugConfig: vscode.DebugConfiguration = {
-                    type: 'java',
-                    request: 'attach',
-                    name: 'Debug (Remote)',
-                    hostName: 'localhost',
-                    port: DebugInfoProvider.create(serverStarted.details).getPort()
-                };
-                vscode.debug.startDebugging(undefined, debugConfig);
+                const port: string = DebugInfoProvider.create(serverStarted.details).getPort();
+                this.debugSession.start(context.server, port);
                 return Promise.resolve(serverStarted);
             });
     }
@@ -159,28 +146,19 @@ export class CommandHandler {
         this.explorer.showOutput(context);
     }
 
-    public async restartServer(mode: string, context?: Protocol.ServerState): Promise<void> {
+    public async restartServer(mode: string, context?: Protocol.ServerState): Promise<Protocol.StartServerResponse> {
         if (context === undefined) {
             const serverId: string = await this.selectServer('Select server to restart', ServerState.STARTED);
             if (!serverId) return null;
             context = this.explorer.serverStatus.get(serverId);
         }
 
-        this.stopServer(context)
+        return this.stopServer(false)
             .then(() => {
                 if (mode === 'debug') {
                     return this.debugServer(context);
                 } else if (mode === 'run') {
-                    const params: Protocol.LaunchParameters = {
-                        mode: mode,
-                        params: {
-                            id: context.server.id,
-                            serverType: context.server.type.id,
-                            attributes: new Map<string, any>()
-                        }
-                    };
-
-                    return this.client.getOutgoingHandler().startServerAsync(params);
+                    return this.startServer('run', context);
                 } else {
                     return Promise.reject(`Could not restart server: unknown mode ${mode}`);
                 }

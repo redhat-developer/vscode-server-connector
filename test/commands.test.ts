@@ -4,8 +4,9 @@
  *-----------------------------------------------------------------------------------------------*/
 
 import * as chai from 'chai';
+import * as chaipromise from 'chai-as-promised';
 import { ClientStubs } from './clientstubs';
-import { DebugInfo } from '../src/debugInfo';
+import { DebugInfo } from '../src/debug/debugInfo';
 import { DebugInfoProvider } from '../src/debugInfoProvider';
 import { CommandHandler } from '../src/extensionApi';
 import { ProtocolStubs } from './protocolstubs';
@@ -17,6 +18,7 @@ import * as vscode from 'vscode';
 
 const expect = chai.expect;
 chai.use(sinonChai);
+chai.use(chaipromise);
 
 suite('Command Handler', () => {
     let sandbox: sinon.SinonSandbox;
@@ -25,25 +27,18 @@ suite('Command Handler', () => {
     let handler: CommandHandler;
     let serverExplorer: ServerExplorer;
 
-    const simpleContext = {
-        id: 'id'
-    };
-    const context = {
-        id: 'id',
-        type: ProtocolStubs.serverType
-    };
-
     setup(() => {
         sandbox = sinon.createSandbox();
         sandboxDebug = sinon.createSandbox();
 
         stubs = new ClientStubs(sandbox);
         stubs.outgoing.getServerHandles = sandbox.stub().resolves([ProtocolStubs.serverHandle]);
-        stubs.outgoing.getServerState = sandbox.stub().resolves(ProtocolStubs.serverState);
+        stubs.outgoing.getServerState = sandbox.stub().resolves(ProtocolStubs.unknownServerState);
+
         serverExplorer = new ServerExplorer(stubs.client);
         handler = new CommandHandler(serverExplorer, stubs.client);
 
-        serverExplorer.serverStatus.set('server', ProtocolStubs.serverState);
+        serverExplorer.serverStatus.set('server', ProtocolStubs.unknownServerState);
     });
 
     teardown(() => {
@@ -69,36 +64,24 @@ suite('Command Handler', () => {
         let statusStub: sinon.SinonStub;
         let startStub: sinon.SinonStub;
 
-        const cmdDetails: Protocol.CommandLineDetails = {
-            cmdLine: [''],
-            envp: [],
-            properties: {},
-            workingDir: 'dir'
-        };
-
-        const response: Protocol.StartServerResponse = {
-            details: cmdDetails,
-            status: ProtocolStubs.status
-        };
-
         setup(() => {
-            statusStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(ProtocolStubs.serverState);
-            startStub = sandbox.stub().resolves(response);
+            statusStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(ProtocolStubs.unknownServerState);
+            startStub = sandbox.stub().resolves(ProtocolStubs.okStartServerResponse);
             stubs.outgoing.startServerAsync = startStub;
         });
 
         test('works with injected context', async () => {
-            const result = await handler.startServer('run', ProtocolStubs.serverState);
+            const result = await handler.startServer('run', ProtocolStubs.unknownServerState);
             const args: Protocol.LaunchParameters = {
                 mode: 'run',
                 params: {
-                    serverType: context.type.id,
-                    id: context.id,
+                    serverType: ProtocolStubs.serverHandle.type.id,
+                    id: ProtocolStubs.serverHandle.id,
                     attributes: new Map<string, any>()
                 }
             };
 
-            expect(result).equals(response);
+            expect(result).equals(ProtocolStubs.okStartServerResponse);
             expect(startStub).calledOnceWith(args);
         });
 
@@ -114,7 +97,7 @@ suite('Command Handler', () => {
                 }
             };
 
-            expect(result).equals(response);
+            expect(result).equals(ProtocolStubs.okStartServerResponse);
             expect(startStub).calledOnceWith(args);
         });
 
@@ -122,7 +105,7 @@ suite('Command Handler', () => {
             statusStub.returns(ServerState.STARTED);
 
             try {
-                await handler.startServer('run', ProtocolStubs.serverState);
+                await handler.startServer('run', ProtocolStubs.unknownServerState);
                 expect.fail();
             } catch (err) {
                 expect(err).equals('The server is already running.');
@@ -131,13 +114,13 @@ suite('Command Handler', () => {
 
         test('throws any errors coming from the rsp client', async () => {
             const result: Protocol.StartServerResponse = {
-                details: cmdDetails,
+                details: ProtocolStubs.cmdDetails,
                 status: ProtocolStubs.errorStatus
             };
             startStub.resolves(result);
 
             try {
-                await handler.startServer('run', ProtocolStubs.serverState);
+                await handler.startServer('run', ProtocolStubs.unknownServerState);
                 expect.fail();
             } catch (err) {
                 expect(err).equals(ProtocolStubs.errorStatus.message);
@@ -159,11 +142,11 @@ suite('Command Handler', () => {
 
         const response: Protocol.StartServerResponse = {
             details: cmdDetails,
-            status: ProtocolStubs.status
+            status: ProtocolStubs.okStatus
         };
 
         setup(() => {
-            startStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(ProtocolStubs.serverState);
+            startStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(ProtocolStubs.unknownServerState);
             startStub = sandbox.stub().resolves(response);
             stubs.outgoing.startServerAsync = startStub;
         });
@@ -172,38 +155,47 @@ suite('Command Handler', () => {
             const stubM = sinon.stub(handler, 'checkExtension' as any);
             stubM.resolves('Debugger for Java extension is required. Install/Enable it before proceeding.');
             const showErrorMessageStub = sandbox.stub(vscode.window, 'showErrorMessage');
-            await handler.debugServer(ProtocolStubs.serverState);
+            await handler.debugServer(ProtocolStubs.unknownServerState);
             sinon.assert.calledOnce(showErrorMessageStub);
         });
 
         test('display error if language is not supported', async () => {
+            // given
             const debugInfo: DebugInfo = new DebugInfo(sandbox.stub() as unknown as Protocol.CommandLineDetails);
             sandbox.stub(debugInfo, 'isJavaType').returns(false);
             sandbox.stub(DebugInfoProvider, 'retrieve').resolves(debugInfo);
             const startServerStub = givenServerStarted(sandbox, handler);
             const showErrorMessageStub = sandbox.stub(vscode.window, 'showErrorMessage');
-            await handler.debugServer(ProtocolStubs.serverState);
+            // when
+            await handler.debugServer(ProtocolStubs.unknownServerState);
+            // then
             sandbox.assert.calledOnce(showErrorMessageStub);
             sandbox.assert.notCalled(startServerStub);
         });
 
-        test('starts server & debugging with injected context', async () => {
+        test('starts server & debugging with given server', async () => {
+            // given
             givenDebugTypeIsSupported(sandbox, handler);
             const startServerStub = givenServerStarted(sandbox, handler);
             const startDebuggingStub = sandbox.stub(vscode.debug, 'startDebugging');
-
-            await handler.debugServer(ProtocolStubs.serverState);
+            givenProcessOutput(sandbox, stubs);
+            // when
+            await handler.debugServer(ProtocolStubs.unknownServerState);
+            // then
             sandbox.assert.calledOnce(startServerStub);
             sandbox.assert.calledOnce(startDebuggingStub);
         });
 
-        test('starts server & debugging without injected context', async () => {
+        test('starts server & debugging without given but prompted server', async () => {
+            // given
             sandbox.stub(vscode.window, 'showQuickPick').resolves('id');
             givenDebugTypeIsSupported(sandbox, handler);
             const startServerStub = givenServerStarted(sandbox, handler);
             const startDebuggingStub = sandbox.stub(vscode.debug, 'startDebugging');
-
+            givenProcessOutput(sandbox, stubs);
+            // when
             await handler.debugServer(undefined);
+            // then
             sandbox.assert.calledOnce(startServerStub);
             sandbox.assert.calledOnce(startDebuggingStub);
         });
@@ -215,27 +207,19 @@ suite('Command Handler', () => {
         let stopStub: sinon.SinonStub;
 
         setup(() => {
-            const serverStateInternal: Protocol.ServerState =  {
-                server: ProtocolStubs.serverHandle,
-                deployableStates: [],
-                publishState: 0,
-                runMode: ServerState.RUN_MODE_RUN,
-                state: ServerState.STARTED
-            };
-
-            statusStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverStateInternal);
-            stopStub = stubs.outgoing.stopServerAsync.resolves(ProtocolStubs.status);
+            statusStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(ProtocolStubs.startedServerState);
+            stopStub = stubs.outgoing.stopServerAsync = sandbox.stub().resolves(ProtocolStubs.okStatus);
             sandbox.stub(vscode.window, 'showQuickPick').resolves('id');
         });
 
         test('works with injected context', async () => {
-            const result = await handler.stopServer(false, ProtocolStubs.serverState);
+            const result = await handler.stopServer(false, ProtocolStubs.unknownServerState);
             const args: Protocol.StopServerAttributes = {
-                id: simpleContext.id,
+                id: ProtocolStubs.serverHandle.id,
                 force: true
             };
 
-            expect(result).equals(ProtocolStubs.status);
+            expect(result).equals(ProtocolStubs.okStatus);
             expect(stopStub).calledOnceWith(args);
         });
 
@@ -246,7 +230,7 @@ suite('Command Handler', () => {
                 force: true
             };
 
-            expect(result).equals(ProtocolStubs.status);
+            expect(result).equals(ProtocolStubs.okStatus);
             expect(stopStub).calledOnceWith(args);
         });
 
@@ -254,7 +238,7 @@ suite('Command Handler', () => {
             statusStub.returns(ServerState.STOPPED);
 
             try {
-                await handler.stopServer(false, ProtocolStubs.serverState);
+                await handler.stopServer(false, ProtocolStubs.stoppedServerState);
                 expect.fail();
             } catch (err) {
                 expect(err).equals('The server is already stopped.');
@@ -265,10 +249,10 @@ suite('Command Handler', () => {
             stopStub.resolves(ProtocolStubs.errorStatus);
 
             try {
-                await handler.stopServer(false, ProtocolStubs.serverState);
+                await handler.stopServer(true, ProtocolStubs.startedServerState);
                 expect.fail();
             } catch (err) {
-                expect(err).equals(ProtocolStubs.errorStatus.message);
+                expect(err).equals('The server is already stopped.');
             }
         });
     });
@@ -287,18 +271,18 @@ suite('Command Handler', () => {
             };
 
             statusStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverStateInternal);
-            stopStub = stubs.outgoing.stopServerAsync.resolves(ProtocolStubs.status);
+            stopStub = stubs.outgoing.stopServerAsync.resolves(ProtocolStubs.okStatus);
             sandbox.stub(vscode.window, 'showQuickPick').resolves('id');
         });
 
         test('works with injected context', async () => {
-            const result = await handler.stopServer(true, ProtocolStubs.serverState);
+            const result = await handler.stopServer(true, ProtocolStubs.startedServerState);
             const args: Protocol.StopServerAttributes = {
-                id: simpleContext.id,
+                id: ProtocolStubs.startedServerState.server.id,
                 force: true
             };
 
-            expect(result).equals(ProtocolStubs.status);
+            expect(result).equals(ProtocolStubs.okStatus);
             expect(stopStub).calledOnceWith(args);
         });
 
@@ -309,7 +293,7 @@ suite('Command Handler', () => {
                 force: true
             };
 
-            expect(result).equals(ProtocolStubs.status);
+            expect(result).equals(ProtocolStubs.okStatus);
             expect(stopStub).calledOnceWith(args);
         });
 
@@ -317,7 +301,7 @@ suite('Command Handler', () => {
             statusStub.returns(ServerState.STOPPED);
 
             try {
-                await handler.stopServer(false, ProtocolStubs.serverState);
+                await handler.stopServer(false, ProtocolStubs.stoppedServerState);
                 expect.fail();
             } catch (err) {
                 expect(err).equals('The server is already stopped.');
@@ -340,19 +324,19 @@ suite('Command Handler', () => {
             };
 
             statusStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverStateInternal);
-            removeStub = stubs.outgoing.deleteServer.resolves(ProtocolStubs.status);
+            removeStub = stubs.outgoing.deleteServer.resolves(ProtocolStubs.okStatus);
             sandbox.stub(vscode.window, 'showQuickPick').resolves('id');
         });
 
         test('works with injected context', async () => {
             sandbox.stub(vscode.window, 'showWarningMessage').resolves('Yes');
-            const result = await handler.removeServer(ProtocolStubs.serverState);
+            const result = await handler.removeServer(ProtocolStubs.unknownServerState);
             const args: Protocol.ServerHandle = {
-                id: context.id,
-                type: context.type
+                id: ProtocolStubs.serverHandle.id,
+                type: ProtocolStubs.serverHandle.type
             };
 
-            expect(result).equals(ProtocolStubs.status);
+            expect(result).equals(ProtocolStubs.okStatus);
             expect(removeStub).calledOnceWith(args);
         });
 
@@ -364,7 +348,7 @@ suite('Command Handler', () => {
                 type: ProtocolStubs.serverType
             };
 
-            expect(result).equals(ProtocolStubs.status);
+            expect(result).equals(ProtocolStubs.okStatus);
             expect(removeStub).calledOnceWith(args);
         });
 
@@ -373,10 +357,10 @@ suite('Command Handler', () => {
             statusStub.returns(ServerState.STARTED);
 
             try {
-                await handler.removeServer(ProtocolStubs.serverState);
+                await handler.removeServer(ProtocolStubs.unknownServerState);
                 expect.fail();
             } catch (err) {
-                expect(err).to.include(ProtocolStubs.serverState.server.id);
+                expect(err).to.include(ProtocolStubs.unknownServerState.server.id);
             }
         });
 
@@ -385,7 +369,7 @@ suite('Command Handler', () => {
             removeStub.resolves(ProtocolStubs.errorStatus);
 
             try {
-                await handler.removeServer(ProtocolStubs.serverState);
+                await handler.removeServer(ProtocolStubs.unknownServerState);
                 expect.fail();
             } catch (err) {
                 expect(err).equals(ProtocolStubs.errorStatus.message);
@@ -401,104 +385,122 @@ suite('Command Handler', () => {
     suite('restartServer', () => {
         let startStub: sinon.SinonStub;
         let stopStub: sinon.SinonStub;
-        const startedState: Protocol.ServerState = {
-            deployableStates: [],
-            publishState: 0,
-            server: ProtocolStubs.serverHandle,
-            runMode: ServerState.RUN_MODE_RUN,
-            state: ServerState.STARTED
-        };
 
         setup(() => {
-            serverExplorer.serverStatus.set('server', startedState);
-            sandbox.stub(serverExplorer.serverStatus, 'get').returns(startedState);
-            startStub = stubs.outgoing.startServerAsync.resolves(ProtocolStubs.status);
-            stopStub = stubs.outgoingSync.stopServerSync.resolves(ProtocolStubs.status);
-            sandbox.stub(vscode.window, 'showQuickPick').resolves('id');
+            serverExplorer.serverStatus.set(ProtocolStubs.startedServerState.server.id, ProtocolStubs.startedServerState);
+            stopStub = stubs.outgoing.stopServerAsync = sandbox.stub().callsFake(() => {
+                // set server to stopped state if stopServer is called
+                serverExplorer.serverStatus.set(ProtocolStubs.stoppedServerState.server.id, ProtocolStubs.stoppedServerState);
+                return ProtocolStubs.okStatus;
+            });
+            startStub = stubs.outgoing.startServerAsync = sandbox.stub().resolves(ProtocolStubs.okStartServerResponse);
+            sandbox.stub(vscode.window, 'showQuickPick').resolves(ProtocolStubs.serverHandle.id);
         });
 
-        test('works with injected context', async () => {
-            await handler.restartServer('run', ProtocolStubs.serverState);
+        test('should restart with given server', async () => {
+            // when
+            await handler.restartServer('run', ProtocolStubs.startedServerState);
+
+            // then
             const stopArgs: Protocol.StopServerAttributes = {
-                id: context.id,
+                id: ProtocolStubs.startedServerState.server.id,
                 force: true
             };
             const startArgs: Protocol.LaunchParameters = {
                 mode: 'run',
                 params: {
-                    id: context.id,
-                    serverType: context.type.id,
+                    id: ProtocolStubs.startedServerState.server.id,
+                    serverType: ProtocolStubs.startedServerState.server.type.id,
                     attributes: new Map<string, any>()
                 }
             };
-
             expect(stopStub).calledOnceWith(stopArgs);
             expect(startStub).calledAfter(stopStub);
             expect(startStub).calledOnceWith(startArgs);
         });
 
-        test('works without injected context', async () => {
+        test('should restart without given but prompted server', async () => {
+            // when
             await handler.restartServer('run');
+
+            // then
             const stopArgs: Protocol.StopServerAttributes = {
-                id: 'id',
+                id: ProtocolStubs.startedServerState.server.id,
                 force: true
             };
             const startArgs: Protocol.LaunchParameters = {
                 mode: 'run',
                 params: {
-                    id: 'id',
-                    serverType: ProtocolStubs.serverType.id,
+                    id: ProtocolStubs.startedServerState.server.id,
+                    serverType: ProtocolStubs.startedServerState.server.type.id,
                     attributes: new Map<string, any>()
                 }
             };
-
             expect(stopStub).calledOnceWith(stopArgs);
             expect(startStub).calledAfter(stopStub);
             expect(startStub).calledOnceWith(startArgs);
         });
     });
 
-    suite('restartInDebugServer', () => {
+    suite('restartServerInDebug', () => {
         let stopStub: sinon.SinonStub;
-        const startedState: Protocol.ServerState = {
-            deployableStates: [],
-            publishState: 0,
-            server: ProtocolStubs.serverHandle,
-            runMode: ServerState.RUN_MODE_RUN,
-            state: ServerState.STARTED
-        };
+        let debugStub: sinon.SinonStub;
 
         setup(() => {
-            serverExplorer.serverStatus.set('server', startedState);
-            sandbox.stub(serverExplorer.serverStatus, 'get').returns(startedState);
-            stopStub = stubs.outgoingSync.stopServerSync.resolves(ProtocolStubs.status);
-            sandbox.stub(vscode.window, 'showQuickPick').resolves('id');
+            serverExplorer.serverStatus.set(ProtocolStubs.startedServerState.server.id, ProtocolStubs.startedServerState);
+            stopStub = stubs.outgoing.stopServerAsync = sandbox.stub().callsFake(() => {
+                // set server to stopped state if stopServer is called
+                serverExplorer.serverStatus.set(ProtocolStubs.stoppedServerState.server.id, ProtocolStubs.stoppedServerState);
+                return ProtocolStubs.okStatus;
+            });
+            debugStub = stubs.outgoing.startServerAsync = sandbox.stub().resolves(ProtocolStubs.okStartServerResponse);
+            stubs.outgoing.getLaunchCommand = sandbox.stub().resolves(ProtocolStubs.javaCommandLine);
+            sandbox.stub(vscode.window, 'showQuickPick').resolves(ProtocolStubs.serverHandle.id);
+            sandbox.stub(handler, 'checkExtension' as any).resolves(undefined);
         });
 
-        test('works with injected context', async () => {
-            const debugStub = sandbox.stub(handler, 'debugServer' as any).resolves(undefined);
-            await handler.restartServer('debug', ProtocolStubs.serverState);
+        test('should restart with given server', async () => {
+            // when
+            await handler.restartServer('debug', ProtocolStubs.unknownServerState);
+
+            // then
             const stopArgs: Protocol.StopServerAttributes = {
-                id: context.id,
+                id: ProtocolStubs.serverHandle.id,
                 force: true
             };
-
+            const startArgs: Protocol.LaunchParameters = {
+                mode: 'debug',
+                params: {
+                    id: ProtocolStubs.serverHandle.id,
+                    serverType: ProtocolStubs.serverType.id,
+                    attributes: new Map<string, any>()
+                }
+            };
             expect(stopStub).calledOnceWith(stopArgs);
-            expect(debugStub).calledOnceWith(ProtocolStubs.serverState);
+            expect(debugStub).calledOnceWith(startArgs);
             expect(debugStub).calledAfter(stopStub);
         });
 
-        test('works without injected context', async () => {
-            const debugStub = sandbox.stub(handler, 'debugServer' as any).resolves(undefined);
+        test('should restart without given but prompted server', async () => {
+            // when
             await handler.restartServer('debug');
+
+            // then
             const stopArgs: Protocol.StopServerAttributes = {
-                id: 'id',
+                id: ProtocolStubs.serverHandle.id,
                 force: true
             };
-
+            const startArgs: Protocol.LaunchParameters = {
+                mode: 'debug',
+                params: {
+                    id: ProtocolStubs.serverHandle.id,
+                    serverType: ProtocolStubs.serverType.id,
+                    attributes: new Map<string, any>()
+                }
+            };
             expect(stopStub).calledOnceWith(stopArgs);
+            expect(debugStub).calledOnceWith(startArgs);
             expect(debugStub).calledAfter(stopStub);
-            expect(debugStub).calledOnceWith(startedState);
         });
     });
 
@@ -546,6 +548,19 @@ function givenDebugTypeIsSupported(sandbox: sinon.SinonSandbox, handler: Command
     const debugInfo: DebugInfo = new DebugInfo(sandbox.stub() as unknown as Protocol.CommandLineDetails);
     sandbox.stub(DebugInfoProvider, 'retrieve').resolves(debugInfo);
     sandbox.stub(handler, 'checkExtension' as any).resolves(undefined);
+}
+
+function givenProcessOutput(sandbox: sinon.SinonSandbox, stubs: ClientStubs) {
+    stubs.incoming.onServerProcessOutputAppended = sandbox.stub().callsFake((listener: (arg: Protocol.ServerProcessOutput) => void) => {
+        // call listeners that's being registered with fake output
+        listener({
+            server: ProtocolStubs.serverHandle,
+            processId: 'papa smurf',
+            streamType: 1,
+            text: 'Listening for transport dt_socket'
+        });
+    });
+
 }
 
 function createServerStartedResponse() {
