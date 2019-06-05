@@ -303,6 +303,8 @@ suite('Server explorer', () => {
             exploded = 'Exploded'
         }
 
+        const userSelectedPath = { fsPath: 'path/path' };
+
         test('check dialog options are set up correctly when choosing file in Windows', async () => {
             Object.defineProperty(process, 'platform', {
                 value: 'win32'
@@ -398,7 +400,7 @@ suite('Server explorer', () => {
             expect(JSON.stringify(pickerResult)).equals(JSON.stringify(pickerResponseDialog));
         });
 
-        test('check promise get rejected if dialog is closed without choosing', async () => {
+        test('check promise get rejected if os picker is closed without choosing', async () => {
             sandbox.stub(serverExplorer, 'quickPickDeploymentType' as any).resolves(undefined);
 
             try {
@@ -407,6 +409,19 @@ suite('Server explorer', () => {
             } catch (err) {
                 expect(err).equals(undefined);
             }
+        });
+
+        test('check if user doesn\'t choose any file from dialog', async () => {
+            sandbox.stub(window, 'showOpenDialog').resolves(undefined);
+            const result = await serverExplorer.addDeployment(undefined);
+            expect(result).equals(undefined);
+        });
+
+        test('check if user terminate before adding optional deployment parameters', async () => {
+            sandbox.stub(window, 'showOpenDialog').resolves([userSelectedPath]);
+            sandbox.stub(window, 'showQuickPick').resolves(undefined);
+            const result = await serverExplorer.addDeployment(undefined);
+            expect(result).equals(undefined);
         });
     });
 });
