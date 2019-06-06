@@ -2,7 +2,7 @@
  *  Copyright (c) Red Hat, Inc. All rights reserved.
  *  Licensed under the EPL v2.0 License. See LICENSE file in the project root for license information.
  *-----------------------------------------------------------------------------------------------*/
-import { Protocol } from 'rsp-client';
+import { Protocol, ServerState } from 'rsp-client';
 
 export class ProtocolStubs {
 
@@ -21,6 +21,7 @@ export class ProtocolStubs {
         server: ProtocolStubs.serverHandle,
         deployableStates: [],
         publishState: 0,
+        runMode: ServerState.RUN_MODE_RUN,
         state: 0
     };
 

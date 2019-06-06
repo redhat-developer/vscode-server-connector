@@ -8,7 +8,7 @@ import * as chai from 'chai';
 import { ClientStubs } from './clientstubs';
 import * as path from 'path';
 import { ProtocolStubs } from './protocolstubs';
-import { Protocol } from 'rsp-client';
+import { Protocol, ServerState } from 'rsp-client';
 import { ServerExplorer } from '../src/serverExplorer';
 import * as sinon from 'sinon';
 import * as sinonChai from 'sinon-chai';
@@ -106,30 +106,35 @@ suite('Server explorer', () => {
             server: ProtocolStubs.serverHandle,
             state: 0,
             publishState: 1,
+            runMode: ServerState.RUN_MODE_RUN,
             deployableStates: []
         };
         const stateChangeStarting: Protocol.ServerState = {
             server: ProtocolStubs.serverHandle,
             state: 1,
             publishState: 1,
+            runMode: ServerState.RUN_MODE_RUN,
             deployableStates: []
         };
         const stateChangeStarted: Protocol.ServerState = {
             server: ProtocolStubs.serverHandle,
             state: 2,
             publishState: 1,
+            runMode: ServerState.RUN_MODE_RUN,
             deployableStates: []
         };
         const stateChangeStopping: Protocol.ServerState = {
             server: ProtocolStubs.serverHandle,
             state: 3,
             publishState: 1,
+            runMode: ServerState.RUN_MODE_RUN,
             deployableStates: []
         };
         const stateChangeStopped: Protocol.ServerState = {
             server: ProtocolStubs.serverHandle,
             state: 4,
             publishState: 1,
+            runMode: ServerState.RUN_MODE_RUN,
             deployableStates: []
         };
 
