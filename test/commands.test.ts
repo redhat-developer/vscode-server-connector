@@ -219,6 +219,7 @@ suite('Command Handler', () => {
                 server: ProtocolStubs.serverHandle,
                 deployableStates: [],
                 publishState: 0,
+                runMode: ServerState.RUN_MODE_RUN,
                 state: ServerState.STARTED
             };
 
@@ -281,6 +282,7 @@ suite('Command Handler', () => {
                 server: ProtocolStubs.serverHandle,
                 deployableStates: [],
                 publishState: 0,
+                runMode: ServerState.RUN_MODE_RUN,
                 state: ServerState.STARTING
             };
 
@@ -333,6 +335,7 @@ suite('Command Handler', () => {
                 server: ProtocolStubs.serverHandle,
                 deployableStates: [],
                 publishState: 0,
+                runMode: ServerState.RUN_MODE_RUN,
                 state: ServerState.STOPPED
             };
 
@@ -402,6 +405,7 @@ suite('Command Handler', () => {
             deployableStates: [],
             publishState: 0,
             server: ProtocolStubs.serverHandle,
+            runMode: ServerState.RUN_MODE_RUN,
             state: ServerState.STARTED
         };
 
@@ -460,6 +464,7 @@ suite('Command Handler', () => {
             deployableStates: [],
             publishState: 0,
             server: ProtocolStubs.serverHandle,
+            runMode: ServerState.RUN_MODE_RUN,
             state: ServerState.STARTED
         };
 
