@@ -62,7 +62,7 @@ export class CommandHandler {
         }
     }
 
-    public async stopServer(context?: Protocol.ServerState): Promise<Protocol.Status> {
+    public async stopServer(forced: boolean, context?: Protocol.ServerState): Promise<Protocol.Status> {
         let serverId: string;
         if (context === undefined) {
             serverId = await this.selectServer('Select server to stop.');
@@ -72,7 +72,9 @@ export class CommandHandler {
         }
 
         const stateObj: Protocol.ServerState = this.explorer.serverStatus.get(serverId);
-        if (stateObj.state === ServerState.STARTED) {
+        if ((!forced && stateObj.state === ServerState.STARTED)
+            || (forced && (stateObj.state === ServerState.STARTING
+                            || stateObj.state === ServerState.STOPPING))) {
             const status = await this.client.getOutgoingHandler().stopServerAsync({ id: serverId, force: true });
             if (!StatusSeverity.isOk(status)) {
                 return Promise.reject(status.message);

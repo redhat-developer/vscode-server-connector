@@ -33,6 +33,7 @@
     "onCommand:server.start",
     "onCommand:server.debug",
     "onCommand:server.stop",
+    "onCommand:server.terminate",
     "onCommand:server.restart",
     "onCommand:server.restartDebug",
     "onCommand:server.remove",
@@ -75,6 +76,11 @@
       {
         "command": "server.stop",
         "title": "Stop",
+        "category": "Servers"
+      },
+      {
+        "command": "server.terminate",
+        "title": "Terminate",
         "category": "Servers"
       },
       {
@@ -159,6 +165,11 @@
           "command": "server.restartDebug",
           "when": "view == servers && viewItem == 'Started'",
           "group": "1_server-startstop@5"
+        },
+        {
+          "command": "server.terminate",
+          "when": "view == servers && viewItem =~ /(Starting|Stopping)/",
+          "group": "1_server-startstop@6"
         },
         {
           "command": "server.remove",

@@ -228,7 +228,7 @@ suite('Command Handler', () => {
         });
 
         test('works with injected context', async () => {
-            const result = await handler.stopServer(ProtocolStubs.serverState);
+            const result = await handler.stopServer(false, ProtocolStubs.serverState);
             const args: Protocol.StopServerAttributes = {
                 id: simpleContext.id,
                 force: true
@@ -239,7 +239,7 @@ suite('Command Handler', () => {
         });
 
         test('works without injected context', async () => {
-            const result = await handler.stopServer();
+            const result = await handler.stopServer(false);
             const args: Protocol.StopServerAttributes = {
                 id: 'id',
                 force: true
@@ -253,7 +253,7 @@ suite('Command Handler', () => {
             statusStub.returns(ServerState.STOPPED);
 
             try {
-                await handler.stopServer(ProtocolStubs.serverState);
+                await handler.stopServer(false, ProtocolStubs.serverState);
                 expect.fail();
             } catch (err) {
                 expect(err).equals('The server is already stopped.');
@@ -264,12 +264,64 @@ suite('Command Handler', () => {
             stopStub.resolves(ProtocolStubs.errorStatus);
 
             try {
-                await handler.stopServer(ProtocolStubs.serverState);
+                await handler.stopServer(false, ProtocolStubs.serverState);
                 expect.fail();
             } catch (err) {
                 expect(err).equals(ProtocolStubs.errorStatus.message);
             }
         });
+    });
+
+    suite('terminateServer', () => {
+        let statusStub: sinon.SinonStub;
+        let stopStub: sinon.SinonStub;
+
+        setup(() => {
+            const serverStateInternal: Protocol.ServerState =  {
+                server: ProtocolStubs.serverHandle,
+                deployableStates: [],
+                publishState: 0,
+                state: ServerState.STARTING
+            };
+
+            statusStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverStateInternal);
+            stopStub = stubs.outgoing.stopServerAsync.resolves(ProtocolStubs.status);
+            sandbox.stub(vscode.window, 'showQuickPick').resolves('id');
+        });
+
+        test('works with injected context', async () => {
+            const result = await handler.stopServer(true, ProtocolStubs.serverState);
+            const args: Protocol.StopServerAttributes = {
+                id: simpleContext.id,
+                force: true
+            };
+
+            expect(result).equals(ProtocolStubs.status);
+            expect(stopStub).calledOnceWith(args);
+        });
+
+        test('works without injected context', async () => {
+            const result = await handler.stopServer(true);
+            const args: Protocol.StopServerAttributes = {
+                id: 'id',
+                force: true
+            };
+
+            expect(result).equals(ProtocolStubs.status);
+            expect(stopStub).calledOnceWith(args);
+        });
+
+        test('errors if the server is already stopped', async () => {
+            statusStub.returns(ServerState.STOPPED);
+
+            try {
+                await handler.stopServer(false, ProtocolStubs.serverState);
+                expect.fail();
+            } catch (err) {
+                expect(err).equals('The server is already stopped.');
+            }
+        });
+
     });
 
     suite('removeServer', () => {
