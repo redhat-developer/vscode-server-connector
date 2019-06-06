@@ -86,7 +86,9 @@ export class EditorUtil {
                 vscode.window.showErrorMessage('Unable to save server properties');
                 return;
             }
-            this.explorer.saveServerProperties(serverHandle, doc.getText());
+            this.explorer.saveServerProperties(serverHandle, doc.getText()).catch(error => {
+                vscode.window.showErrorMessage(`Unable to save server properties. ${error}`);
+            });
         }
     }
 

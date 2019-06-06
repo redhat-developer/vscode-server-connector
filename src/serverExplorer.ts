@@ -264,7 +264,7 @@ export class ServerExplorer implements TreeDataProvider< Protocol.ServerState | 
         };
         const response = await this.client.getOutgoingHandler().updateServer(serverProps);
         if (!StatusSeverity.isOk(response.validation.status)) {
-            throw new Error(response.validation.status.message);
+            return Promise.reject(response.validation.status.message);
         }
         return response.validation.status;
     }
