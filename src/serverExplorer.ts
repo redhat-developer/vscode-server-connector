@@ -21,6 +21,7 @@ import {
     workspace
 } from 'vscode';
 
+import { EditorUtil } from './editorutil';
 import {
     Protocol,
     RSPClient,
@@ -28,9 +29,6 @@ import {
     StatusSeverity
 } from 'rsp-client';
 import { ServerIcon } from './serverIcon';
-//import { tmp } from 'tmp';
-const tmp = require('tmp');
-import * as fs from 'fs';
 
 enum deploymentStatus {
     file = 'File',
@@ -52,7 +50,7 @@ export class ServerExplorer implements TreeDataProvider< Protocol.ServerState | 
 
     constructor(client: RSPClient) {
         this.client = client;
-        this.viewer = window.createTreeView('servers', { treeDataProvider: this }) ;
+        this.viewer = window.createTreeView('servers', { treeDataProvider: this }) ;        
 
         this.runStateEnum
             .set(0, 'Unknown')
@@ -246,22 +244,29 @@ export class ServerExplorer implements TreeDataProvider< Protocol.ServerState | 
         return this.createServer(server.bean, server.name, attrs);
     }
 
-    public async editServer(): Promise<void> {
-        const propertiesContent = '{"prova": true, "prova2": false}'; //prendo json da server
+    public async editServer(server: Protocol.ServerHandle): Promise<void> {
+        const serverProperties = await this.client.getOutgoingHandler().getServerAsJson(server);
 
-        if (!propertiesContent) {
+        if (!serverProperties || !serverProperties.serverJson ) {
             return Promise.reject();
         }
 
-        tmp.file({ prefix: 'tmpServerConnectorProp', postfix: '.json' }, (err, path, fd) => {
-            //JSON.stringify(propertiesContent, null, 4)
-            fs.writeFile(path, propertiesContent, undefined, (error) => {
+        EditorUtil.getInstance(this).openServerJsonResponse(serverProperties);
+    }
 
-            });
-            workspace.openTextDocument(path).then(doc =>
-                window.showTextDocument(doc)
-            );
-        });
+    public async saveServerProperties(serverhandle: Protocol.ServerHandle, content: string): Promise<Protocol.Status> {
+        if (!serverhandle || !content) {
+            throw new Error('Unable to update server properties.');
+        }
+        const serverProps: Protocol.UpdateServerRequest = {
+            handle: serverhandle,
+            serverJson: content
+        };
+        const response = await this.client.getOutgoingHandler().updateServer(serverProps);
+        if (!StatusSeverity.isOk(response.validation.status)) {
+            throw new Error(response.validation.status.message);
+        }
+        return response.validation.status;
     }
 
     private async createServer(bean: Protocol.ServerBean, name: string, attributes: any = {}): Promise<Protocol.Status> {

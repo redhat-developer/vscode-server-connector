@@ -14,6 +14,7 @@ import { EditorUtil } from './editorutil';
 
 let client: RSPClient;
 let serversExplorer: ServersExplorer;
+let editorUtil: EditorUtil;
 
 const rspserverstdout = vscode.window.createOutputChannel('RSP Server (stdout)');
 const rspserverstderr = vscode.window.createOutputChannel('RSP Server (stderr)');
@@ -28,6 +29,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Extens
     }
     client = await initClient(serverInfo);
     serversExplorer = new ServersExplorer(client);
+    editorUtil = EditorUtil.getInstance(serversExplorer);
     const commandHandler = new CommandHandler(serversExplorer, client);
     await commandHandler.activate();
     registerCommands(commandHandler, context);
@@ -93,8 +95,8 @@ function registerCommands(commandHandler: CommandHandler, context: vscode.Extens
             context => executeCommand(commandHandler.editServer, commandHandler, context, 'Unable to edit server properties')),
         vscode.commands.registerCommand('server.infoServer',
             context => executeCommand(commandHandler.infoServer, commandHandler, context, 'Unable to retrieve server properties')),
-        vscode.workspace.onDidSaveTextDocument(EditorUtil._onDidSaveTextDocument),
-        vscode.workspace.onDidCloseTextDocument(EditorUtil._onDidCloseTextDocument),
+        vscode.workspace.onDidSaveTextDocument(onDidSaveTextDocument),
+        vscode.workspace.onDidCloseTextDocument(onDidCloseTextDocument),
         rspserverstdout,
         rspserverstderr
     ];
@@ -136,6 +138,14 @@ function onStderrData(data: string) {
 function displayLog(outputPanel: vscode.OutputChannel, message: string, show: boolean = true) {
     if (show) outputPanel.show();
     outputPanel.appendLine(message);
+}
+
+function onDidSaveTextDocument(doc: vscode.TextDocument) {
+    EditorUtil.getInstance(serversExplorer).onDidSaveTextDocument(doc);
+}
+
+function onDidCloseTextDocument(doc: vscode.TextDocument) {
+    EditorUtil.getInstance(serversExplorer).onDidCloseTextDocument(doc);
 }
 
 function executeCommand(command: (...args: any[]) => Promise<any>, thisArg: any, ...params: any[]) {
