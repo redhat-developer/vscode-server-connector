@@ -28,6 +28,9 @@ import {
     StatusSeverity
 } from 'rsp-client';
 import { ServerIcon } from './serverIcon';
+//import { tmp } from 'tmp';
+const tmp = require('tmp');
+import * as fs from 'fs';
 
 enum deploymentStatus {
     file = 'File',
@@ -241,6 +244,24 @@ export class ServerExplorer implements TreeDataProvider< Protocol.ServerState | 
         const attrs = await this.getRequiredParameters(server.bean);
         await this.getOptionalParameters(server.bean, attrs);
         return this.createServer(server.bean, server.name, attrs);
+    }
+
+    public async editServer(): Promise<void> {
+        const propertiesContent = '{"prova": true, "prova2": false}'; //prendo json da server
+
+        if (!propertiesContent) {
+            return Promise.reject();
+        }
+
+        tmp.file({ prefix: 'tmpServerConnectorProp', postfix: '.json' }, (err, path, fd) => {
+            //JSON.stringify(propertiesContent, null, 4)
+            fs.writeFile(path, propertiesContent, undefined, (error) => {
+
+            });
+            workspace.openTextDocument(path).then(doc =>
+                window.showTextDocument(doc)
+            );
+        });
     }
 
     private async createServer(bean: Protocol.ServerBean, name: string, attributes: any = {}): Promise<Protocol.Status> {

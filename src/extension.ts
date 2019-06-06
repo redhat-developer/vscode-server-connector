@@ -10,6 +10,7 @@ import { Protocol, RSPClient, ServerState } from 'rsp-client';
 import * as server from './server';
 import { ServerExplorer as ServersExplorer } from './serverExplorer';
 import * as vscode from 'vscode';
+import { EditorUtil } from './editorutil';
 
 let client: RSPClient;
 let serversExplorer: ServersExplorer;
@@ -88,8 +89,12 @@ function registerCommands(commandHandler: CommandHandler, context: vscode.Extens
             () => executeCommand(commandHandler.addLocation, commandHandler, 'Unable to detect any server: ')),
         vscode.commands.registerCommand('server.downloadRuntime',
             () => executeCommand(commandHandler.downloadRuntime, commandHandler, 'Unable to detect any runtime: ')),
+        vscode.commands.registerCommand('server.editServer',
+            context => executeCommand(commandHandler.editServer, commandHandler, context, 'Unable to edit server properties')),
         vscode.commands.registerCommand('server.infoServer',
-            context => executeCommand(commandHandler.infoServer, commandHandler, context, 'Unable to retrieve server property')),
+            context => executeCommand(commandHandler.infoServer, commandHandler, context, 'Unable to retrieve server properties')),
+        vscode.workspace.onDidSaveTextDocument(EditorUtil._onDidSaveTextDocument),
+        vscode.workspace.onDidCloseTextDocument(EditorUtil._onDidCloseTextDocument),
         rspserverstdout,
         rspserverstderr
     ];

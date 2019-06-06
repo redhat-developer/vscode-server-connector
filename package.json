@@ -119,6 +119,11 @@
         "category": "Servers"
       },
       {
+        "command": "server.editServer",
+        "title": "Edit Server",
+        "category": "Servers"
+      },
+      {
         "command": "server.infoServer",
         "title": "Properties",
         "category": "Servers"
@@ -207,9 +212,14 @@
           "group": "5_rsp@2"
         },
         {
-          "command": "server.infoServer",
+          "command": "server.editServer",
           "when": "view == servers && viewItem =~ /(Starting|Started|Debugging|Stopping|Stopped|Unknown)/'",
           "group": "6_server-info@1"
+        },
+        {
+          "command": "server.infoServer",
+          "when": "view == servers && viewItem =~ /(Starting|Started|Debugging|Stopping|Stopped|Unknown)/'",
+          "group": "6_server-info@2"
         }
       ]
     },
@@ -280,6 +290,7 @@
     "pify": "4.0.0",
     "portfinder": "^1.0.20",
     "rsp-client": "^0.16.0",
+    "tmp": "^0.1.0",
     "vscode-jsonrpc": "^4.0.0",
     "vscode-languageclient": "^5.1.0",
     "wait-on": "^3.0.1"

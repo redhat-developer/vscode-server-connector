@@ -310,6 +310,22 @@ export class CommandHandler {
         }
     }
 
+    public async editServer(context?: Protocol.ServerState): Promise<void> {
+        if (context === undefined) {
+            if (this.explorer) {
+                const serverId = await this.selectServer('Select server you want to retrieve info about');
+                if (!serverId) return null;
+                context = this.explorer.serverStatus.get(serverId);
+            } else {
+                return Promise.reject('Runtime Server Protocol (RSP) Server is starting, please try again later.');
+            }
+        }
+
+        const selectedServerName: string = context.server.id;
+        return this.explorer.editServer();
+
+    }
+
     public async infoServer(context?: Protocol.ServerState): Promise<void> {
         if (context === undefined) {
             if (this.explorer) {
