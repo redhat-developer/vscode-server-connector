@@ -113,6 +113,7 @@ suite('Extension Tests', () => {
                 'server.createServer',
                 'server.addLocation',
                 'server.downloadRuntime',
+                'server.editServer',
                 'server.infoServer'
             ];
             const foundServerCommands = commands.filter(value => {
