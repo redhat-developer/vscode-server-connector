@@ -78,11 +78,13 @@ export class EditorUtil {
         if (await this.checkTmpServerPropsFile(doc)) {
             const serverId = await Utils.getKeyByValue<string>(this.serverTmpFiles, doc.uri.path);
             if (!serverId) {
-                //display error
+                vscode.window.showErrorMessage('Unable to save server properties');
+                return;
             }
             const serverHandle: Protocol.ServerHandle = this.explorer.serverStatus.get(serverId).server;
             if (!serverHandle) {
-                //display error
+                vscode.window.showErrorMessage('Unable to save server properties');
+                return;
             }
             this.explorer.saveServerProperties(serverHandle, doc.getText());
         }
@@ -93,7 +95,7 @@ export class EditorUtil {
             return;
         }
         if (await this.checkTmpServerPropsFile(doc)) {
-            fs.unlink(doc.uri.fsPath, (error) => {
+            fs.unlink(doc.uri.fsPath, error => {
                 console.log(error);
             });
         }

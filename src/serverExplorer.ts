@@ -50,7 +50,7 @@ export class ServerExplorer implements TreeDataProvider< Protocol.ServerState | 
 
     constructor(client: RSPClient) {
         this.client = client;
-        this.viewer = window.createTreeView('servers', { treeDataProvider: this }) ;        
+        this.viewer = window.createTreeView('servers', { treeDataProvider: this }) ;
 
         this.runStateEnum
             .set(0, 'Unknown')

@@ -4,17 +4,16 @@
  *-----------------------------------------------------------------------------------------------*/
 
 'use strict';
+import { EditorUtil } from './editorutil';
 import { CommandHandler, ExtensionAPI } from './extensionApi';
 import { JobProgress } from './jobprogress';
 import { Protocol, RSPClient, ServerState } from 'rsp-client';
 import * as server from './server';
 import { ServerExplorer as ServersExplorer } from './serverExplorer';
 import * as vscode from 'vscode';
-import { EditorUtil } from './editorutil';
 
 let client: RSPClient;
 let serversExplorer: ServersExplorer;
-let editorUtil: EditorUtil;
 
 const rspserverstdout = vscode.window.createOutputChannel('RSP Server (stdout)');
 const rspserverstderr = vscode.window.createOutputChannel('RSP Server (stderr)');
@@ -29,7 +28,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<Extens
     }
     client = await initClient(serverInfo);
     serversExplorer = new ServersExplorer(client);
-    editorUtil = EditorUtil.getInstance(serversExplorer);
     const commandHandler = new CommandHandler(serversExplorer, client);
     await commandHandler.activate();
     registerCommands(commandHandler, context);
