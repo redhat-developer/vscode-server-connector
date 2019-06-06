@@ -58,37 +58,38 @@ async function initClient(serverInfo: server.ServerInfo): Promise<RSPClient> {
 }
 
 function registerCommands(commandHandler: CommandHandler, context: vscode.ExtensionContext) {
+    const errorMessage = 'Unable to %ACTION% the server: ';
     const newLocal = [
         vscode.commands.registerCommand('server.start',
-            context => executeCommand(commandHandler.startServer, commandHandler, 'run', context)),
+            context => executeCommand(commandHandler.startServer, commandHandler, 'run', context, errorMessage.replace('%ACTION%', 'start'))),
         vscode.commands.registerCommand('server.restart',
-            context => executeCommand(commandHandler.restartServer, commandHandler, 'run',  context)),
+            context => executeCommand(commandHandler.restartServer, commandHandler, 'run', context, errorMessage.replace('%ACTION%', 'restart in run mode'))),
         vscode.commands.registerCommand('server.debug',
-            context => executeCommand(commandHandler.debugServer, commandHandler, context)),
+            context => executeCommand(commandHandler.debugServer, commandHandler, context, errorMessage.replace('%ACTION%', 'debug'))),
         vscode.commands.registerCommand('server.restartDebug',
-            context => executeCommand(commandHandler.restartServer, commandHandler, 'debug', context)),
+            context => executeCommand(commandHandler.restartServer, commandHandler, 'debug', context, errorMessage.replace('%ACTION%', 'restart in debug mode'))),
         vscode.commands.registerCommand('server.stop',
-            context => executeCommand(commandHandler.stopServer, commandHandler, false, context)),
+            context => executeCommand(commandHandler.stopServer, commandHandler, false, context, errorMessage.replace('%ACTION%', 'stop'))),
         vscode.commands.registerCommand('server.terminate',
-            context => executeCommand(commandHandler.stopServer, commandHandler, true, context)),
+            context => executeCommand(commandHandler.stopServer, commandHandler, true, context, errorMessage.replace('%ACTION%', 'terminate'))),
         vscode.commands.registerCommand('server.remove',
-            context => executeCommand(commandHandler.removeServer, commandHandler, context)),
+            context => executeCommand(commandHandler.removeServer, commandHandler, context, errorMessage.replace('%ACTION%', 'remove'))),
         vscode.commands.registerCommand('server.output',
-            context => executeCommand(commandHandler.showServerOutput, commandHandler, context)),
+            context => executeCommand(commandHandler.showServerOutput, commandHandler, context, 'Unable to show server output channel')),
         vscode.commands.registerCommand('server.addDeployment',
-            context => executeCommand(commandHandler.addDeployment, commandHandler, context)),
+            context => executeCommand(commandHandler.addDeployment, commandHandler, context, errorMessage.replace('%ACTION%', 'add deployment to'))),
         vscode.commands.registerCommand('server.removeDeployment',
-            context => executeCommand(commandHandler.removeDeployment, commandHandler, context)),
+            context => executeCommand(commandHandler.removeDeployment, commandHandler, context, errorMessage.replace('%ACTION%', 'remove deployment to'))),
         vscode.commands.registerCommand('server.publishFull',
-            context => executeCommand(commandHandler.fullPublishServer, commandHandler, context)),
+            context => executeCommand(commandHandler.fullPublishServer, commandHandler, context, errorMessage.replace('%ACTION%', 'publish to'))),
         vscode.commands.registerCommand('server.createServer',
-            () => executeCommand(commandHandler.createServer, commandHandler)),
+            () => executeCommand(commandHandler.createServer, commandHandler, errorMessage.replace('%ACTION%', 'create'))),
         vscode.commands.registerCommand('server.addLocation',
-            () => executeCommand(commandHandler.addLocation, commandHandler)),
+            () => executeCommand(commandHandler.addLocation, commandHandler, 'Unable to detect any server: ')),
         vscode.commands.registerCommand('server.downloadRuntime',
-            () => executeCommand(commandHandler.downloadRuntime, commandHandler)),
+            () => executeCommand(commandHandler.downloadRuntime, commandHandler, 'Unable to detect any runtime: ')),
         vscode.commands.registerCommand('server.infoServer',
-            context => executeCommand(commandHandler.infoServer, commandHandler, context)),
+            context => executeCommand(commandHandler.infoServer, commandHandler, context, 'Unable to retrieve server property')),
         rspserverstdout,
         rspserverstderr
     ];
@@ -133,8 +134,13 @@ function displayLog(outputPanel: vscode.OutputChannel, message: string, show: bo
 }
 
 function executeCommand(command: (...args: any[]) => Promise<any>, thisArg: any, ...params: any[]) {
+    const commandErrorLabel = typeof params[params.length - 1] === 'string' ? params[params.length - 1] : '';
     return command.call(thisArg, ...params).catch((err: string | Error) => {
         const error = typeof err === 'string' ? new Error(err) : err;
-        vscode.window.showErrorMessage(error.message);
+        const msg = error.hasOwnProperty('message') ? error.message : '';
+        if (commandErrorLabel === '' && msg === '') {
+            return;
+        }
+        vscode.window.showErrorMessage(`${commandErrorLabel} Extension backend error - ${msg.toLowerCase()}`);
     });
 }
