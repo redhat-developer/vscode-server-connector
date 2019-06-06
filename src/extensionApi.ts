@@ -297,7 +297,7 @@ export class CommandHandler {
             const workflowMap = {};
             for (const item of response1.items) {
                 if (this.isMultilineText(item.content) ) {
-                    await new EditorUtil().showEditor(item.id, item.content);
+                    await new EditorUtil(this.explorer).showEditor(item.id, item.content);
                 }
 
                 const canceled: boolean = await this.promptUser(item, workflowMap);
@@ -321,9 +321,12 @@ export class CommandHandler {
             }
         }
 
-        const selectedServerName: string = context.server.id;
-        return this.explorer.editServer();
-
+        if (this.explorer) {
+            const serverHandle: Protocol.ServerHandle = this.explorer.serverStatus.get(context.server.id).server;
+            return this.explorer.editServer(serverHandle);
+        } else {
+            return Promise.reject('Runtime Server Protocol (RSP) Server is starting, please try again later.');
+        }
     }
 
     public async infoServer(context?: Protocol.ServerState): Promise<void> {
