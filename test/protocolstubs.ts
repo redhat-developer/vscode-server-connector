@@ -25,6 +25,14 @@ export class ProtocolStubs {
         state: 0
     };
 
+    public static readonly serverDebuggingState: Protocol.ServerState =  {
+        server: ProtocolStubs.serverHandle,
+        deployableStates: [],
+        publishState: 0,
+        runMode: ServerState.RUN_MODE_DEBUG,
+        state: 2
+    };
+
     public static readonly status: Protocol.Status = {
         code: 0,
         message: 'ok',
