@@ -251,7 +251,7 @@ export class ServerExplorer implements TreeDataProvider< Protocol.ServerState | 
             return Promise.reject(`Could not load server properties for server ${server.id}`);
         }
 
-        return ServerEditorAdapter.getInstance(this).openServerJsonResponse(serverProperties);
+        return ServerEditorAdapter.getInstance(this).showServerJsonResponse(serverProperties);
     }
 
     public async saveServerProperties(serverhandle: Protocol.ServerHandle, content: string): Promise<Protocol.Status> {
