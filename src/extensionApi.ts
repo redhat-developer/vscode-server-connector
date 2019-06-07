@@ -7,11 +7,11 @@
 
 import { DebugInfo } from './debugInfo';
 import { DebugInfoProvider } from './debugInfoProvider';
-import { EditorUtil } from './editorutil';
 import { Protocol, RSPClient, ServerState, StatusSeverity } from 'rsp-client';
 import { ServerInfo } from './server';
 import { ServerExplorer } from './serverExplorer';
 import * as vscode from 'vscode';
+import { ServerEditorAdapter } from './serverEditorAdapter';
 
 export interface ExtensionAPI {
     readonly serverInfo: ServerInfo;
@@ -283,21 +283,21 @@ export class CommandHandler {
         if (!rtId) {
             return;
         }
-        let response1: Protocol.WorkflowResponse = await this.initEmptyDownloadRuntimeRequest(rtId);
+        let response: Protocol.WorkflowResponse = await this.initEmptyDownloadRuntimeRequest(rtId);
         while (true) {
-            if (StatusSeverity.isOk(response1.status)) {
-                return Promise.resolve(response1.status);
-            } else if (StatusSeverity.isError(response1.status)
-                        || StatusSeverity.isCancel(response1.status)) {
+            if (StatusSeverity.isOk(response.status)) {
+                return Promise.resolve(response.status);
+            } else if (StatusSeverity.isError(response.status)
+                        || StatusSeverity.isCancel(response.status)) {
                 // error
-                return Promise.reject(response1.status);
+                return Promise.reject(response.status);
             }
 
             // not complete, not an error.
             const workflowMap = {};
-            for (const item of response1.items) {
+            for (const item of response.items) {
                 if (this.isMultilineText(item.content) ) {
-                    await new EditorUtil(this.explorer).showEditor(item.id, item.content);
+                    await ServerEditorAdapter.getInstance(this.explorer).showEditor(item.id, item.content);
                 }
 
                 const canceled: boolean = await this.promptUser(item, workflowMap);
@@ -306,7 +306,7 @@ export class CommandHandler {
                 }
             }
             // Now we have a data map
-            response1 = await this.initDownloadRuntimeRequest(rtId, workflowMap, response1.requestId);
+            response = await this.initDownloadRuntimeRequest(rtId, workflowMap, response.requestId);
         }
     }
 

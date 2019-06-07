@@ -4,11 +4,11 @@
  *-----------------------------------------------------------------------------------------------*/
 
 'use strict';
-import { EditorUtil } from './editorutil';
 import { CommandHandler, ExtensionAPI } from './extensionApi';
 import { JobProgress } from './jobprogress';
 import { Protocol, RSPClient, ServerState } from 'rsp-client';
 import * as server from './server';
+import { ServerEditorAdapter } from './serverEditorAdapter';
 import { ServerExplorer as ServersExplorer } from './serverExplorer';
 import * as vscode from 'vscode';
 
@@ -139,11 +139,15 @@ function displayLog(outputPanel: vscode.OutputChannel, message: string, show: bo
 }
 
 function onDidSaveTextDocument(doc: vscode.TextDocument) {
-    EditorUtil.getInstance(serversExplorer).onDidSaveTextDocument(doc);
+    ServerEditorAdapter.getInstance(serversExplorer).onDidSaveTextDocument(doc).then(() =>
+        vscode.window.showInformationMessage('Server correctly saved')
+    ).catch(err => {
+        vscode.window.showErrorMessage(err);
+    });
 }
 
 function onDidCloseTextDocument(doc: vscode.TextDocument) {
-    EditorUtil.getInstance(serversExplorer).onDidCloseTextDocument(doc);
+    ServerEditorAdapter.getInstance(serversExplorer).onDidCloseTextDocument(doc);
 }
 
 function executeCommand(command: (...args: any[]) => Promise<any>, thisArg: any, ...params: any[]) {

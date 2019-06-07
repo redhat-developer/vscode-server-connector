@@ -21,13 +21,13 @@ import {
     workspace
 } from 'vscode';
 
-import { EditorUtil } from './editorutil';
 import {
     Protocol,
     RSPClient,
     ServerState,
     StatusSeverity
 } from 'rsp-client';
+import { ServerEditorAdapter } from './serverEditorAdapter';
 import { ServerIcon } from './serverIcon';
 
 enum deploymentStatus {
@@ -248,15 +248,15 @@ export class ServerExplorer implements TreeDataProvider< Protocol.ServerState | 
         const serverProperties = await this.client.getOutgoingHandler().getServerAsJson(server);
 
         if (!serverProperties || !serverProperties.serverJson ) {
-            return Promise.reject();
+            return Promise.reject(`Could not load server properties for server ${server.id}`);
         }
 
-        EditorUtil.getInstance(this).openServerJsonResponse(serverProperties);
+        return ServerEditorAdapter.getInstance(this).openServerJsonResponse(serverProperties);
     }
 
     public async saveServerProperties(serverhandle: Protocol.ServerHandle, content: string): Promise<Protocol.Status> {
         if (!serverhandle || !content) {
-            throw new Error('Unable to update server properties.');
+            throw new Error(`Unable to update server properties for server ${serverhandle.id}`);
         }
         const serverProps: Protocol.UpdateServerRequest = {
             handle: serverhandle,
