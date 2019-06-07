@@ -346,7 +346,9 @@ export class ServerExplorer implements TreeDataProvider< Protocol.ServerState | 
             const state: Protocol.ServerState = item as Protocol.ServerState;
             const handle: Protocol.ServerHandle = state.server;
             const id1: string = handle.id;
-            const runState: string = this.runStateEnum.get(state.state);
+            const runState: string = (state.state === 2 && state.runMode === 'debug') ?
+                                    'Debugging' :
+                                    this.runStateEnum.get(state.state);
             const pubState: string = this.publishStateEnum.get(state.publishState);
             const depStr = `${id1} (${runState}) (${pubState})`;
             return { label: `${depStr}`,

@@ -153,17 +153,17 @@
         },
         {
           "command": "server.stop",
-          "when": "view == servers && viewItem == 'Started'",
+          "when": "view == servers && viewItem =~ '/(Started|Debugging)/'",
           "group": "1_server-startstop@3"
         },
         {
           "command": "server.restart",
-          "when": "view == servers && viewItem == 'Started'",
+          "when": "view == servers && viewItem =~ '/(Started|Debugging)/'",
           "group": "1_server-startstop@4"
         },
         {
           "command": "server.restartDebug",
-          "when": "view == servers && viewItem == 'Started'",
+          "when": "view == servers && viewItem =~ '/(Started|Debugging)/'",
           "group": "1_server-startstop@5"
         },
         {
@@ -178,12 +178,12 @@
         },
         {
           "command": "server.publishFull",
-          "when": "view == servers && viewItem =~ /(Starting|Started|Stopping|Stopped|Unknown)/",
+          "when": "view == servers && viewItem =~ /(Starting|Started|Debugging|Stopping|Stopped|Unknown)/",
           "group": "3_server-deployments@6"
         },
         {
           "command": "server.addDeployment",
-          "when": "view == servers && viewItem =~ /(Starting|Started|Stopping|Stopped|Unknown)/",
+          "when": "view == servers && viewItem =~ /(Starting|Started|Debugging|Stopping|Stopped|Unknown)/",
           "group": "3_server-deployments@1"
         },
         {
@@ -193,7 +193,7 @@
         },
         {
           "command": "server.output",
-          "when": "view == servers && viewItem =~ '/(Starting|Started|Stopping|Stopped)/'",
+          "when": "view == servers && viewItem =~ '/(Starting|Started|Debugging|Stopping|Stopped)/'",
           "group": "4_server-status@1"
         },
         {
@@ -208,7 +208,7 @@
         },
         {
           "command": "server.infoServer",
-          "when": "view == servers && viewItem =~ /(Starting|Started|Stopping|Stopped|Unknown)/'",
+          "when": "view == servers && viewItem =~ /(Starting|Started|Debugging|Stopping|Stopped|Unknown)/'",
           "group": "6_server-info@1"
         }
       ]
