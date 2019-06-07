@@ -346,22 +346,22 @@ export class ServerExplorer implements TreeDataProvider< Protocol.ServerState | 
             const state: Protocol.ServerState = item as Protocol.ServerState;
             const handle: Protocol.ServerHandle = state.server;
             const id1: string = handle.id;
-            const runState: string = (state.state === 2 && state.runMode === 'debug') ?
+            const serverState: string = (state.state === ServerState.STARTED && state.runMode === ServerState.RUN_MODE_DEBUG) ?
                                     'Debugging' :
                                     this.runStateEnum.get(state.state);
             const pubState: string = this.publishStateEnum.get(state.publishState);
-            const depStr = `${id1} (${runState}) (${pubState})`;
+            const depStr = `${id1} (${serverState}) (${pubState})`;
             return { label: `${depStr}`,
                 iconPath: ServerIcon.get(handle.type),
-                contextValue: runState,
+                contextValue: serverState,
                 collapsibleState: TreeItemCollapsibleState.Expanded
             };
         } else if (this.isDeployableElement(item)) {
             const state: Protocol.DeployableState = item as Protocol.DeployableState;
             const id1: string = state.reference.label;
-            const runState: string = this.runStateEnum.get(state.state);
+            const serverState: string = this.runStateEnum.get(state.state);
             const pubState: string = this.publishStateEnum.get(state.publishState);
-            const depStr = `${id1} (${runState}) (${pubState})`;
+            const depStr = `${id1} (${serverState}) (${pubState})`;
             return { label: `${depStr}`,
                 iconPath: Uri.file(path.join(__dirname, '../../images/server-light.png')),
                 contextValue: pubState,

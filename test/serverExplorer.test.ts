@@ -123,6 +123,20 @@ suite('Server explorer', () => {
             runMode: ServerState.RUN_MODE_RUN,
             deployableStates: []
         };
+        const stateChangeDebuggingStarting: Protocol.ServerState = {
+            server: ProtocolStubs.serverHandle,
+            state: 1,
+            publishState: 1,
+            runMode: ServerState.RUN_MODE_DEBUG,
+            deployableStates: []
+        };
+        const stateChangeDebugging: Protocol.ServerState = {
+            server: ProtocolStubs.serverHandle,
+            state: 2,
+            publishState: 1,
+            runMode: ServerState.RUN_MODE_DEBUG,
+            deployableStates: []
+        };
         const stateChangeStopping: Protocol.ServerState = {
             server: ProtocolStubs.serverHandle,
             state: 3,
@@ -149,6 +163,13 @@ suite('Server explorer', () => {
             collapsibleState: TreeItemCollapsibleState.Expanded,
             label: 'id (Started) (undefined)',
             contextValue: 'Started',
+            iconPath: Uri.file(path.join(__dirname, '../../images/server-light.png'))
+        };
+
+        const serverDebugging = {
+            collapsibleState: TreeItemCollapsibleState.Expanded,
+            label: 'id (Debugging) (undefined)',
+            contextValue: 'Debugging',
             iconPath: Uri.file(path.join(__dirname, '../../images/server-light.png'))
         };
 
@@ -192,6 +213,19 @@ suite('Server explorer', () => {
             expect(getStub).calledTwice;
             expect(children).deep.equals([ProtocolStubs.serverState]);
             expect(treeItem).deep.equals(serverStart);
+        });
+
+        test('call should update server state to received in state change event (Debugging)', () => {
+            serverExplorer.serverStatus =  new Map<string, Protocol.ServerState>([['server', ProtocolStubs.serverDebuggingState]]);
+
+            const children = serverExplorer.getChildren();
+            const treeItem = serverExplorer.getTreeItem(ProtocolStubs.serverDebuggingState);
+
+            serverExplorer.updateServer(stateChangeDebuggingStarting);
+            serverExplorer.updateServer(stateChangeDebugging);
+
+            expect(children).deep.equals([ProtocolStubs.serverDebuggingState]);
+            expect(treeItem).deep.equals(serverDebugging);
         });
 
         test('call should update server state to received in state change event (Unknown)', () => {
