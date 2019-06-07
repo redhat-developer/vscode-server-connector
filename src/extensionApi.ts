@@ -9,9 +9,9 @@ import { DebugInfo } from './debugInfo';
 import { DebugInfoProvider } from './debugInfoProvider';
 import { Protocol, RSPClient, ServerState, StatusSeverity } from 'rsp-client';
 import { ServerInfo } from './server';
+import { ServerEditorAdapter } from './serverEditorAdapter';
 import { ServerExplorer } from './serverExplorer';
 import * as vscode from 'vscode';
-import { ServerEditorAdapter } from './serverEditorAdapter';
 
 export interface ExtensionAPI {
     readonly serverInfo: ServerInfo;
