@@ -7,25 +7,23 @@
 import * as fs from 'fs';
 import { Protocol } from 'rsp-client';
 import { ServerExplorer } from './serverExplorer';
+import * as tmp from 'tmp';
 import { Utils } from './utils';
 import * as vscode from 'vscode';
-const tmp = require('tmp');
 
-export class EditorUtil {
+export class ServerEditorAdapter {
 
-    private static instance: EditorUtil;
-    private explorer: ServerExplorer;
+    private static instance: ServerEditorAdapter;
     private serverTmpFiles: Map<string, string> = new Map<string, string>();
 
-    constructor(explorer: ServerExplorer) {
-        this.explorer = explorer;
+    private constructor(private explorer: ServerExplorer) {
     }
 
     public static getInstance(explorer: ServerExplorer) {
-        if (!EditorUtil.instance) {
-            EditorUtil.instance = new EditorUtil(explorer);
+        if (!ServerEditorAdapter.instance) {
+            ServerEditorAdapter.instance = new ServerEditorAdapter(explorer);
         }
-        return EditorUtil.instance;
+        return ServerEditorAdapter.instance;
     }
 
     public async showEditor(fileSuffix: string, content: string) {
@@ -43,27 +41,27 @@ export class EditorUtil {
         });
     }
 
-    public async openServerJsonResponse(content: Protocol.GetServerJsonResponse): Promise<void> {
+    public async showServerJsonResponse(content: Protocol.GetServerJsonResponse): Promise<void> {
         if (!content || !content.serverHandle || !content.serverJson) {
-            return;
+            return Promise.reject('Could not handle server response: empty/invalid response');
         }
 
         if (this.serverTmpFiles.has(content.serverHandle.id)) {
-            this.saveTmpJsonresponse(
+            return this.saveAndShowEditor(
                 this.serverTmpFiles.get(content.serverHandle.id),
-                content
+                content.serverJson
             );
         } else {
-            tmp.file({ prefix: 'tmpServerConnectorProp', postfix: '.json' }, (err, path, fd) => {
+            return tmp.file({ prefix: 'tmpServerConnectorProp', postfix: '.json' }, (err, path, fd) => {
                 this.serverTmpFiles.set(content.serverHandle.id, path);
-                this.saveTmpJsonresponse(path, content);
+                this.saveAndShowEditor(path, content.serverJson);
             });
         }
     }
 
-    private async saveTmpJsonresponse(path: string, content: Protocol.GetServerJsonResponse): Promise<void> {
-        fs.writeFile(path, content.serverJson, undefined, () => {
-            return Promise.reject();
+    private async saveAndShowEditor(path: string, content: string): Promise<void> {
+        fs.writeFile(path, content, undefined, () => {
+            return Promise.reject(`Unable to save file on path ${path}`);
         });
 
         vscode.workspace.openTextDocument(path).then(doc =>
@@ -71,43 +69,35 @@ export class EditorUtil {
         );
     }
 
-    public async onDidSaveTextDocument(doc: vscode.TextDocument) {
+    public async onDidSaveTextDocument(doc: vscode.TextDocument): Promise<Protocol.Status> {
         if (!doc) {
-            return;
+            return Promise.reject('Unable to save server properties');
         }
-        if (await this.checkTmpServerPropsFile(doc)) {
+        if (await this.isTmpServerPropsFile(doc.fileName)) {
             const serverId = await Utils.getKeyByValue<string>(this.serverTmpFiles, doc.uri.path);
             if (!serverId) {
-                vscode.window.showErrorMessage('Unable to save server properties');
-                return;
+                return Promise.reject('Unable to save server properties - server id is invalid');
             }
             const serverHandle: Protocol.ServerHandle = this.explorer.serverStatus.get(serverId).server;
             if (!serverHandle) {
-                vscode.window.showErrorMessage('Unable to save server properties');
-                return;
+                return Promise.reject('Unable to save server properties - server is invalid');
             }
-            this.explorer.saveServerProperties(serverHandle, doc.getText()).catch(error => {
-                vscode.window.showErrorMessage(`Unable to save server properties. ${error}`);
-            });
+            return this.explorer.saveServerProperties(serverHandle, doc.getText());
         }
     }
 
-    public async onDidCloseTextDocument(doc: vscode.TextDocument) {
+    public async onDidCloseTextDocument(doc: vscode.TextDocument): Promise<void> {
         if (!doc) {
-            return;
+            return Promise.reject();
         }
-        if (await this.checkTmpServerPropsFile(doc)) {
+        if (await this.isTmpServerPropsFile(doc.fileName)) {
             fs.unlink(doc.uri.fsPath, error => {
                 console.log(error);
             });
         }
     }
 
-    private async checkTmpServerPropsFile(doc: vscode.TextDocument): Promise<boolean> {
-        if (doc.fileName.indexOf('tmpServerConnectorProp') > -1) {
-            return true;
-        }
-
-        return false;
+    private isTmpServerPropsFile(docName: string): boolean {
+        return docName.indexOf('tmpServerConnectorProp') > -1;
     }
 }
