@@ -139,9 +139,7 @@ function displayLog(outputPanel: vscode.OutputChannel, message: string, show: bo
 }
 
 function onDidSaveTextDocument(doc: vscode.TextDocument) {
-    ServerEditorAdapter.getInstance(serversExplorer).onDidSaveTextDocument(doc).then(() =>
-        vscode.window.showInformationMessage('Server correctly saved')
-    ).catch(err => {
+    ServerEditorAdapter.getInstance(serversExplorer).onDidSaveTextDocument(doc).catch(err => {
         vscode.window.showErrorMessage(err);
     });
 }
