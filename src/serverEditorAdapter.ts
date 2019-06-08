@@ -15,6 +15,7 @@ export class ServerEditorAdapter {
 
     private static instance: ServerEditorAdapter;
     private serverTmpFiles: Map<string, string> = new Map<string, string>();
+    private readonly PREFIX_TMP = 'tmpServerConnector';
 
     private constructor(private explorer: ServerExplorer) {
     }
@@ -52,7 +53,10 @@ export class ServerEditorAdapter {
                 content.serverJson
             );
         } else {
-            return tmp.file({ prefix: 'tmpServerConnectorProp', postfix: '.json' }, (err, path, fd) => {
+            return tmp.file({ prefix: `${this.PREFIX_TMP}-${content.serverHandle.id}-` , postfix: '.json' }, (err, path) => {
+                if (err) {
+                    return Promise.reject('Could not handle server response. Unable to create temp file');
+                }
                 this.serverTmpFiles.set(content.serverHandle.id, path);
                 this.saveAndShowEditor(path, content.serverJson);
             });
@@ -60,8 +64,10 @@ export class ServerEditorAdapter {
     }
 
     private async saveAndShowEditor(path: string, content: string): Promise<void> {
-        fs.writeFile(path, content, undefined, () => {
-            return Promise.reject(`Unable to save file on path ${path}`);
+        fs.writeFile(path, content, undefined, error => {
+            if (error !== null) {
+                return Promise.reject(`Unable to save file on path ${path}. Error - ${error}`);
+            }
         });
 
         vscode.workspace.openTextDocument(path).then(doc =>
@@ -82,7 +88,10 @@ export class ServerEditorAdapter {
             if (!serverHandle) {
                 return Promise.reject('Unable to save server properties - server is invalid');
             }
-            return this.explorer.saveServerProperties(serverHandle, doc.getText());
+            this.explorer.saveServerProperties(serverHandle, doc.getText()).then(status => {
+                vscode.window.showInformationMessage(`Server ${serverHandle.id} correctly saved`);
+                return status;
+            });
         }
     }
 
@@ -98,6 +107,6 @@ export class ServerEditorAdapter {
     }
 
     private isTmpServerPropsFile(docName: string): boolean {
-        return docName.indexOf('tmpServerConnectorProp') > -1;
+        return docName.indexOf(`${this.PREFIX_TMP}`) > -1;
     }
 }
