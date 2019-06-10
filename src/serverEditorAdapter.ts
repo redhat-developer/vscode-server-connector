@@ -80,7 +80,7 @@ export class ServerEditorAdapter {
             return Promise.reject('Unable to save server properties');
         }
         if (await this.isTmpServerPropsFile(doc.fileName)) {
-            const serverId = await Utils.getKeyByValue<string>(this.serverTmpFiles, doc.uri.path);
+            const serverId = await Utils.getKeyByValueString<string>(this.serverTmpFiles, doc.uri.fsPath);
             if (!serverId) {
                 return Promise.reject('Unable to save server properties - server id is invalid');
             }
