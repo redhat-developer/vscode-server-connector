@@ -33,7 +33,7 @@ export class ProtocolStubs {
         state: 2
     };
 
-    public static readonly status: Protocol.Status = {
+    public static readonly okStatus: Protocol.Status = {
         code: 0,
         message: 'ok',
         severity: 0,
@@ -56,6 +56,52 @@ export class ProtocolStubs {
         server: ProtocolStubs.serverHandle,
         streamType: 0,
         text: 'the type'
+    };
+
+    public static readonly cmdDetails: Protocol.CommandLineDetails = {
+        cmdLine: [''],
+        envp: [],
+        properties: {},
+        workingDir: 'dir'
+    };
+
+    public static readonly okStartServerResponse: Protocol.StartServerResponse = {
+        details: ProtocolStubs.cmdDetails,
+        status: ProtocolStubs.okStatus
+    };
+
+    public static readonly unknownServerState: Protocol.ServerState =  {
+        server: ProtocolStubs.serverHandle,
+        deployableStates: [],
+        publishState: ServerState.PUBLISH_STATE_UNKNOWN,
+        runMode: ServerState.RUN_MODE_RUN,
+        state: ServerState.UNKNOWN
+    };
+
+    public static readonly startedServerState: Protocol.ServerState = {
+        deployableStates: [],
+        publishState: ServerState.PUBLISH_STATE_UNKNOWN,
+        server: ProtocolStubs.serverHandle,
+        runMode: ServerState.RUN_MODE_RUN,
+        state: ServerState.STARTED
+    };
+
+    public static readonly stoppedServerState: Protocol.ServerState = {
+        deployableStates: [],
+        publishState: ServerState.PUBLISH_STATE_UNKNOWN,
+        server: ProtocolStubs.serverHandle,
+        runMode: ServerState.RUN_MODE_RUN,
+        state: ServerState.STOPPED
+    };
+
+    public static readonly javaCommandLine: Protocol.CommandLineDetails = {
+        cmdLine: [],
+        workingDir: '',
+        envp: [],
+        properties: {
+            ['debug.details.type']: 'java',
+            ['debug.details.port']: 'javaPort'
+        }
     };
 
 }

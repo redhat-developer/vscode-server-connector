@@ -25,7 +25,7 @@ export class DebugInfo {
 
     private getDetailsProperty(identifier: string) {
         if (!this.details
-              || !this.details.properties) {
+            || !this.details.properties) {
             return null;
         }
         return this.details.properties[identifier];

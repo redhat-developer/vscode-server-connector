@@ -5,10 +5,9 @@
 import * as chai from 'chai';
 import * as chaipromise from 'chai-as-promised';
 import { ClientStubs } from './clientstubs';
-import { DebugInfo } from '../src/debugInfo';
-import { DebugInfoProvider } from '../src/debugInfoProvider';
+import { DebugInfo } from '../src/debug/debugInfo';
+import { DebugInfoProvider } from '../src/debug/debugInfoProvider';
 import { ProtocolStubs } from './protocolstubs';
-import { Protocol } from 'rsp-client';
 import * as sinon from 'sinon';
 import * as sinonChai from 'sinon-chai';
 
@@ -18,7 +17,6 @@ chai.use(chaipromise);
 
 suite('DebugInfo', () => {
     let sandbox: sinon.SinonSandbox;
-    let javaCmdLineStub: Protocol.CommandLineDetails;
     let javaDebugInfo: DebugInfo;
     let typescriptDebugInfo: DebugInfo;
     let emptyDebugInfo: DebugInfo;
@@ -26,16 +24,7 @@ suite('DebugInfo', () => {
     setup(() => {
         sandbox = sinon.createSandbox();
 
-        javaCmdLineStub = {
-            cmdLine: [],
-            workingDir: '',
-            envp: [],
-            properties: {
-                ['debug.details.type']: 'java',
-                ['debug.details.port']: 'javaPort'
-            }
-        };
-        javaDebugInfo = new DebugInfo(javaCmdLineStub);
+        javaDebugInfo = new DebugInfo(ProtocolStubs.javaCommandLine);
 
         typescriptDebugInfo = new DebugInfo({
             cmdLine: [],
@@ -76,7 +65,7 @@ suite('DebugInfo', () => {
         // when
         const port = javaDebugInfo.getPort();
         // then
-        expect(port).to.equals('javaPort');
+        expect(port).to.equals(ProtocolStubs.javaCommandLine.properties['debug.details.port']);
     });
 
     test('Typescript should not be java type', () => {
@@ -106,7 +95,7 @@ suite('DebugInfo', () => {
     test('Should retrieve java debug info', () => {
         // given
         const stubs: ClientStubs = new ClientStubs(sandbox);
-        stubs.outgoing.getLaunchCommand.resolves(javaCmdLineStub);
+        stubs.outgoing.getLaunchCommand.resolves(ProtocolStubs.javaCommandLine);
 
         // when
         const debugInfo: Thenable<DebugInfo> = DebugInfoProvider.retrieve(ProtocolStubs.serverHandle, stubs.client);

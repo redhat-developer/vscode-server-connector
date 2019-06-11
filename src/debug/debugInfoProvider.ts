@@ -3,7 +3,7 @@
  *  Licensed under the EPL v2.0 License. See LICENSE file in the project root for license information.
  *-----------------------------------------------------------------------------------------------*/
 
-import { DebugInfo } from './debug/debugInfo';
+import { DebugInfo } from './debugInfo';
 import { Protocol, RSPClient } from 'rsp-client';
 
 export class DebugInfoProvider {
