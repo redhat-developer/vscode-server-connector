@@ -120,7 +120,7 @@
       },
       {
         "command": "server.editServer",
-        "title": "Customize Server",
+        "title": "Edit Server",
         "category": "Servers"
       },
       {
