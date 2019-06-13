@@ -204,12 +204,12 @@
         },
         {
           "command": "server.downloadRuntime",
-          "when": "view == servers",
+          "when": "view == servers && !viewItem",
           "group": "5_rsp@1"
         },
         {
           "command": "server.addLocation",
-          "when": "view == servers",
+          "when": "view == servers && !viewItem",
           "group": "5_rsp@2"
         },
         {
