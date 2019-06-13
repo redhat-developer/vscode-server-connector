@@ -24,6 +24,7 @@ export class CommandHandler {
     private static readonly NO_SERVERS_FILTER: number = -1;
 
     private debugSession: JavaDebugSession;
+    private serverPropertiesChannel: Map<string, vscode.OutputChannel> = new Map<string, vscode.OutputChannel>();
 
     constructor(private explorer: ServerExplorer, private client: RSPClient) {
         this.debugSession = new JavaDebugSession(client);
@@ -324,7 +325,15 @@ export class CommandHandler {
         const selectedServerType: Protocol.ServerType = context.server.type;
         const selectedServerName: string = context.server.id;
 
-        const outputChannel = vscode.window.createOutputChannel('vscode-adapter');
+        let outputChannel: vscode.OutputChannel;
+        if (this.serverPropertiesChannel.has(selectedServerName)) {
+            outputChannel = this.serverPropertiesChannel.get(selectedServerName);
+            outputChannel.clear();
+        } else {
+            outputChannel = vscode.window.createOutputChannel(`Properties: ${selectedServerName}`);
+            this.serverPropertiesChannel.set(selectedServerName, outputChannel);
+        }
+
         outputChannel.show();
         outputChannel.appendLine(`Server Name: ${selectedServerName}`);
         outputChannel.appendLine(`Server Type Id: ${selectedServerType.id}`);
