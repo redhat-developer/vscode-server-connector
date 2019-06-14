@@ -5,18 +5,15 @@
 import * as chai from 'chai';
 import * as chaipromise from 'chai-as-promised';
 import { ClientStubs } from './clientstubs';
+import * as fs from 'fs';
 import { ProtocolStubs } from './protocolstubs';
 import { Protocol } from 'rsp-client';
 import { ServerEditorAdapter } from '../src/serverEditorAdapter';
 import { ServerExplorer } from '../src/serverExplorer';
 import * as sinon from 'sinon';
 import * as sinonChai from 'sinon-chai';
-import { TextDocument, EndOfLine, Uri, window } from 'vscode';
-import { TextDecoder } from 'util';
-import { EOL } from 'os';
 import { Utils } from '../src/utils';
-import { AssertionError } from 'assert';
-import * as fs from 'fs';
+import { EndOfLine, TextDocument, Uri } from 'vscode';
 
 const expect = chai.expect;
 chai.use(sinonChai);
