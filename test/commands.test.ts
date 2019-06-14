@@ -524,6 +524,57 @@ suite('Command Handler', () => {
         });
     });
 
+    suite('editServer', () => {
+        let serverJsonResponseStub: sinon.SinonStub;
+
+        test('errors if server explorer is not initialized', async () => {
+            const nullHandler = new CommandHandler(null, stubs.client);
+
+            try {
+                await nullHandler.editServer();
+                expect.fail();
+            } catch (err) {
+                expect(err).equals('Runtime Server Protocol (RSP) Server is starting, please try again later.');
+            }
+        });
+
+        test('error if server properties object is undefined', async () => {
+            serverJsonResponseStub = stubs.outgoing.getServerAsJson = sandbox.stub().callsFake(() => {
+                return undefined;
+            });
+
+            try {
+                await serverExplorer.editServer(ProtocolStubs.serverHandle);
+                expect(serverJsonResponseStub).calledOnce();
+                expect.fail();
+            } catch (err) {
+                expect(err).equals('Could not load server properties for server id');
+            }
+
+        });
+
+        test('error if serverJson property of server properties object is undefined', async () => {
+            const serverJsonResponse: Protocol.GetServerJsonResponse = {
+                serverHandle: ProtocolStubs.serverHandle,
+                serverJson: undefined,
+                status: ProtocolStubs.okStatus
+            };
+
+            serverJsonResponseStub = stubs.outgoing.getServerAsJson = sandbox.stub().callsFake(() => {
+                return serverJsonResponse;
+            });
+
+            try {
+                await serverExplorer.editServer(ProtocolStubs.serverHandle);
+                expect(serverJsonResponseStub).calledOnce();
+                expect.fail();
+            } catch (err) {
+                expect(err).equals('Could not load server properties for server id');
+            }
+
+        });
+    });
+
     suite('infoServer', () => {
 
         test('errors if server explorer is not initialized', async () => {

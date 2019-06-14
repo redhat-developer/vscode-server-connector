@@ -104,4 +104,19 @@ export class ProtocolStubs {
         }
     };
 
+    public static readonly createResponseOK: Protocol.CreateServerResponse = {
+        status: ProtocolStubs.okStatus,
+        invalidKeys: []
+    };
+
+    public static readonly createResponseKO: Protocol.CreateServerResponse = {
+        status: ProtocolStubs.errorStatus,
+        invalidKeys: []
+    };
+
+    public static readonly updateServerResponse: Protocol.UpdateServerResponse = {
+        handle: ProtocolStubs.serverHandle,
+        validation: ProtocolStubs.createResponseOK
+    }
+
 }

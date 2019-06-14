@@ -255,8 +255,11 @@ export class ServerExplorer implements TreeDataProvider< Protocol.ServerState | 
     }
 
     public async saveServerProperties(serverhandle: Protocol.ServerHandle, content: string): Promise<Protocol.Status> {
-        if (!serverhandle || !content) {
-            throw new Error(`Unable to update server properties for server ${serverhandle.id}`);
+        if (!serverhandle) {
+            return Promise.reject('Unable to update server properties - Invalid server');
+        }
+        if (!content) {
+            return Promise.reject(`Unable to update server properties for server ${serverhandle.id} - Invalid content`);
         }
         const serverProps: Protocol.UpdateServerRequest = {
             handle: serverhandle,
