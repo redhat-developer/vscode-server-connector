@@ -42,7 +42,7 @@ export class CommandHandler {
             return Promise.reject('The server is already running.');
         }
 
-        const client: RSPClient = this.explorer.getClient(context.server.id);
+        const client: RSPClient = this.explorer.getClientByServer(context.server.id);
 
         const response = await client.getOutgoingHandler().startServerAsync({
             params: {
@@ -71,7 +71,7 @@ export class CommandHandler {
         if ((!forced && stateObj.state === ServerState.STARTED)
             || (forced && (stateObj.state === ServerState.STARTING
                             || stateObj.state === ServerState.STOPPING))) {
-            const client: RSPClient = this.explorer.getClient(context.server.id);
+            const client: RSPClient = this.explorer.getClientByServer(context.server.id);
             const status = await client.getOutgoingHandler().stopServerAsync({ id: serverId, force: true });
             if (this.debugSession.isDebuggerStarted()) {
                 await this.debugSession.stop();
@@ -92,7 +92,7 @@ export class CommandHandler {
             context = this.explorer.serverStatus.get(selectedServerId);
         }
 
-        const client: RSPClient = this.explorer.getClient(context.server.id);
+        const client: RSPClient = this.explorer.getClientByServer(context.server.id);
         const debugInfo: DebugInfo = await DebugInfoProvider.retrieve(context.server, client);
         const extensionIsRequired = await this.checkExtension(debugInfo);
         if (extensionIsRequired) {
@@ -134,7 +134,7 @@ export class CommandHandler {
         if (status1.state !== ServerState.STOPPED) {
             return Promise.reject(`Stop server ${serverId} before removing it.`);
         }
-        const client: RSPClient = this.explorer.getClient(serverId);
+        const client: RSPClient = this.explorer.getClientByServer(serverId);
         const status = await client.getOutgoingHandler().deleteServer({ id: serverId, type: serverType });
         if (!StatusSeverity.isOk(status)) {
             return Promise.reject(status.message);
@@ -246,7 +246,7 @@ export class CommandHandler {
         if (download.startsWith('Yes')) {
             return this.downloadRuntime(rspProvider.toString());
         } else if (download.startsWith('No')) {
-            return this.addLocation();
+            return this.addLocation(rspProvider.toString());
         }
     }
 
@@ -256,16 +256,16 @@ export class CommandHandler {
         }
     }
 
-    public async addLocation(): Promise<Protocol.Status> {
+    public async addLocation(rspProvider: string): Promise<Protocol.Status> {
         if (this.explorer) {
-            return this.explorer.addLocation();
+            return this.explorer.addLocation(rspProvider);
         } else {
             return Promise.reject('Runtime Server Protocol (RSP) Server is starting, please try again later.');
         }
     }
 
     public async downloadRuntime(rspProvider: string): Promise<Protocol.Status> {
-        const client = this.explorer.getClient(rspProvider);
+        const client = this.explorer.getClientByRSP(rspProvider);
         const rtId: string = await this.promptDownloadableRuntimes(client);
         if (!rtId) {
             return;

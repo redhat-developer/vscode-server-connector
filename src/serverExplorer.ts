@@ -78,7 +78,7 @@ export class ServerExplorer implements TreeDataProvider< Protocol.ServerState | 
     }
 
     public async insertServer(event: Protocol.ServerHandle) {
-        const client: RSPClient = this.getClient(event.id);
+        const client: RSPClient = this.getClientByServer(event.id);
         const state = await client.getOutgoingHandler().getServerState(event);
         this.serverStatus.set(state.server.id, state);
         this.refresh(state);
@@ -135,7 +135,7 @@ export class ServerExplorer implements TreeDataProvider< Protocol.ServerState | 
     }
 
     public async addDeployment(server: Protocol.ServerHandle): Promise<Protocol.Status> {
-        const client: RSPClient = this.getClient(server.id);
+        const client: RSPClient = this.getClientByServer(server.id);
         return this.createOpenDialogOptions()
             .then(options => window.showOpenDialog(options))
             .then(async file => {
@@ -201,7 +201,7 @@ export class ServerExplorer implements TreeDataProvider< Protocol.ServerState | 
     }
 
     public async removeDeployment(server: Protocol.ServerHandle, deployableRef: Protocol.DeployableReference): Promise<Protocol.Status> {
-        const client: RSPClient = this.getClient(server.id);
+        const client: RSPClient = this.getClientByServer(server.id);
         const req: Protocol.ServerDeployableReference = {
             server: server,
             deployableReference : deployableRef
@@ -214,7 +214,7 @@ export class ServerExplorer implements TreeDataProvider< Protocol.ServerState | 
     }
 
     public async publish(server: Protocol.ServerHandle, type: number): Promise<Protocol.Status> {
-        const client: RSPClient = this.getClient(server.id);
+        const client: RSPClient = this.getClientByServer(server.id);
         const req: Protocol.PublishServerRequest = { server: server, kind : type};
         const status = await client.getOutgoingHandler().publish(req);
         if (!StatusSeverity.isOk(status)) {
@@ -223,8 +223,8 @@ export class ServerExplorer implements TreeDataProvider< Protocol.ServerState | 
         return status;
     }
 
-    public async addLocation(): Promise<Protocol.Status> {
-        //const client: RSPClient = this.getClient(server.id);
+    public async addLocation(rsp: string): Promise<Protocol.Status> {
+        const client: RSPClient = this.getClientByRSP(rsp);
         const server: { name: string, bean: Protocol.ServerBean } = { name: null, bean: null };
         const folders = await window.showOpenDialog({
             canSelectFiles: false,
@@ -239,7 +239,7 @@ export class ServerExplorer implements TreeDataProvider< Protocol.ServerState | 
         }
 
         const serverBeans: Protocol.ServerBean[] =
-          await this.client.getOutgoingHandler().findServerBeans({ filepath: folders[0].fsPath });
+          await client.getOutgoingHandler().findServerBeans({ filepath: folders[0].fsPath });
 
         if (!serverBeans
           || serverBeans.length === 0
@@ -250,13 +250,13 @@ export class ServerExplorer implements TreeDataProvider< Protocol.ServerState | 
         }
         server.bean = serverBeans[0];
         server.name = await this.getServerName();
-        const attrs = await this.getRequiredParameters(server.bean);
+        const attrs = await this.getRequiredParameters(server.bean, client);
         await this.getOptionalParameters(server.bean, attrs);
-        return this.createServer(server.bean, server.name, attrs);
+        return this.createServer(server.bean, server.name, attrs, client);
     }
 
     public async editServer(server: Protocol.ServerHandle): Promise<void> {
-        const client: RSPClient = this.getClient(server.id);
+        const client: RSPClient = this.getClientByServer(server.id);
         const serverProperties = await client.getOutgoingHandler().getServerAsJson(server);
 
         if (!serverProperties || !serverProperties.serverJson ) {
@@ -270,7 +270,7 @@ export class ServerExplorer implements TreeDataProvider< Protocol.ServerState | 
         if (!serverhandle || !content) {
             throw new Error(`Unable to update server properties for server ${serverhandle.id}`);
         }
-        const client: RSPClient = this.getClient(serverhandle.id);
+        const client: RSPClient = this.getClientByServer(serverhandle.id);
         const serverProps: Protocol.UpdateServerRequest = {
             handle: serverhandle,
             serverJson: content
@@ -282,18 +282,18 @@ export class ServerExplorer implements TreeDataProvider< Protocol.ServerState | 
         return response.validation.status;
     }
 
-    private async createServer(bean: Protocol.ServerBean, name: string, attributes: any = {}): Promise<Protocol.Status> {
+    private async createServer(bean: Protocol.ServerBean, name: string, attributes: any = {}, client: RSPClient): Promise<Protocol.Status> {
         if (!bean || !name) {
             throw new Error('Couldn\'t create server: no type or name provided.');
         }
-        const response = await this.client.getServerCreation().createServerFromBeanAsync(bean, name, attributes);
+        const response = await client.getServerCreation().createServerFromBeanAsync(bean, name, attributes);
         if (!StatusSeverity.isOk(response.status)) {
             throw new Error(response.status.message);
         }
         return response.status;
     }
 
-    public getClient(rspProvider: string): RSPClient {
+    public getClientByRSP(rspProvider: string): RSPClient {
         return this.rspProvidersM.get(rspProvider).client;
     }
 
@@ -331,14 +331,14 @@ export class ServerExplorer implements TreeDataProvider< Protocol.ServerState | 
     /**
      * Requests parameters for the given server and lets user fill the required ones
      */
-    private async getRequiredParameters(bean: Protocol.ServerBean): Promise<object> {
+    private async getRequiredParameters(bean: Protocol.ServerBean, client: RSPClient): Promise<object> {
         let serverAttribute: {required: Protocol.Attributes; optional: Protocol.Attributes};
 
         if (this.serverAttributes.has(bean.serverAdapterTypeId)) {
             serverAttribute = this.serverAttributes.get(bean.serverAdapterTypeId);
         } else {
-            const req = await this.client.getOutgoingHandler().getRequiredAttributes({id: bean.serverAdapterTypeId, visibleName: '', description: ''});
-            const opt = await this.client.getOutgoingHandler().getOptionalAttributes({id: bean.serverAdapterTypeId, visibleName: '', description: ''});
+            const req = await client.getOutgoingHandler().getRequiredAttributes({id: bean.serverAdapterTypeId, visibleName: '', description: ''});
+            const opt = await client.getOutgoingHandler().getOptionalAttributes({id: bean.serverAdapterTypeId, visibleName: '', description: ''});
             serverAttribute = { required: req, optional: opt };
 
             this.serverAttributes.set(bean.serverAdapterTypeId, serverAttribute);
