@@ -41,6 +41,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         client = await initClient(serverInfo);
 
         const rspUtils: RSPProviderUtils = {
+            name: nameRSP,
             client: client,
             rspserverstderr: rspserverstderr,
             rspserverstdout: rspserverstdout

@@ -29,13 +29,25 @@ import {
 } from 'rsp-client';
 import { ServerEditorAdapter } from './serverEditorAdapter';
 import { ServerIcon } from './serverIcon';
+import { ClientRequest } from 'http';
 
 enum deploymentStatus {
     file = 'File',
     exploded = 'Exploded'
 }
 
+interface RSPType {
+    id: string;
+    visibilename: string;
+}
+
+interface RSPState {
+    type: RSPType;
+    state: number;
+}
+
 export interface RSPProviderUtils {
+    name: string;
     rspserverstdout: OutputChannel;
     rspserverstderr: OutputChannel;
     client: RSPClient;
@@ -73,8 +85,14 @@ export class ServerExplorer implements TreeDataProvider< Protocol.ServerState | 
             .set(5, '- Publish Required')
             .set(6, 'Unknown');
 
+        Array.from(this.rspProvidersM.keys()).forEach(async id => this.insertRSP(id, this.rspProvidersM.get(id).name));
+
         // client.getOutgoingHandler().getServerHandles()
         //     .then(servers => servers.forEach(async server => this.insertServer(server)));
+    }
+
+    private async insertRSP(rspId: string, rspName: string) {
+
     }
 
     public async insertServer(event: Protocol.ServerHandle) {

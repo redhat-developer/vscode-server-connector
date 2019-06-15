@@ -5,8 +5,10 @@ export class RSPProvider {
     private host: string;
     private port: number;
     private name: string;
+    private id: string;
 
     constructor() {
+        this.id = 'sample.extensionid';
         this.name = 'RSP Server (Wildfly, Eap, Minishift)'; // to be removed
         // this.name = vscode.env.appName; to be tested
     }
