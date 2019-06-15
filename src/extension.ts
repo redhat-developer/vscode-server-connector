@@ -139,9 +139,7 @@ function registerCommands(commandHandler: CommandHandler, context: vscode.Extens
         vscode.commands.registerCommand('server.infoServer',
             context => executeCommand(commandHandler.infoServer, commandHandler, context, 'Unable to retrieve server properties')),
         vscode.workspace.onDidSaveTextDocument(onDidSaveTextDocument),
-        vscode.workspace.onDidCloseTextDocument(onDidCloseTextDocument),
-        rspserverstdout,
-        rspserverstderr
+        vscode.workspace.onDidCloseTextDocument(onDidCloseTextDocument)
     ];
     const subscriptions = newLocal;
     subscriptions.forEach(element => {
