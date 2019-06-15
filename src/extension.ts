@@ -7,16 +7,21 @@
 import { CommandHandler, ExtensionAPI } from './extensionApi';
 import { JobProgress } from './jobprogress';
 import { Protocol, RSPClient, ServerState } from 'rsp-client';
+import { RSPProvider } from './rspProvider';
 import * as server from './server';
 import { ServerEditorAdapter } from './serverEditorAdapter';
 import { ServerExplorer as ServersExplorer } from './serverExplorer';
 import * as vscode from 'vscode';
-import { RSPProvider } from './rspProvider';
+
+interface RSPProviderUtils {
+    rspserverstdout: vscode.OutputChannel;
+    rspserverstderr: vscode.OutputChannel;
+}
 
 let rspProviders: RSPProvider[];
 let client: RSPClient;
 let serversExplorer: ServersExplorer;
-
+let rspProvidersM: Map<string, RSPProviderUtils> = new Map<string, RSPProviderUtils>();
 
 const rspserverstdout = vscode.window.createOutputChannel('RSP Server (stdout)');
 const rspserverstderr = vscode.window.createOutputChannel('RSP Server (stderr)');
@@ -27,9 +32,10 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     registerRSPProvider(); // to be removed when external extension will register automatically
     rspProviders.forEach(async rsp => {
         const serverInfo = await rsp.startRSP(onStdoutData, onStderrData);
+        const nameRSP = rsp.getName();
 
         if (!serverInfo || !serverInfo.port) {
-            return Promise.reject('Failed to start the rsp server');
+            return Promise.reject(`Failed to start the ${nameRSP} rsp server`);
         }
 
         client = await initClient(serverInfo);
@@ -38,6 +44,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         await commandHandler.activate();
         registerCommands(commandHandler, context);
     });
+    
+    
     //const serverInfo = await server.start(onStdoutData, onStderrData);
 
     // if (!serverInfo || !serverInfo.port) {

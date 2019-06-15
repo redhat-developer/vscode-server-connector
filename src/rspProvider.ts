@@ -1,12 +1,15 @@
 import * as server from './server';
+// import * as vscode from 'vscode';
 
 export class RSPProvider {
 
     private host: string;
     private port: number;
+    private name: string;
 
     constructor() {
-
+        this.name = 'RSP Server (Wildfly, Eap, Minishift)';
+        // this.name = vscode.env.appName; to be tested
     }
 
     public async startRSP(stdoutCallback: (data: string) => void, stderrCallback: (data: string) => void ): Promise<server.ServerInfo>  {
@@ -27,6 +30,10 @@ export class RSPProvider {
 
     public getPort(): number {
         return this.port;
+    }
+
+    public getName(): string {
+        return this.name;
     }
 
 
