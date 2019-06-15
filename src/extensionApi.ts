@@ -25,8 +25,8 @@ export class CommandHandler {
 
     private debugSession: JavaDebugSession;
 
-    constructor(private explorer: ServerExplorer, private client: RSPClient) {
-        this.debugSession = new JavaDebugSession(client);
+    constructor(private explorer: ServerExplorer) {
+        //this.debugSession = new JavaDebugSession(client);
     }
 
     public async startServer(mode: string, context?: Protocol.ServerState): Promise<Protocol.StartServerResponse> {
@@ -42,7 +42,9 @@ export class CommandHandler {
             return Promise.reject('The server is already running.');
         }
 
-        const response = await this.client.getOutgoingHandler().startServerAsync({
+        const client: RSPClient = this.explorer.getClient(context.server.id);
+
+        const response = await client.getOutgoingHandler().startServerAsync({
             params: {
                 serverType: context.server.type.id,
                 id: context.server.id,
@@ -69,7 +71,8 @@ export class CommandHandler {
         if ((!forced && stateObj.state === ServerState.STARTED)
             || (forced && (stateObj.state === ServerState.STARTING
                             || stateObj.state === ServerState.STOPPING))) {
-            const status = await this.client.getOutgoingHandler().stopServerAsync({ id: serverId, force: true });
+            const client: RSPClient = this.explorer.getClient(context.server.id);
+            const status = await client.getOutgoingHandler().stopServerAsync({ id: serverId, force: true });
             if (this.debugSession.isDebuggerStarted()) {
                 await this.debugSession.stop();
             }
@@ -89,7 +92,8 @@ export class CommandHandler {
             context = this.explorer.serverStatus.get(selectedServerId);
         }
 
-        const debugInfo: DebugInfo = await DebugInfoProvider.retrieve(context.server, this.client);
+        const client: RSPClient = this.explorer.getClient(context.server.id);
+        const debugInfo: DebugInfo = await DebugInfoProvider.retrieve(context.server, client);
         const extensionIsRequired = await this.checkExtension(debugInfo);
         if (extensionIsRequired) {
             vscode.window.showErrorMessage(extensionIsRequired);
@@ -130,7 +134,8 @@ export class CommandHandler {
         if (status1.state !== ServerState.STOPPED) {
             return Promise.reject(`Stop server ${serverId} before removing it.`);
         }
-        const status = await this.client.getOutgoingHandler().deleteServer({ id: serverId, type: serverType });
+        const client: RSPClient = this.explorer.getClient(serverId);
+        const status = await client.getOutgoingHandler().deleteServer({ id: serverId, type: serverType });
         if (!StatusSeverity.isOk(status)) {
             return Promise.reject(status.message);
         }
