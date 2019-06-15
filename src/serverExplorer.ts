@@ -35,11 +35,17 @@ enum deploymentStatus {
     exploded = 'Exploded'
 }
 
+export interface RSPProviderUtils {
+    rspserverstdout: OutputChannel;
+    rspserverstderr: OutputChannel;
+    client: RSPClient;
+}
+
 export class ServerExplorer implements TreeDataProvider< Protocol.ServerState | Protocol.DeployableState> {
 
     private _onDidChangeTreeData: EventEmitter<Protocol.ServerState | undefined> = new EventEmitter<Protocol.ServerState | undefined>();
     public readonly onDidChangeTreeData: Event<Protocol.ServerState | undefined> = this._onDidChangeTreeData.event;
-    private client: RSPClient;
+    //private client: RSPClient;
     public serverStatus: Map<string, Protocol.ServerState> = new Map<string, Protocol.ServerState>();
     public serverOutputChannels: Map<string, OutputChannel> = new Map<string, OutputChannel>();
     public runStateEnum: Map<number, string> = new Map<number, string>();
@@ -47,9 +53,9 @@ export class ServerExplorer implements TreeDataProvider< Protocol.ServerState | 
     private serverAttributes: Map<string, {required: Protocol.Attributes, optional: Protocol.Attributes}> =
         new Map<string, {required: Protocol.Attributes, optional: Protocol.Attributes}>();
     private readonly viewer: TreeView< Protocol.ServerState | Protocol.DeployableState>;
+    public rspProvidersM: Map<string, RSPProviderUtils> = new Map<string, RSPProviderUtils>();
 
-    constructor(client: RSPClient) {
-        this.client = client;
+    constructor() {
         this.viewer = window.createTreeView('servers', { treeDataProvider: this }) ;
 
         this.runStateEnum
@@ -67,8 +73,8 @@ export class ServerExplorer implements TreeDataProvider< Protocol.ServerState | 
             .set(5, '- Publish Required')
             .set(6, 'Unknown');
 
-        client.getOutgoingHandler().getServerHandles()
-            .then(servers => servers.forEach(async server => this.insertServer(server)));
+        // client.getOutgoingHandler().getServerHandles()
+        //     .then(servers => servers.forEach(async server => this.insertServer(server)));
     }
 
     public async insertServer(event: Protocol.ServerHandle) {
@@ -278,6 +284,10 @@ export class ServerExplorer implements TreeDataProvider< Protocol.ServerState | 
             throw new Error(response.status.message);
         }
         return response.status;
+    }
+
+    public getClient(server: string): RSPClient {
+        return this.rspProvidersM.get(server).client;
     }
 
     /**
