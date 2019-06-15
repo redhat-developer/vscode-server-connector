@@ -20,7 +20,7 @@ export interface ServerInfo {
     port: number;
 }
 
-export function start(stdoutCallback: (data: string) => void, stderrCallback: (data: string) => void ): Promise<ServerInfo> {
+export function start(stdoutCallback: (server: string, data: string) => void, stderrCallback: (server: string, data: string) => void ): Promise<ServerInfo> {
     return requirements.resolveRequirements()
     .catch(error => {
       // show error

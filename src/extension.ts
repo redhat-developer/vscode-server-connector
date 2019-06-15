@@ -24,9 +24,9 @@ let serversExplorer: ServersExplorer;
 const PROTOCOL_VERSION = '0.14.0';
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
-    registerRSPProvider(); // to be removed when external extension will register automatically
+    registerRSPProvider(); // to be removed when external extensions will register themselves automatically
     serversExplorer = new ServersExplorer();
-    const commandHandler = new CommandHandler(serversExplorer, client);
+    const commandHandler = new CommandHandler(serversExplorer);
     await commandHandler.activate();
 
     rspProviders.forEach(async rsp => {
@@ -160,11 +160,13 @@ function stopServer(val: Protocol.ServerState) {
     }
 }
 
-function onStdoutData(data: string) {
+function onStdoutData(server: string, data: string) {
+    const rspserverstdout = this.serversExplorer.getRSPOutputChannel(server);
     displayLog(rspserverstdout, data.toString());
 }
 
-function onStderrData(data: string) {
+function onStderrData(server: string, data: string) {
+    const rspserverstderr = this.serversExplorer.getRSPErrorChannel(server);
     displayLog(rspserverstderr, data.toString());
 }
 

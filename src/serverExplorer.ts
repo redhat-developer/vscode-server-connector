@@ -297,6 +297,14 @@ export class ServerExplorer implements TreeDataProvider< Protocol.ServerState | 
         return this.rspProvidersM.get(server).client;
     }
 
+    public getRSPOutputChannel(server: string): OutputChannel {
+        return this.rspProvidersM.get(server).rspserverstdout;
+    }
+
+    public getRSPErrorChannel(server: string): OutputChannel {
+        return this.rspProvidersM.get(server).rspserverstderr;
+    }
+
     /**
      * Prompts for server name
      */
