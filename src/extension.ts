@@ -11,27 +11,49 @@ import * as server from './server';
 import { ServerEditorAdapter } from './serverEditorAdapter';
 import { ServerExplorer as ServersExplorer } from './serverExplorer';
 import * as vscode from 'vscode';
+import { RSPProvider } from './rspProvider';
 
+let rspProviders: RSPProvider[];
 let client: RSPClient;
 let serversExplorer: ServersExplorer;
+
 
 const rspserverstdout = vscode.window.createOutputChannel('RSP Server (stdout)');
 const rspserverstderr = vscode.window.createOutputChannel('RSP Server (stderr)');
 
 const PROTOCOL_VERSION = '0.14.0';
 
-export async function activate(context: vscode.ExtensionContext): Promise<ExtensionAPI> {
-    const serverInfo = await server.start(onStdoutData, onStderrData);
+export async function activate(context: vscode.ExtensionContext): Promise<void> {
+    registerRSPProvider(); // to be removed when external extension will register automatically
+    rspProviders.forEach(async rsp => {
+        const serverInfo = await rsp.startRSP(onStdoutData, onStderrData);
 
-    if (!serverInfo || !serverInfo.port) {
-        return Promise.reject('Failed to start the rsp server');
-    }
-    client = await initClient(serverInfo);
-    serversExplorer = new ServersExplorer(client);
-    const commandHandler = new CommandHandler(serversExplorer, client);
-    await commandHandler.activate();
-    registerCommands(commandHandler, context);
-    return { serverInfo };
+        if (!serverInfo || !serverInfo.port) {
+            return Promise.reject('Failed to start the rsp server');
+        }
+
+        client = await initClient(serverInfo);
+        serversExplorer = new ServersExplorer(client);
+        const commandHandler = new CommandHandler(serversExplorer, client);
+        await commandHandler.activate();
+        registerCommands(commandHandler, context);
+    });
+    //const serverInfo = await server.start(onStdoutData, onStderrData);
+
+    // if (!serverInfo || !serverInfo.port) {
+    //     return Promise.reject('Failed to start the rsp server');
+    // }
+    // client = await initClient(serverInfo);
+    // serversExplorer = new ServersExplorer(client);
+    // const commandHandler = new CommandHandler(serversExplorer, client);
+    // await commandHandler.activate();
+    // registerCommands(commandHandler, context);
+    // return { serverInfo };
+}
+
+function registerRSPProvider() {
+    const rspProv: RSPProvider = new RSPProvider();
+    rspProviders.push(rspProv);
 }
 
 async function initClient(serverInfo: server.ServerInfo): Promise<RSPClient> {
