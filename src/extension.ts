@@ -27,8 +27,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     registerRSPProvider(); // to be removed when external extensions will register themselves automatically
     serversExplorer = new ServersExplorer();
     const commandHandler = new CommandHandler(serversExplorer);
-    await commandHandler.activate();
-
+    
     rspProviders.forEach(async rsp => {
         const serverInfo = await rsp.startRSP(onStdoutData, onStderrData);
         const nameRSP = rsp.getName();
@@ -47,6 +46,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
             rspserverstdout: rspserverstdout
         };
         serversExplorer.rspProvidersM.set(nameRSP, rspUtils);
+        await commandHandler.activate(client);
 
     });
 
