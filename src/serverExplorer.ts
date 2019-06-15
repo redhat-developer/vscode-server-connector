@@ -78,7 +78,8 @@ export class ServerExplorer implements TreeDataProvider< Protocol.ServerState | 
     }
 
     public async insertServer(event: Protocol.ServerHandle) {
-        const state = await this.client.getOutgoingHandler().getServerState(event);
+        const client: RSPClient = this.getClient(event.id);
+        const state = await client.getOutgoingHandler().getServerState(event);
         this.serverStatus.set(state.server.id, state);
         this.refresh(state);
     }
@@ -134,6 +135,7 @@ export class ServerExplorer implements TreeDataProvider< Protocol.ServerState | 
     }
 
     public async addDeployment(server: Protocol.ServerHandle): Promise<Protocol.Status> {
+        const client: RSPClient = this.getClient(server.id);
         return this.createOpenDialogOptions()
             .then(options => window.showOpenDialog(options))
             .then(async file => {
@@ -146,7 +148,7 @@ export class ServerExplorer implements TreeDataProvider< Protocol.ServerState | 
                         return;
                     }
                     if (answer === 'Yes') {
-                        const optionMap: Protocol.Attributes = await this.client.getOutgoingHandler().listDeploymentOptions(server);
+                        const optionMap: Protocol.Attributes = await client.getOutgoingHandler().listDeploymentOptions(server);
                         for (const key in optionMap.attributes) {
                             if (key) {
                                 const attribute = optionMap.attributes[key];
@@ -170,7 +172,7 @@ export class ServerExplorer implements TreeDataProvider< Protocol.ServerState | 
                         server: server,
                         deployableReference : deployableRef
                     };
-                    const status = await this.client.getOutgoingHandler().addDeployable(req);
+                    const status = await client.getOutgoingHandler().addDeployable(req);
                     if (!StatusSeverity.isOk(status)) {
                         return Promise.reject(status.message);
                     }
@@ -199,11 +201,12 @@ export class ServerExplorer implements TreeDataProvider< Protocol.ServerState | 
     }
 
     public async removeDeployment(server: Protocol.ServerHandle, deployableRef: Protocol.DeployableReference): Promise<Protocol.Status> {
+        const client: RSPClient = this.getClient(server.id);
         const req: Protocol.ServerDeployableReference = {
             server: server,
             deployableReference : deployableRef
         };
-        const status = await this.client.getOutgoingHandler().removeDeployable(req);
+        const status = await client.getOutgoingHandler().removeDeployable(req);
         if (!StatusSeverity.isOk(status)) {
             return Promise.reject(status.message);
         }
@@ -211,8 +214,9 @@ export class ServerExplorer implements TreeDataProvider< Protocol.ServerState | 
     }
 
     public async publish(server: Protocol.ServerHandle, type: number): Promise<Protocol.Status> {
+        const client: RSPClient = this.getClient(server.id);
         const req: Protocol.PublishServerRequest = { server: server, kind : type};
-        const status = await this.client.getOutgoingHandler().publish(req);
+        const status = await client.getOutgoingHandler().publish(req);
         if (!StatusSeverity.isOk(status)) {
             return Promise.reject(status.message);
         }
@@ -220,6 +224,7 @@ export class ServerExplorer implements TreeDataProvider< Protocol.ServerState | 
     }
 
     public async addLocation(): Promise<Protocol.Status> {
+        //const client: RSPClient = this.getClient(server.id);
         const server: { name: string, bean: Protocol.ServerBean } = { name: null, bean: null };
         const folders = await window.showOpenDialog({
             canSelectFiles: false,
@@ -251,7 +256,8 @@ export class ServerExplorer implements TreeDataProvider< Protocol.ServerState | 
     }
 
     public async editServer(server: Protocol.ServerHandle): Promise<void> {
-        const serverProperties = await this.client.getOutgoingHandler().getServerAsJson(server);
+        const client: RSPClient = this.getClient(server.id);
+        const serverProperties = await client.getOutgoingHandler().getServerAsJson(server);
 
         if (!serverProperties || !serverProperties.serverJson ) {
             return Promise.reject(`Could not load server properties for server ${server.id}`);
@@ -264,11 +270,12 @@ export class ServerExplorer implements TreeDataProvider< Protocol.ServerState | 
         if (!serverhandle || !content) {
             throw new Error(`Unable to update server properties for server ${serverhandle.id}`);
         }
+        const client: RSPClient = this.getClient(serverhandle.id);
         const serverProps: Protocol.UpdateServerRequest = {
             handle: serverhandle,
             serverJson: content
         };
-        const response = await this.client.getOutgoingHandler().updateServer(serverProps);
+        const response = await client.getOutgoingHandler().updateServer(serverProps);
         if (!StatusSeverity.isOk(response.validation.status)) {
             return Promise.reject(response.validation.status.message);
         }
