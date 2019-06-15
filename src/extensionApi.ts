@@ -236,7 +236,7 @@ export class CommandHandler {
         }
     }
 
-    public async createServer(): Promise<Protocol.Status> {
+    public async createServer(rspProvider: object): Promise<Protocol.Status> {
         this.assertExplorerExists();
         const download: string = await vscode.window.showQuickPick(['Yes', 'No, use server on disk'],
             { placeHolder: 'Download server?', ignoreFocusOut: true });
@@ -244,7 +244,7 @@ export class CommandHandler {
             return;
         }
         if (download.startsWith('Yes')) {
-            return this.downloadRuntime();
+            return this.downloadRuntime(rspProvider.toString());
         } else if (download.startsWith('No')) {
             return this.addLocation();
         }
@@ -264,12 +264,13 @@ export class CommandHandler {
         }
     }
 
-    public async downloadRuntime(): Promise<Protocol.Status> {
-        const rtId: string = await this.promptDownloadableRuntimes();
+    public async downloadRuntime(rspProvider: string): Promise<Protocol.Status> {
+        const client = this.explorer.getClient(rspProvider);
+        const rtId: string = await this.promptDownloadableRuntimes(client);
         if (!rtId) {
             return;
         }
-        let response: Protocol.WorkflowResponse = await this.initEmptyDownloadRuntimeRequest(rtId);
+        let response: Protocol.WorkflowResponse = await this.initEmptyDownloadRuntimeRequest(rtId, client);
         while (true) {
             if (StatusSeverity.isOk(response.status)) {
                 return Promise.resolve(response.status);
@@ -292,7 +293,7 @@ export class CommandHandler {
                 }
             }
             // Now we have a data map
-            response = await this.initDownloadRuntimeRequest(rtId, workflowMap, response.requestId);
+            response = await this.initDownloadRuntimeRequest(rtId, workflowMap, response.requestId, client);
         }
     }
 
@@ -380,29 +381,30 @@ export class CommandHandler {
         return content && content.indexOf('\n') !== -1;
     }
 
-    private async initDownloadRuntimeRequest(id: string, data1: {[index: string]: any}, reqId: number):
+    private async initDownloadRuntimeRequest(id: string, data1: {[index: string]: any}, reqId: number, client: RSPClient):
         Promise<Protocol.WorkflowResponse> {
         const req: Protocol.DownloadSingleRuntimeRequest = {
             requestId: reqId,
             downloadRuntimeId: id,
             data: data1
         };
-        const resp: Promise<Protocol.WorkflowResponse> = this.client.getOutgoingHandler().downloadRuntime(req, 20000);
+
+        const resp: Promise<Protocol.WorkflowResponse> = client.getOutgoingHandler().downloadRuntime(req, 20000);
         return resp;
     }
 
-    private async initEmptyDownloadRuntimeRequest(id: string): Promise<Protocol.WorkflowResponse> {
+    private async initEmptyDownloadRuntimeRequest(id: string, client: RSPClient): Promise<Protocol.WorkflowResponse> {
         const req: Protocol.DownloadSingleRuntimeRequest = {
             requestId: null,
             downloadRuntimeId: id,
             data: {}
         };
-        const resp: Promise<Protocol.WorkflowResponse> = this.client.getOutgoingHandler().downloadRuntime(req);
+        const resp: Promise<Protocol.WorkflowResponse> = client.getOutgoingHandler().downloadRuntime(req);
         return resp;
     }
 
-    private async promptDownloadableRuntimes(): Promise<string> {
-        const newlist = this.client.getOutgoingHandler().listDownloadableRuntimes(CommandHandler.LIST_RUNTIMES_TIMEOUT)
+    private async promptDownloadableRuntimes(client: RSPClient): Promise<string> {
+        const newlist = client.getOutgoingHandler().listDownloadableRuntimes(CommandHandler.LIST_RUNTIMES_TIMEOUT)
             .then(async (list: Protocol.ListDownloadRuntimeResponse) => {
                 const collator = new Intl.Collator(undefined, {numeric: true, sensitivity: 'base'});
                 const rts: Protocol.DownloadRuntimeDescription[] = list.runtimes.sort((runtimeA, runtimeB) => collator.compare(runtimeA.name, runtimeB.name));
