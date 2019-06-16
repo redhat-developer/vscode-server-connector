@@ -14,7 +14,7 @@ export class RSPProvider {
         // this.name = vscode.env.appName; to be tested
     }
 
-    public async startRSP(stdoutCallback: (server: string, data: string) => void, stderrCallback: (server: string, data: string) => void ): Promise<server.ServerInfo>  {
+    public async startRSP(stdoutCallback: (data: string) => void, stderrCallback: (data: string) => void ): Promise<server.ServerInfo>  {
         return await server.start(stdoutCallback, stderrCallback).then(serverInfo => {
             this.host = serverInfo.host;
             this.port = serverInfo.port;
@@ -48,7 +48,8 @@ export class RSPProvider {
             type: {
                 id: this.id,
                 visibilename: this.name
-            }
+            },
+            serverStates: undefined
         };
     }
 

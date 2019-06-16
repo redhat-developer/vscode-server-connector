@@ -44,6 +44,7 @@ export interface RSPType {
 export interface RSPState {
     type: RSPType;
     state: number;
+    serverStates: Map<string, Protocol.ServerState>;
 }
 
 export interface RSPProviderUtils {
@@ -53,7 +54,7 @@ export interface RSPProviderUtils {
     client: RSPClient;
 }
 
-export class ServerExplorer implements TreeDataProvider< RSPState | Protocol.ServerState | Protocol.DeployableState> {
+export class ServerExplorer implements TreeDataProvider<RSPState | Protocol.ServerState | Protocol.DeployableState> {
 
     private _onDidChangeTreeData: EventEmitter<RSPState | Protocol.ServerState | undefined> = new EventEmitter<RSPState | Protocol.ServerState | undefined>();
     public readonly onDidChangeTreeData: Event<RSPState | Protocol.ServerState | undefined> = this._onDidChangeTreeData.event;
@@ -92,7 +93,15 @@ export class ServerExplorer implements TreeDataProvider< RSPState | Protocol.Ser
     }
 
     public initTreeRsp() {
-        Array.from(this.rspProvidersM.keys()).forEach(async id => this.insertRSP(this.rspProvidersM.get(id).state));
+        // retieve server belongs to rspprovider
+
+        Array.from(this.rspProvidersM.keys()).forEach(async id => {
+            // const client: RSPClient = this.getClientByRSP(id);
+            // const servers: Protocol.ServerHandle[] = await client.getOutgoingHandler().getServerHandles();
+            // const state = await client.getOutgoingHandler().getServerState(event);
+
+            this.insertRSP(this.rspProvidersM.get(id).state);
+        });
     }
 
     private async insertRSP(rspState: RSPState) {
@@ -459,12 +468,20 @@ export class ServerExplorer implements TreeDataProvider< RSPState | Protocol.Ser
         }
     }
 
-    public getChildren(element?:  Protocol.ServerState | Protocol.DeployableState):  Protocol.ServerState[] | Protocol.DeployableState[] {
+    public getChildren(element?:  RSPState | Protocol.ServerState | Protocol.DeployableState):  RSPState[] | Protocol.ServerState[] | Protocol.DeployableState[] {
         if (element === undefined) {
-            // no parent, root node -> return servers
-            return Array.from(this.serverStatus.values());
+            return Array.from(this.rspProvidersM.values()).map(rsp => rsp.state);
+        } else if (this.isRSPElement(element) && (element as RSPState).serverStates !== undefined) {
+            return Array.from((element as RSPState).serverStates.values());
+            
+            
+        
+            //return Array.from(this.serverStatus.values());
+        // if (element === undefined) {
+        //     // no parent, root node -> return servers
+        //     return Array.from(this.serverStatus.values());
         } else if (this.isServerElement(element)) {
-            // server parent -> return deployables
+        //     // server parent -> return deployables
             return (element as Protocol.ServerState).deployableStates;
         } else {
             return [];

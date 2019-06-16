@@ -19,8 +19,8 @@ let serversExplorer: ServersExplorer;
 let commandHandler: CommandHandler;
 
 
-// const rspserverstdout = vscode.window.createOutputChannel('RSP Server (stdout)');
-// const rspserverstderr = vscode.window.createOutputChannel('RSP Server (stderr)');
+const rspserverstdout = vscode.window.createOutputChannel('RSP Server (stdout)');
+const rspserverstderr = vscode.window.createOutputChannel('RSP Server (stderr)');
 
 const PROTOCOL_VERSION = '0.14.0';
 
@@ -29,9 +29,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     serversExplorer = new ServersExplorer();
     commandHandler = new CommandHandler(serversExplorer);
     
-    Array.from(rspProviders.keys()).forEach(async rsp => {
-        const rspserverstdout = vscode.window.createOutputChannel('RSP Server (stdout)');
-        const rspserverstderr = vscode.window.createOutputChannel('RSP Server (stderr)');
+    Array.from(rspProviders.keys()).forEach(rsp => {
+        // const rspserverstdout = vscode.window.createOutputChannel('RSP Server (stdout)');
+        // const rspserverstderr = vscode.window.createOutputChannel('RSP Server (stderr)');
 
         const rspUtils: RSPProviderUtils = {
             state: rspProviders.get(rsp),
@@ -42,7 +42,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         serversExplorer.rspProvidersM.set(rsp.getId(), rspUtils);
     });
 
-    startRSPServers();
+    await startRSPServers();
 
     serversExplorer.initTreeRsp();
 
@@ -64,7 +64,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     // return { serverInfo };
 }
 
-function startRSPServers() {
+async function startRSPServers(): Promise<void> {
     Array.from(rspProviders.keys()).forEach(async rsp => {
         const serverInfo = await rsp.startRSP(onStdoutData, onStderrData); //to modify state rsp server inside RSPState
         const nameRSP = rsp.getName();
@@ -77,7 +77,8 @@ function startRSPServers() {
 
         const rspUtils: RSPProviderUtils = serversExplorer.rspProvidersM.get(rsp.getId());
         rspUtils.client = client;
-        serversExplorer.rspProvidersM.set(nameRSP, rspUtils);
+        rspUtils.state.serverStates = serversExplorer.serverStatus;
+        serversExplorer.rspProvidersM.set(rsp.getId(), rspUtils);
         await commandHandler.activate(client);
 
     });
@@ -179,13 +180,13 @@ function stopServer(val: Protocol.ServerState) {
     }
 }
 
-function onStdoutData(server: string, data: string) {
-    const rspserverstdout = this.serversExplorer.getRSPOutputChannel(server);
+function onStdoutData(data: string) {
+    //const rspserverstdout = serversExplorer.getRSPOutputChannel(server);
     displayLog(rspserverstdout, data.toString());
 }
 
-function onStderrData(server: string, data: string) {
-    const rspserverstderr = this.serversExplorer.getRSPErrorChannel(server);
+function onStderrData(data: string) {
+    //const rspserverstderr = serversExplorer.getRSPErrorChannel(server);
     displayLog(rspserverstderr, data.toString());
 }
 
