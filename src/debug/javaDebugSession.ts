@@ -12,10 +12,10 @@ export class JavaDebugSession {
 
     private processOutputListener: { port: string, server: Protocol.ServerHandle, listener: ((output: Protocol.ServerProcessOutput) => void)};
 
-    constructor(private readonly client: RSPClient) {
+    constructor() {
     }
 
-    public start(server: Protocol.ServerHandle, port: string) {
+    public start(server: Protocol.ServerHandle, port: string, client: RSPClient) {
         this.processOutputListener = {
             port: port,
             server: server,
@@ -26,11 +26,11 @@ export class JavaDebugSession {
                     && output.text
                     && output.text.includes('Listening for transport dt_socket')) {
                     this.startDebugger(port);
-                    this.client.getIncomingHandler().removeOnServerProcessOutputAppended(this.processOutputListener.listener);
+                    client.getIncomingHandler().removeOnServerProcessOutputAppended(this.processOutputListener.listener);
                 }
             }
         };
-        this.client.getIncomingHandler().onServerProcessOutputAppended(this.processOutputListener.listener);
+        client.getIncomingHandler().onServerProcessOutputAppended(this.processOutputListener.listener);
     }
 
     private async startDebugger(port: string) {

@@ -26,7 +26,7 @@ export class CommandHandler {
     private debugSession: JavaDebugSession;
 
     constructor(private explorer: ServerExplorer) {
-        //this.debugSession = new JavaDebugSession(client);
+        this.debugSession = new JavaDebugSession();
     }
 
     public async startServer(mode: string, context?: Protocol.ServerState): Promise<Protocol.StartServerResponse> {
@@ -107,7 +107,7 @@ export class CommandHandler {
                     return Promise.reject(`Failed to start server ${context.server.id}`);
                 }
                 const port: string = DebugInfoProvider.create(serverStarted.details).getPort();
-                this.debugSession.start(context.server, port);
+                this.debugSession.start(context.server, port, client);
                 return Promise.resolve(serverStarted);
             });
     }
