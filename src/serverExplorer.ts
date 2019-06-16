@@ -341,7 +341,7 @@ export class ServerExplorer implements TreeDataProvider<RSPState | Protocol.Serv
     }
 
     public getClientByServer(server: string): RSPClient {
-        return this.rspProvidersM.get(server).client; // to be modified
+        return this.rspProvidersM.get('sample.extensionid').client; // to be modified
     }
 
     public getRSPOutputChannel(server: string): OutputChannel {
@@ -446,7 +446,7 @@ export class ServerExplorer implements TreeDataProvider<RSPState | Protocol.Serv
             const depStr = `${id1} (${serverState})`;
             return { label: `${depStr}`,
                 iconPath: Uri.file(path.join(__dirname, '../../images/server-light.png')),
-                //contextValue: item,
+                contextValue: serverState, //state.type.id, //to be removed, edited and change context menu actions
                 collapsibleState: TreeItemCollapsibleState.Expanded
             };
         } else if (this.isServerElement(item)) {
@@ -511,7 +511,8 @@ export class ServerExplorer implements TreeDataProvider<RSPState | Protocol.Serv
     }
 
     private getRSPState(element: Protocol.ServerState): RSPState {
-        return undefined; // to be removed
+        const serverStates = this.rspProvidersM.get('sample.extensionid'); //to be removed, just for testing
+        return serverStates.state; // to be removed
     }
 
     private getServerState(element: Protocol.DeployableState): Protocol.ServerState {
