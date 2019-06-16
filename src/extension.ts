@@ -42,8 +42,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     });
 
     await startRSPServers();
-
     serversExplorer.initTreeRsp();
+        
 
 
     registerCommands(commandHandler, context);
@@ -64,7 +64,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 }
 
 async function startRSPServers(): Promise<void> {
-    Array.from(rspProviders.keys()).forEach(async rsp => {
+    for (const rsp of rspProviders.keys()) {
         const serverInfo = await rsp.startRSP(onStdoutData, onStderrData); //to modify state rsp server inside RSPState
         const nameRSP = rsp.getName();
 
@@ -79,8 +79,7 @@ async function startRSPServers(): Promise<void> {
         rspUtils.state.serverStates = [];
         serversExplorer.rspProvidersM.set(rsp.getId(), rspUtils);
         await commandHandler.activate(rsp.getId(), client);
-
-    });
+    }
 
 }
 
