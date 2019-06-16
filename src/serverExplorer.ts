@@ -53,10 +53,10 @@ export interface RSPProviderUtils {
     client: RSPClient;
 }
 
-export class ServerExplorer implements TreeDataProvider< Protocol.ServerState | Protocol.DeployableState> {
+export class ServerExplorer implements TreeDataProvider< RSPState | Protocol.ServerState | Protocol.DeployableState> {
 
-    private _onDidChangeTreeData: EventEmitter<Protocol.ServerState | undefined> = new EventEmitter<Protocol.ServerState | undefined>();
-    public readonly onDidChangeTreeData: Event<Protocol.ServerState | undefined> = this._onDidChangeTreeData.event;
+    private _onDidChangeTreeData: EventEmitter<RSPState | Protocol.ServerState | undefined> = new EventEmitter<RSPState | Protocol.ServerState | undefined>();
+    public readonly onDidChangeTreeData: Event<RSPState | Protocol.ServerState | undefined> = this._onDidChangeTreeData.event;
     //private client: RSPClient;
     public serverStatus: Map<string, Protocol.ServerState> = new Map<string, Protocol.ServerState>();
     public serverOutputChannels: Map<string, OutputChannel> = new Map<string, OutputChannel>();
@@ -92,7 +92,7 @@ export class ServerExplorer implements TreeDataProvider< Protocol.ServerState | 
     }
 
     private async insertRSP(rspState: RSPState) {
-        //this.refresh(rspState);
+        this.refresh(rspState);
     }
 
     public async insertServer(event: Protocol.ServerHandle) {
@@ -141,14 +141,14 @@ export class ServerExplorer implements TreeDataProvider< Protocol.ServerState | 
         }
     }
 
-    public refresh(data?: Protocol.ServerState): void {
+    public refresh(data?: RSPState | Protocol.ServerState): void {
         this._onDidChangeTreeData.fire();
-        if (data !== undefined) {
+        if (data !== undefined && this.isServerElement(data)) {
             this.selectNode(data);
         }
     }
 
-    public selectNode(data: Protocol.ServerState): void {
+    public selectNode(data: RSPState | Protocol.ServerState): void {
         this.viewer.reveal(data, { focus: true, select: true });
     }
 
