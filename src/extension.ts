@@ -18,7 +18,6 @@ let client: RSPClient;
 let serversExplorer: ServersExplorer;
 let commandHandler: CommandHandler;
 
-
 const rspserverstdout = vscode.window.createOutputChannel('RSP Server (stdout)');
 const rspserverstderr = vscode.window.createOutputChannel('RSP Server (stderr)');
 
@@ -77,12 +76,11 @@ async function startRSPServers(): Promise<void> {
 
         const rspUtils: RSPProviderUtils = serversExplorer.rspProvidersM.get(rsp.getId());
         rspUtils.client = client;
-        rspUtils.state.serverStates = serversExplorer.serverStatus;
+        rspUtils.state.serverStates = [];
         serversExplorer.rspProvidersM.set(rsp.getId(), rspUtils);
-        await commandHandler.activate(client);
+        await commandHandler.activate(rsp.getId(), client);
 
     });
-
 
 }
 

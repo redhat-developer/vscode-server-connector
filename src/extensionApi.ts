@@ -442,17 +442,17 @@ export class CommandHandler {
         return vscode.extensions.getExtension('vscjava.vscode-java-debug') === undefined;
     }
 
-    public async activate(client: RSPClient): Promise<void> {
+    public async activate(rspId: string, client: RSPClient): Promise<void> {
         client.getIncomingHandler().onServerAdded(handle => {
-            this.explorer.insertServer(handle);
+            this.explorer.insertServer(rspId, handle);
         });
 
         client.getIncomingHandler().onServerRemoved(handle => {
-            this.explorer.removeServer(handle);
+            this.explorer.removeServer(rspId, handle);
         });
 
         client.getIncomingHandler().onServerStateChanged(event => {
-            this.explorer.updateServer(event);
+            this.explorer.updateServer(rspId, event);
         });
 
         client.getIncomingHandler().onServerProcessOutputAppended(event => {
