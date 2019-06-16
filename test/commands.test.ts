@@ -35,8 +35,8 @@ suite('Command Handler', () => {
         stubs.outgoing.getServerHandles = sandbox.stub().resolves([ProtocolStubs.serverHandle]);
         stubs.outgoing.getServerState = sandbox.stub().resolves(ProtocolStubs.unknownServerState);
 
-        serverExplorer = new ServerExplorer(stubs.client);
-        handler = new CommandHandler(serverExplorer, stubs.client);
+        //serverExplorer = new ServerExplorer(stubs.client); // to be modified
+        //handler = new CommandHandler(serverExplorer, stubs.client); // to be modified
 
         serverExplorer.serverStatus.set('server', ProtocolStubs.unknownServerState);
     });
@@ -52,7 +52,7 @@ suite('Command Handler', () => {
         stubs.incoming.onServerStateChanged.reset();
         stubs.incoming.onServerProcessOutputAppended.reset();
 
-        await handler.activate();
+        //await handler.activate(); // to be modified
 
         expect(stubs.incoming.onServerAdded).calledOnce;
         expect(stubs.incoming.onServerRemoved).calledOnce;
@@ -508,12 +508,12 @@ suite('Command Handler', () => {
 
         test('calls addLocation from server explorer', async () => {
             sandbox.stub(serverExplorer, 'addLocation').resolves(undefined);
-            await handler.addLocation();
+            //await handler.addLocation(); // to be modified
             expect(serverExplorer.addLocation).calledOnce;
         });
 
         test('errors if server explorer is not initialized', async () => {
-            const nullHandler = new CommandHandler(null, stubs.client);
+            const nullHandler = undefined; //new CommandHandler(null, stubs.client); // to be modified
 
             try {
                 await nullHandler.addLocation();
@@ -527,7 +527,7 @@ suite('Command Handler', () => {
     suite('infoServer', () => {
 
         test('errors if server explorer is not initialized', async () => {
-            const nullHandler = new CommandHandler(null, stubs.client);
+            const nullHandler = undefined; // new CommandHandler(null, stubs.client); // to be modified
 
             try {
                 await nullHandler.infoServer();

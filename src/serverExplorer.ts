@@ -36,12 +36,12 @@ enum deploymentStatus {
     exploded = 'Exploded'
 }
 
-interface RSPType {
+export interface RSPType {
     id: string;
     visibilename: string;
 }
 
-interface RSPState {
+export interface RSPState {
     type: RSPType;
     state: number;
 }
@@ -85,10 +85,14 @@ export class ServerExplorer implements TreeDataProvider< RSPState | Protocol.Ser
             .set(5, '- Publish Required')
             .set(6, 'Unknown');
 
-        Array.from(this.rspProvidersM.keys()).forEach(async id => this.insertRSP(this.rspProvidersM.get(id).state));
+        
 
         // client.getOutgoingHandler().getServerHandles()
         //     .then(servers => servers.forEach(async server => this.insertServer(server)));
+    }
+
+    public initTreeRsp() {
+        Array.from(this.rspProvidersM.keys()).forEach(async id => this.insertRSP(this.rspProvidersM.get(id).state));
     }
 
     private async insertRSP(rspState: RSPState) {

@@ -1,4 +1,5 @@
 import * as server from './server';
+import { RSPState } from './serverExplorer';
 
 export class RSPProvider {
 
@@ -33,8 +34,22 @@ export class RSPProvider {
         return this.port;
     }
 
+    public getId(): string {
+        return this.id;
+    }
+
     public getName(): string {
         return this.name;
+    }
+
+    public getState(): RSPState {
+        return {
+            state: 2,
+            type: {
+                id: this.id,
+                visibilename: this.name
+            }
+        };
     }
 
 }
