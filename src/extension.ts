@@ -6,11 +6,11 @@
 'use strict';
 import { CommandHandler } from './extensionApi';
 import { JobProgress } from './jobprogress';
-import { Protocol, RSPClient, ServerState } from 'rsp-client';
+import { RSPClient, ServerState } from 'rsp-client';
 import { RSPProvider } from './rspProvider';
 import * as server from './server';
 import { ServerEditorAdapter } from './serverEditorAdapter';
-import { RSPProviderUtils, RSPState, ServerExplorer as ServersExplorer } from './serverExplorer';
+import { RSPProviderUtils, RSPState, ServerExplorer as ServersExplorer, ServerStateNode } from './serverExplorer';
 import * as vscode from 'vscode';
 
 const rspProviders: Map<RSPProvider, RSPState> = new Map<RSPProvider, RSPState>(); //to be modified, id as key when we will use external providers
@@ -156,8 +156,8 @@ export function deactivate() {
     }
 }
 
-function stopServer(val: Protocol.ServerState) {
-    const oneStat: Protocol.ServerState = val;
+function stopServer(val: ServerStateNode) {
+    const oneStat: ServerStateNode = val;
     const stateNum = oneStat.state;
     if (stateNum !== ServerState.UNKNOWN
       && stateNum !== ServerState.STOPPED
