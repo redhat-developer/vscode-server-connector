@@ -35,7 +35,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
             rspserverstderr: rspserverstderr,
             rspserverstdout: rspserverstdout
         };
-        serversExplorer.rspProvidersM.set(rsp.getId(), rspUtils);
+        serversExplorer.RSPServersStatus.set(rsp.getId(), rspUtils);
     });
 
     await startRSPServers(); // TEST - to be modified when external extensions will register themselves automatically
@@ -63,10 +63,10 @@ async function startRSPServers(): Promise<void> { // TEST - to be modified when 
 
         client = await initClient(serverInfo);
 
-        const rspUtils: RSPProviderUtils = serversExplorer.rspProvidersM.get(rsp.getId());
+        const rspUtils: RSPProviderUtils = serversExplorer.RSPServersStatus.get(rsp.getId());
         rspUtils.client = client;
         rspUtils.state.serverStates = [];
-        serversExplorer.rspProvidersM.set(rsp.getId(), rspUtils);
+        serversExplorer.RSPServersStatus.set(rsp.getId(), rspUtils);
         await commandHandler.activate(rsp.getId(), client);
     }
 
@@ -146,7 +146,7 @@ function registerCommands(commandHandler: CommandHandler, context: vscode.Extens
 }
 
 export function deactivate() {
-    for (const rspProvider of serversExplorer.rspProvidersM.values()) {
+    for (const rspProvider of serversExplorer.RSPServersStatus.values()) {
         if (rspProvider.client) {
             for (const server of rspProvider.state.serverStates) {
                 stopServer(server);

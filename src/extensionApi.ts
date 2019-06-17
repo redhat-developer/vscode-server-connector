@@ -370,7 +370,7 @@ export class CommandHandler {
     }
 
     private async selectRSP(message: string): Promise<{ label: string; id: string; }> {
-        const rspProviders = Array.from(this.explorer.rspProvidersM.values()).map(rsp => {
+        const rspProviders = Array.from(this.explorer.RSPServersStatus.values()).map(rsp => {
             return {
                 label: (!rsp.state.type.visibilename ?
                         rsp.state.type.id :
