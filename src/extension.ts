@@ -18,8 +18,8 @@ let client: RSPClient;
 let serversExplorer: ServersExplorer;
 let commandHandler: CommandHandler;
 
-const rspserverstdout = vscode.window.createOutputChannel('RSP Server (stdout)');
-const rspserverstderr = vscode.window.createOutputChannel('RSP Server (stderr)');
+// const rspserverstdout = vscode.window.createOutputChannel('RSP Server (stdout)');
+// const rspserverstderr = vscode.window.createOutputChannel('RSP Server (stderr)');
 
 const PROTOCOL_VERSION = '0.14.0';
 
@@ -29,8 +29,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     commandHandler = new CommandHandler(serversExplorer);
     
     Array.from(rspProviders.keys()).forEach(rsp => {
-        // const rspserverstdout = vscode.window.createOutputChannel('RSP Server (stdout)');
-        // const rspserverstderr = vscode.window.createOutputChannel('RSP Server (stderr)');
+        const rspserverstdout = vscode.window.createOutputChannel(`${rsp.getName()} (stdout)`);
+        const rspserverstderr = vscode.window.createOutputChannel(`${rsp.getName()} (stderr)`);
 
         const rspUtils: RSPProviderUtils = {
             state: rspProviders.get(rsp),
@@ -65,7 +65,13 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
 async function startRSPServers(): Promise<void> {
     for (const rsp of rspProviders.keys()) {
-        const serverInfo = await rsp.startRSP(onStdoutData, onStderrData); //to modify state rsp server inside RSPState
+        const serverInfo = await rsp.startRSP((data: string) => {
+            const rspserverstdout = serversExplorer.getRSPOutputChannel(rsp.getId());
+            displayLog(rspserverstdout, data.toString());
+        }, (data: string) => {
+            const rspserverstderr = serversExplorer.getRSPErrorChannel(rsp.getId());
+            displayLog(rspserverstderr, data.toString());
+        }); //to modify state rsp server inside RSPState
         const nameRSP = rsp.getName();
 
         if (!serverInfo || !serverInfo.port) {
@@ -177,15 +183,15 @@ function stopServer(val: Protocol.ServerState) {
     }
 }
 
-function onStdoutData(data: string) {
-    //const rspserverstdout = serversExplorer.getRSPOutputChannel(server);
-    displayLog(rspserverstdout, data.toString());
-}
+// function onStdoutData(data: string) {
+//     //const rspserverstdout = serversExplorer.getRSPOutputChannel(server);
+//     displayLog(rspserverstdout, data.toString());
+// }
 
-function onStderrData(data: string) {
-    //const rspserverstderr = serversExplorer.getRSPErrorChannel(server);
-    displayLog(rspserverstderr, data.toString());
-}
+// function onStderrData(data: string) {
+//     //const rspserverstderr = serversExplorer.getRSPErrorChannel(server);
+//     displayLog(rspserverstderr, data.toString());
+// }
 
 function displayLog(outputPanel: vscode.OutputChannel, message: string, show: boolean = true) {
     if (show) outputPanel.show();
