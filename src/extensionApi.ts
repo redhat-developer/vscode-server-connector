@@ -31,12 +31,14 @@ export class CommandHandler {
 
     public async startServer(mode: string, context?: Protocol.ServerState): Promise<Protocol.StartServerResponse> {
         if (context === undefined) {
-            const selectedServerId = await this.selectServer('Select server to start.');
+            const rspId = await this.selectRSP('Select RSP provider you want to retrieve servers');
+            if (!rspId) return null;
+            const selectedServerId = await this.selectServer(rspId, 'Select server to start.');
             if (!selectedServerId) return null;
-            context = this.explorer.serverStatus.get(selectedServerId);
+            context = this.explorer.getServerStateById(selectedServerId);
         }
 
-        const serverState = await this.explorer.serverStatus.get(context.server.id).state;
+        const serverState = this.explorer.getServerStateById(context.server.id).state;
         if (!(serverState === ServerState.STOPPED
             || serverState === ServerState.UNKNOWN)) {
             return Promise.reject('The server is already running.');
@@ -61,13 +63,15 @@ export class CommandHandler {
     public async stopServer(forced: boolean, context?: Protocol.ServerState): Promise<Protocol.Status> {
         let serverId: string;
         if (context === undefined) {
-            serverId = await this.selectServer('Select server to stop.');
+            const rspId = await this.selectRSP('Select RSP provider you want to retrieve servers');
+            if (!rspId) return null;
+            serverId = await this.selectServer(rspId, 'Select server to stop.');
             if (!serverId) return null;
         } else {
             serverId = context.server.id;
         }
 
-        const stateObj: Protocol.ServerState = this.explorer.serverStatus.get(serverId);
+        const stateObj: Protocol.ServerState = this.explorer.getServerStateById(serverId);
         if ((!forced && stateObj.state === ServerState.STARTED)
             || (forced && (stateObj.state === ServerState.STARTING
                             || stateObj.state === ServerState.STOPPING))) {
@@ -87,9 +91,11 @@ export class CommandHandler {
 
     public async debugServer(context?: Protocol.ServerState): Promise<Protocol.StartServerResponse> {
         if (context === undefined) {
-            const selectedServerId = await this.selectServer('Select server to start.');
+            const rspId = await this.selectRSP('Select RSP provider you want to retrieve servers');
+            if (!rspId) return null;
+            const selectedServerId = await this.selectServer(rspId, 'Select server to start.');
             if (!selectedServerId) return;
-            context = this.explorer.serverStatus.get(selectedServerId);
+            context = this.explorer.getServerStateById(selectedServerId);
         }
 
         const client: RSPClient = this.explorer.getClientByServer(context.server.id);
@@ -116,9 +122,11 @@ export class CommandHandler {
         let serverId: string;
         let selectedServerType: Protocol.ServerType;
         if (context === undefined) {
-            serverId = await this.selectServer('Select server to remove');
+            const rspId = await this.selectRSP('Select RSP provider you want to retrieve servers');
+            if (!rspId) return null;
+            serverId = await this.selectServer(rspId, 'Select server to remove');
             if (!serverId) return null;
-            selectedServerType = this.explorer.serverStatus.get(serverId).server.type;
+            selectedServerType = this.explorer.getServerStateById(serverId).server.type;
         } else {
             serverId = context.server.id;
             selectedServerType = context.server.type;
@@ -130,7 +138,7 @@ export class CommandHandler {
     }
 
     private async removeStoppedServer(serverId: string, serverType: Protocol.ServerType): Promise<Protocol.Status> {
-        const status1: Protocol.ServerState = this.explorer.serverStatus.get(serverId);
+        const status1: Protocol.ServerState = this.explorer.getServerStateById(serverId);
         if (status1.state !== ServerState.STOPPED) {
             return Promise.reject(`Stop server ${serverId} before removing it.`);
         }
@@ -144,18 +152,22 @@ export class CommandHandler {
 
     public async showServerOutput(context?: Protocol.ServerState): Promise<void> {
         if (context === undefined) {
-            const serverId = await this.selectServer('Select server to show output channel');
+            const rspId = await this.selectRSP('Select RSP provider you want to retrieve servers');
+            if (!rspId) return null;
+            const serverId = await this.selectServer(rspId, 'Select server to show output channel');
             if (!serverId) return null;
-            context = this.explorer.serverStatus.get(serverId);
+            context = this.explorer.getServerStateById(serverId);
         }
         this.explorer.showOutput(context);
     }
 
     public async restartServer(mode: string, context?: Protocol.ServerState): Promise<Protocol.StartServerResponse> {
         if (context === undefined) {
-            const serverId: string = await this.selectServer('Select server to restart', ServerState.STARTED);
+            const rspId = await this.selectRSP('Select RSP provider you want to retrieve servers');
+            if (!rspId) return null;
+            const serverId: string = await this.selectServer(rspId, 'Select server to restart', ServerState.STARTED);
             if (!serverId) return null;
-            context = this.explorer.serverStatus.get(serverId);
+            context = this.explorer.getServerStateById(serverId);
         }
 
         return this.stopServer(false)
@@ -173,14 +185,16 @@ export class CommandHandler {
     public async addDeployment(context?: Protocol.ServerState): Promise<Protocol.Status> {
         let serverId: string;
         if (context === undefined) {
-            serverId = await this.selectServer('Select server to deploy to');
+            const rspId = await this.selectRSP('Select RSP provider you want to retrieve servers');
+            if (!rspId) return null;
+            serverId = await this.selectServer(rspId, 'Select server to deploy to');
             if (!serverId) return null;
         } else {
             serverId = context.server.id;
         }
 
         if (this.explorer) {
-            const serverHandle: Protocol.ServerHandle = this.explorer.serverStatus.get(serverId).server;
+            const serverHandle: Protocol.ServerHandle = this.explorer.getServerStateById(serverId).server;
             return this.explorer.addDeployment(serverHandle);
         } else {
             return Promise.reject('Runtime Server Protocol (RSP) Server is starting, please try again later.');
@@ -191,10 +205,12 @@ export class CommandHandler {
         let serverId: string;
         let deploymentId: string;
         if (context === undefined) {
-            serverId = await this.selectServer('Select server to remove deployment from');
+            const rspId = await this.selectRSP('Select RSP provider you want to retrieve servers');
+            if (!rspId) return null;
+            serverId = await this.selectServer(rspId, 'Select server to remove deployment from');
             if (!serverId) return null;
 
-            const deployables = this.explorer.serverStatus.get(serverId).deployableStates.map(value => {
+            const deployables = this.explorer.getServerStateById(serverId).deployableStates.map(value => {
                 return value.reference.label;
             });
             deploymentId = await vscode.window.showQuickPick(deployables, { placeHolder: 'Select deployment to remove' });
@@ -205,7 +221,7 @@ export class CommandHandler {
         }
 
         if (this.explorer) {
-            const serverState: Protocol.ServerState = this.explorer.serverStatus.get(serverId);
+            const serverState: Protocol.ServerState = this.explorer.getServerStateById(serverId);
             const serverHandle: Protocol.ServerHandle = serverState.server;
             const states: Protocol.DeployableState[] = serverState.deployableStates;
             for (const entry of states) {
@@ -222,14 +238,16 @@ export class CommandHandler {
     public async fullPublishServer(context?: Protocol.ServerState): Promise<Protocol.Status> {
         let serverId: string;
         if (context === undefined) {
-            serverId = await this.selectServer('Select server to publish');
+            const rspId = await this.selectRSP('Select RSP provider you want to retrieve servers');
+            if (!rspId) return null;
+            serverId = await this.selectServer(rspId, 'Select server to publish');
             if (!serverId) return null;
         } else {
             serverId = context.server.id;
         }
 
         if (this.explorer) {
-            const serverHandle: Protocol.ServerHandle = this.explorer.serverStatus.get(serverId).server;
+            const serverHandle: Protocol.ServerHandle = this.explorer.getServerStateById(serverId).server;
             return this.explorer.publish(serverHandle, 2); // TODO use constant? Where is it?
         } else {
             return Promise.reject('Runtime Server Protocol (RSP) Server is starting, please try again later.');
@@ -300,16 +318,18 @@ export class CommandHandler {
     public async editServer(context?: Protocol.ServerState): Promise<void> {
         if (context === undefined) {
             if (this.explorer) {
-                const serverId = await this.selectServer('Select server you want to retrieve info about');
+                const rspId = await this.selectRSP('Select RSP provider you want to retrieve servers');
+                if (!rspId) return null;
+                const serverId = await this.selectServer(rspId, 'Select server you want to retrieve info about');
                 if (!serverId) return null;
-                context = this.explorer.serverStatus.get(serverId);
+                context = this.explorer.getServerStateById(serverId);
             } else {
                 return Promise.reject('Runtime Server Protocol (RSP) Server is starting, please try again later.');
             }
         }
 
         if (this.explorer) {
-            const serverHandle: Protocol.ServerHandle = this.explorer.serverStatus.get(context.server.id).server;
+            const serverHandle: Protocol.ServerHandle = this.explorer.getServerStateById(context.server.id).server;
             return this.explorer.editServer(serverHandle);
         } else {
             return Promise.reject('Runtime Server Protocol (RSP) Server is starting, please try again later.');
@@ -319,9 +339,11 @@ export class CommandHandler {
     public async infoServer(context?: Protocol.ServerState): Promise<void> {
         if (context === undefined) {
             if (this.explorer) {
-                const serverId = await this.selectServer('Select server you want to retrieve info about');
+                const rspId = await this.selectRSP('Select RSP provider you want to retrieve servers');
+                if (!rspId) return null;
+                const serverId = await this.selectServer(rspId, 'Select server you want to retrieve info about');
                 if (!serverId) return null;
-                context = this.explorer.serverStatus.get(serverId);
+                context = this.explorer.getServerStateById(serverId);
             } else {
                 return Promise.reject('Runtime Server Protocol (RSP) Server is starting, please try again later.');
             }
@@ -337,18 +359,29 @@ export class CommandHandler {
         outputChannel.appendLine(`Server Description: ${selectedServerType.visibleName}`);
     }
 
-    private async selectServer(message: string, stateFilter: number = CommandHandler.NO_SERVERS_FILTER): Promise<string> {
-        let servers = Array.from(this.explorer.serverStatus.keys());
+    private async selectRSP(message: string): Promise<string> {
+        const rspProviders = Array.from(this.explorer.rspProvidersM.keys());
+        if (rspProviders.length < 1) {
+            return Promise.reject('There are no servers to choose from.');
+        }
+
+        return vscode.window.showQuickPick(rspProviders, { placeHolder: message });
+    }
+
+    private async selectServer(rspId: string, message: string, stateFilter: number = CommandHandler.NO_SERVERS_FILTER): Promise<string> {
+        let servers = this.explorer.getServerStatesByRSP(rspId);
+        //let servers = Array.from(this.explorer.serverStatus.keys());
         if (stateFilter >= 0) {
-            servers = servers.filter(value => {
-                return this.explorer.serverStatus.get(value).state === stateFilter;
+            servers = servers.filter(server => {
+                return server.state = stateFilter;
+                //return this.explorer.serverStatus.get(value).state === stateFilter;
             });
         }
         if (servers.length < 1) {
             return Promise.reject('There are no servers to choose from.');
         }
 
-        return vscode.window.showQuickPick(servers, { placeHolder: message });
+        return vscode.window.showQuickPick(servers.map(server => server.server.id), { placeHolder: message });
     }
 
     private async promptUser(item: Protocol.WorkflowResponseItem, workflowMap: {}): Promise<boolean> {

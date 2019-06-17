@@ -71,7 +71,8 @@ async function startRSPServers(): Promise<void> {
         }, (data: string) => {
             const rspserverstderr = serversExplorer.getRSPErrorChannel(rsp.getId());
             displayLog(rspserverstderr, data.toString());
-        }); //to modify state rsp server inside RSPState
+        });
+
         const nameRSP = rsp.getName();
 
         if (!serverInfo || !serverInfo.port) {

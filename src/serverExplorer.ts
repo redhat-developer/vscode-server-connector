@@ -30,6 +30,7 @@ import {
 import { ServerEditorAdapter } from './serverEditorAdapter';
 import { ServerIcon } from './serverIcon';
 import { ClientRequest } from 'http';
+import { runInThisContext } from 'vm';
 
 enum deploymentStatus {
     file = 'File',
@@ -59,7 +60,7 @@ export class ServerExplorer implements TreeDataProvider<RSPState | Protocol.Serv
     private _onDidChangeTreeData: EventEmitter<RSPState | Protocol.ServerState | undefined> = new EventEmitter<RSPState | Protocol.ServerState | undefined>();
     public readonly onDidChangeTreeData: Event<RSPState | Protocol.ServerState | undefined> = this._onDidChangeTreeData.event;
     //private client: RSPClient;
-    public serverStatus: Map<string, Protocol.ServerState> = new Map<string, Protocol.ServerState>();
+    //public serverStatus: Map<string, Protocol.ServerState> = new Map<string, Protocol.ServerState>();
     public serverOutputChannels: Map<string, OutputChannel> = new Map<string, OutputChannel>();
     public runStateEnum: Map<number, string> = new Map<number, string>();
     public publishStateEnum: Map<number, string> = new Map<number, string>();
@@ -67,7 +68,7 @@ export class ServerExplorer implements TreeDataProvider<RSPState | Protocol.Serv
         new Map<string, {required: Protocol.Attributes, optional: Protocol.Attributes}>();
     private readonly viewer: TreeView< RSPState | Protocol.ServerState | Protocol.DeployableState>;
     public rspProvidersM: Map<string, RSPProviderUtils> = new Map<string, RSPProviderUtils>();
-    public rspProviderServers: Map<string, string> = new Map<string, string>();
+    public serverRSPProvider: Map<string, string> = new Map<string, string>();
 
     constructor() {
         this.viewer = window.createTreeView('servers', { treeDataProvider: this }) ;
@@ -102,6 +103,7 @@ export class ServerExplorer implements TreeDataProvider<RSPState | Protocol.Serv
             await servers.forEach(async serverHandle => {
                 const state = await client.getOutgoingHandler().getServerState(serverHandle);
                 this.rspProvidersM.get(id).state.serverStates.push(state);
+                this.serverRSPProvider.set(serverHandle.id, id);
             });
 
             this.insertRSP(this.rspProvidersM.get(id).state);
@@ -116,12 +118,14 @@ export class ServerExplorer implements TreeDataProvider<RSPState | Protocol.Serv
         const client: RSPClient = this.getClientByRSP(rspId);
         const state = await client.getOutgoingHandler().getServerState(event);
         this.rspProvidersM.get(rspId).state.serverStates.push(state);
-        this.serverStatus.set(state.server.id, state);
+        this.serverRSPProvider.set(state.server.id, rspId);
+        //this.serverStatus.set(state.server.id, state);
         this.refresh(state);
     }
 
     public updateServer(rspId: string, event: Protocol.ServerState): void {
-        this.serverStatus.set(event.server.id, event);
+        //this.serverStatus.set(event.server.id, event);
+        this.serverRSPProvider.set(event.server.id, rspId);
         this.rspProvidersM.get(rspId).state.serverStates.forEach((state, index) => {
             if (state.server.id === event.server.id) {
                 this.rspProvidersM.get(rspId).state.serverStates[index] = event;
@@ -136,7 +140,8 @@ export class ServerExplorer implements TreeDataProvider<RSPState | Protocol.Serv
     }
 
     public removeServer(rspId: string, handle: Protocol.ServerHandle): void {
-        this.serverStatus.delete(handle.id);
+        this.serverRSPProvider.delete(handle.id);
+        //this.serverStatus.delete(handle.id);
         this.rspProvidersM.get(rspId).state.serverStates = this.rspProvidersM.get(rspId).state.serverStates.filter(state => state.server.id !== handle.id);
         this.refresh();
         const channel: OutputChannel = this.serverOutputChannels.get(handle.id);
@@ -336,12 +341,13 @@ export class ServerExplorer implements TreeDataProvider<RSPState | Protocol.Serv
         return response.status;
     }
 
-    public getClientByRSP(rspProvider: string): RSPClient {
-        return this.rspProvidersM.get(rspProvider).client;
+    public getClientByRSP(rspId: string): RSPClient {
+        return this.rspProvidersM.get(rspId).client;
     }
 
-    public getClientByServer(server: string): RSPClient {
-        return this.rspProvidersM.get('sample.extensionid').client; // to be modified
+    public getClientByServer(serverId: string): RSPClient {
+        const rspId = this.serverRSPProvider.get(serverId);
+        return this.rspProvidersM.get(rspId).client;
     }
 
     public getRSPOutputChannel(server: string): OutputChannel {
@@ -511,14 +517,21 @@ export class ServerExplorer implements TreeDataProvider<RSPState | Protocol.Serv
     }
 
     private getRSPState(element: Protocol.ServerState): RSPState {
-        const serverStates = this.rspProvidersM.get('sample.extensionid'); //to be removed, just for testing
-        return serverStates.state; // to be removed
+        const rspId = this.serverRSPProvider.get(element.server.id);
+        return this.rspProvidersM.get(rspId).state;
     }
 
     private getServerState(element: Protocol.DeployableState): Protocol.ServerState {
-        // const serverId: string = element.server.id;
-        // return this.serverStatus.get(serverId);
-        return undefined; // to be removed
+        return this.getServerStateById(element.server.id);
+    }
+
+    public getServerStateById(serverId: string): Protocol.ServerState {
+        const rspId = this.serverRSPProvider.get(serverId);
+        return this.rspProvidersM.get(rspId).state.serverStates.find(x => x.server.id === serverId);
+    }
+
+    public getServerStatesByRSP(rspId: string): Protocol.ServerState[] {
+        return this.rspProvidersM.get(rspId).state.serverStates;
     }
 
     private isRSPElement(element: RSPState | Protocol.ServerState | Protocol.DeployableState): boolean {
