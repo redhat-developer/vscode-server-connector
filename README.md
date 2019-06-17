@@ -1,6 +1,6 @@
 # Server Connector
 
-[![Build Status](https://travis-ci.org/redhat-developer/vscode-adapters.svg?branch=master)](https://travis-ci.org/redhat-developer/vscode-adapters)
+[![Build Status](https://travis-ci.org/redhat-developer/vscode-server-connector.svg?branch=master)](https://travis-ci.org/redhat-developer/vscode-server-connector)
 [![License](https://img.shields.io/badge/license-EPLv2.0-brightgreen.svg)](https://github.com/redhat-developer/vscode-server-connector/blob/master/README.md)
 [![Visual Studio Marketplace](https://vsmarketplacebadge.apphb.com/version/redhat.vscode-server-connector.svg)](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-server-connector)
 
