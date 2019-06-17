@@ -4,13 +4,13 @@
  *-----------------------------------------------------------------------------------------------*/
 
 'use strict';
-import { CommandHandler, ExtensionAPI } from './extensionApi';
+import { CommandHandler } from './extensionApi';
 import { JobProgress } from './jobprogress';
 import { Protocol, RSPClient, ServerState } from 'rsp-client';
 import { RSPProvider } from './rspProvider';
 import * as server from './server';
 import { ServerEditorAdapter } from './serverEditorAdapter';
-import { ServerExplorer as ServersExplorer, RSPProviderUtils, RSPState } from './serverExplorer';
+import { RSPProviderUtils, RSPState, ServerExplorer as ServersExplorer } from './serverExplorer';
 import * as vscode from 'vscode';
 
 const rspProviders: Map<RSPProvider, RSPState> = new Map<RSPProvider, RSPState>(); //to be modified, id as key when we will use external providers
@@ -18,17 +18,14 @@ let client: RSPClient;
 let serversExplorer: ServersExplorer;
 let commandHandler: CommandHandler;
 
-// const rspserverstdout = vscode.window.createOutputChannel('RSP Server (stdout)');
-// const rspserverstderr = vscode.window.createOutputChannel('RSP Server (stderr)');
-
 const PROTOCOL_VERSION = '0.14.0';
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
-    registerRSPProvider(); // to be removed when external extensions will register themselves automatically
+    registerRSPProvider(); // TEST - to be removed when external extensions will register themselves automatically
     serversExplorer = new ServersExplorer();
     commandHandler = new CommandHandler(serversExplorer);
-    
-    Array.from(rspProviders.keys()).forEach(rsp => {
+
+    Array.from(rspProviders.keys()).forEach(rsp => { // TEST - to be modified when external extensions will register themselves automatically
         const rspserverstdout = vscode.window.createOutputChannel(`${rsp.getName()} (stdout)`);
         const rspserverstderr = vscode.window.createOutputChannel(`${rsp.getName()} (stderr)`);
 
@@ -41,31 +38,16 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         serversExplorer.rspProvidersM.set(rsp.getId(), rspUtils);
     });
 
-    await startRSPServers();
-    serversExplorer.initTreeRsp();
-        
-
-
+    await startRSPServers(); // TEST - to be modified when external extensions will register themselves automatically
+    serversExplorer.initTreeRsp(); // TEST - to be modified when external extensions will register themselves automatically
     registerCommands(commandHandler, context);
 
-    
-    
-    //const serverInfo = await server.start(onStdoutData, onStderrData);
-
-    // if (!serverInfo || !serverInfo.port) {
-    //     return Promise.reject('Failed to start the rsp server');
-    // }
-    // client = await initClient(serverInfo);
-    // serversExplorer = new ServersExplorer(client);
-    // const commandHandler = new CommandHandler(serversExplorer, client);
-    // await commandHandler.activate();
-    // registerCommands(commandHandler, context);
-    // return { serverInfo };
 }
 
-async function startRSPServers(): Promise<void> {
+async function startRSPServers(): Promise<void> { // TEST - to be modified when external extensions will register themselves automatically
     for (const rsp of rspProviders.keys()) {
-        const serverInfo = await rsp.startRSP((data: string) => {
+        const serverInfo = await rsp.startRSP(
+        (data: string) => {
             const rspserverstdout = serversExplorer.getRSPOutputChannel(rsp.getId());
             displayLog(rspserverstdout, data.toString());
         }, (data: string) => {
@@ -183,16 +165,6 @@ function stopServer(val: Protocol.ServerState) {
         client.getOutgoingHandler().stopServerAsync({ id: oneStat.server.id, force: true });
     }
 }
-
-// function onStdoutData(data: string) {
-//     //const rspserverstdout = serversExplorer.getRSPOutputChannel(server);
-//     displayLog(rspserverstdout, data.toString());
-// }
-
-// function onStderrData(data: string) {
-//     //const rspserverstderr = serversExplorer.getRSPErrorChannel(server);
-//     displayLog(rspserverstderr, data.toString());
-// }
 
 function displayLog(outputPanel: vscode.OutputChannel, message: string, show: boolean = true) {
     if (show) outputPanel.show();
