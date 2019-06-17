@@ -360,9 +360,9 @@ export class CommandHandler {
     }
 
     private async selectRSP(message: string): Promise<string> {
-        const rspProviders = Array.from(this.explorer.rspProvidersM.keys());
+        const rspProviders: string[] = Array.from(this.explorer.rspProvidersM.values()).map(rsp => rsp.state.type.visibilename);
         if (rspProviders.length < 1) {
-            return Promise.reject('There are no servers to choose from.');
+            return Promise.reject('There are no RSP providers to choose from.');
         }
 
         return vscode.window.showQuickPick(rspProviders, { placeHolder: message });

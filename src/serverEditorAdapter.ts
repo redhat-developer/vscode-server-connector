@@ -84,7 +84,7 @@ export class ServerEditorAdapter {
             if (!serverId) {
                 return Promise.reject('Unable to save server properties - server id is invalid');
             }
-            const serverHandle: Protocol.ServerHandle = this.explorer.serverStatus.get(serverId).server;
+            const serverHandle: Protocol.ServerHandle = this.explorer.getServerStateById(serverId).server;
             if (!serverHandle) {
                 return Promise.reject('Unable to save server properties - server is invalid');
             }

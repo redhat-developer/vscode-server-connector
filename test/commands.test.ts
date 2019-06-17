@@ -38,7 +38,7 @@ suite('Command Handler', () => {
         //serverExplorer = new ServerExplorer(stubs.client); // to be modified
         //handler = new CommandHandler(serverExplorer, stubs.client); // to be modified
 
-        serverExplorer.serverStatus.set('server', ProtocolStubs.unknownServerState);
+        //serverExplorer.serverStatus.set('server', ProtocolStubs.unknownServerState); //to be modified
     });
 
     teardown(() => {
@@ -65,7 +65,7 @@ suite('Command Handler', () => {
         let startStub: sinon.SinonStub;
 
         setup(() => {
-            statusStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(ProtocolStubs.unknownServerState);
+            // statusStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(ProtocolStubs.unknownServerState);
             startStub = sandbox.stub().resolves(ProtocolStubs.okStartServerResponse);
             stubs.outgoing.startServerAsync = startStub;
         });
@@ -146,7 +146,7 @@ suite('Command Handler', () => {
         };
 
         setup(() => {
-            startStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(ProtocolStubs.unknownServerState);
+            // startStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(ProtocolStubs.unknownServerState);
             startStub = sandbox.stub().resolves(response);
             stubs.outgoing.startServerAsync = startStub;
         });
@@ -207,7 +207,7 @@ suite('Command Handler', () => {
         let stopStub: sinon.SinonStub;
 
         setup(() => {
-            statusStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(ProtocolStubs.startedServerState);
+            // statusStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(ProtocolStubs.startedServerState);
             stopStub = stubs.outgoing.stopServerAsync = sandbox.stub().resolves(ProtocolStubs.okStatus);
             sandbox.stub(vscode.window, 'showQuickPick').resolves('id');
         });
@@ -270,7 +270,7 @@ suite('Command Handler', () => {
                 state: ServerState.STARTING
             };
 
-            statusStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverStateInternal);
+            // statusStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverStateInternal);
             stopStub = stubs.outgoing.stopServerAsync.resolves(ProtocolStubs.okStatus);
             sandbox.stub(vscode.window, 'showQuickPick').resolves('id');
         });
@@ -323,7 +323,7 @@ suite('Command Handler', () => {
                 state: ServerState.STOPPED
             };
 
-            statusStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverStateInternal);
+            // statusStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverStateInternal);
             removeStub = stubs.outgoing.deleteServer.resolves(ProtocolStubs.okStatus);
             sandbox.stub(vscode.window, 'showQuickPick').resolves('id');
         });
@@ -387,12 +387,12 @@ suite('Command Handler', () => {
         let stopStub: sinon.SinonStub;
 
         setup(() => {
-            serverExplorer.serverStatus.set(ProtocolStubs.startedServerState.server.id, ProtocolStubs.startedServerState);
-            stopStub = stubs.outgoing.stopServerAsync = sandbox.stub().callsFake(() => {
-                // set server to stopped state if stopServer is called
-                serverExplorer.serverStatus.set(ProtocolStubs.stoppedServerState.server.id, ProtocolStubs.stoppedServerState);
-                return ProtocolStubs.okStatus;
-            });
+            // serverExplorer.serverStatus.set(ProtocolStubs.startedServerState.server.id, ProtocolStubs.startedServerState);
+            // stopStub = stubs.outgoing.stopServerAsync = sandbox.stub().callsFake(() => {
+            //     // set server to stopped state if stopServer is called
+            //     serverExplorer.serverStatus.set(ProtocolStubs.stoppedServerState.server.id, ProtocolStubs.stoppedServerState);
+            //     return ProtocolStubs.okStatus;
+            // });
             startStub = stubs.outgoing.startServerAsync = sandbox.stub().resolves(ProtocolStubs.okStartServerResponse);
             sandbox.stub(vscode.window, 'showQuickPick').resolves(ProtocolStubs.serverHandle.id);
         });
@@ -447,12 +447,12 @@ suite('Command Handler', () => {
         let debugStub: sinon.SinonStub;
 
         setup(() => {
-            serverExplorer.serverStatus.set(ProtocolStubs.startedServerState.server.id, ProtocolStubs.startedServerState);
-            stopStub = stubs.outgoing.stopServerAsync = sandbox.stub().callsFake(() => {
-                // set server to stopped state if stopServer is called
-                serverExplorer.serverStatus.set(ProtocolStubs.stoppedServerState.server.id, ProtocolStubs.stoppedServerState);
-                return ProtocolStubs.okStatus;
-            });
+            // serverExplorer.serverStatus.set(ProtocolStubs.startedServerState.server.id, ProtocolStubs.startedServerState);
+            // stopStub = stubs.outgoing.stopServerAsync = sandbox.stub().callsFake(() => {
+            //     // set server to stopped state if stopServer is called
+            //     serverExplorer.serverStatus.set(ProtocolStubs.stoppedServerState.server.id, ProtocolStubs.stoppedServerState);
+            //     return ProtocolStubs.okStatus;
+            // });
             debugStub = stubs.outgoing.startServerAsync = sandbox.stub().resolves(ProtocolStubs.okStartServerResponse);
             stubs.outgoing.getLaunchCommand = sandbox.stub().resolves(ProtocolStubs.javaCommandLine);
             sandbox.stub(vscode.window, 'showQuickPick').resolves(ProtocolStubs.serverHandle.id);

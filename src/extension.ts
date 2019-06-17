@@ -164,13 +164,13 @@ function registerCommands(commandHandler: CommandHandler, context: vscode.Extens
 }
 
 export function deactivate() {
-    if (client) {
-        if (serversExplorer) {
-            for (const val of serversExplorer.serverStatus.values()) {
-                stopServer(val);
+    for (const rspProvider of serversExplorer.rspProvidersM.values()) {
+        if (rspProvider.client) {
+            for (const server of rspProvider.state.serverStates) {
+                stopServer(server);
             }
+            rspProvider.client.shutdownServer();
         }
-        client.shutdownServer();
     }
 }
 
