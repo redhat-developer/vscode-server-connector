@@ -196,7 +196,7 @@ export class CommandHandler {
         }
 
         if (this.explorer) {
-            return this.explorer.addDeployment(context.server);
+            return this.explorer.addDeployment(context);
         } else {
             return Promise.reject('Runtime Server Protocol (RSP) Server is starting, please try again later.');
         }
@@ -231,7 +231,7 @@ export class CommandHandler {
             context = this.explorer.getServerStateById(rsp.id, serverId);
         }
 
-        return this.explorer.publish(context.server, 2); // TODO use constant? Where is it?
+        return this.explorer.publish(context.rsp, context.server, 2); // TODO use constant? Where is it?
     }
 
     public async createServer(context?: RSPState): Promise<Protocol.Status> {
@@ -311,7 +311,7 @@ export class CommandHandler {
         }
 
         if (this.explorer) {
-            return this.explorer.editServer(context.server);
+            return this.explorer.editServer(context.rsp, context.server);
         } else {
             return Promise.reject('Runtime Server Protocol (RSP) Server is starting, please try again later.');
         }
@@ -471,7 +471,7 @@ export class CommandHandler {
         });
 
         client.getIncomingHandler().onServerStateChanged(event => {
-            this.explorer.updateServer({rsp: rspId, ...event});
+            this.explorer.updateServer(rspId, event);
         });
 
         client.getIncomingHandler().onServerProcessOutputAppended(event => {

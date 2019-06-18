@@ -10,7 +10,7 @@ import { RSPClient, ServerState } from 'rsp-client';
 import { RSPProvider } from './rspProvider';
 import * as server from './server';
 import { ServerEditorAdapter } from './serverEditorAdapter';
-import { RSPProviderUtils, RSPState, ServerExplorer as ServersExplorer, ServerStateNode } from './serverExplorer';
+import { RSPProperties, RSPState, ServerExplorer as ServersExplorer, ServerStateNode } from './serverExplorer';
 import * as vscode from 'vscode';
 
 const rspProviders: Map<RSPProvider, RSPState> = new Map<RSPProvider, RSPState>(); //to be modified, id as key when we will use external providers
@@ -29,7 +29,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         const rspserverstdout = vscode.window.createOutputChannel(`${rsp.getName()} (stdout)`);
         const rspserverstderr = vscode.window.createOutputChannel(`${rsp.getName()} (stderr)`);
 
-        const rspUtils: RSPProviderUtils = {
+        const rspUtils: RSPProperties = {
             state: rspProviders.get(rsp),
             client: undefined,
             rspserverstderr: rspserverstderr,
@@ -63,7 +63,7 @@ async function startRSPServers(): Promise<void> { // TEST - to be modified when 
 
         client = await initClient(serverInfo);
 
-        const rspUtils: RSPProviderUtils = serversExplorer.RSPServersStatus.get(rsp.getId());
+        const rspUtils: RSPProperties = serversExplorer.RSPServersStatus.get(rsp.getId());
         rspUtils.client = client;
         rspUtils.state.serverStates = [];
         serversExplorer.RSPServersStatus.set(rsp.getId(), rspUtils);
