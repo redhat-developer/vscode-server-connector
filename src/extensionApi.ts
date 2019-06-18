@@ -11,7 +11,7 @@ import { JavaDebugSession } from './debug/javaDebugSession';
 import { Protocol, RSPClient, ServerState, StatusSeverity } from 'rsp-client';
 import { ServerInfo } from './server';
 import { ServerEditorAdapter } from './serverEditorAdapter';
-import { RSPState, ServerExplorer, ServerStateNode } from './serverExplorer';
+import { RSPState, ServerExplorer, ServerStateNode, DeployableStateNode } from './serverExplorer';
 import * as vscode from 'vscode';
 
 export interface ExtensionAPI {
@@ -202,7 +202,7 @@ export class CommandHandler {
         }
     }
 
-    public async removeDeployment(context?: Protocol.DeployableState): Promise<Protocol.Status> {
+    public async removeDeployment(context?: DeployableStateNode): Promise<Protocol.Status> {
         if (context === undefined) {
             const rsp = await this.selectRSP('Select RSP provider you want to retrieve servers');
             if (!rsp || !rsp.id) return null;
@@ -219,7 +219,7 @@ export class CommandHandler {
             context = deployment.deployable;
         }
 
-        return this.explorer.removeDeployment(context.server, context.reference);
+        return this.explorer.removeDeployment(context.rsp, context.server, context.reference);
     }
 
     public async fullPublishServer(context?: ServerStateNode): Promise<Protocol.Status> {

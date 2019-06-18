@@ -11,10 +11,15 @@ import * as tmp from 'tmp';
 import { Utils } from './utils';
 import * as vscode from 'vscode';
 
+interface ServerProperties {
+    server: string;
+    file: string;
+}
+
 export class ServerEditorAdapter {
 
     private static instance: ServerEditorAdapter;
-    private serverTmpFiles: Map<string, string> = new Map<string, string>();
+    private RSPServerProperties: Map<string, ServerProperties[]> = new Map<string, ServerProperties[]>();
     private readonly PREFIX_TMP = 'tmpServerConnector';
 
     private constructor(private explorer: ServerExplorer) {
@@ -42,25 +47,37 @@ export class ServerEditorAdapter {
         });
     }
 
-    public async showServerJsonResponse(content: Protocol.GetServerJsonResponse): Promise<void> {
+    public async showServerJsonResponse(rspId: string, content: Protocol.GetServerJsonResponse): Promise<void> {
         if (!content || !content.serverHandle || !content.serverJson) {
             return Promise.reject('Could not handle server response: empty/invalid response');
         }
 
-        if (this.serverTmpFiles.has(content.serverHandle.id)) {
-            return this.saveAndShowEditor(
-                this.serverTmpFiles.get(content.serverHandle.id),
-                content.serverJson
-            );
-        } else {
-            return tmp.file({ prefix: `${this.PREFIX_TMP}-${content.serverHandle.id}-` , postfix: '.json' }, (err, path) => {
-                if (err) {
-                    return Promise.reject('Could not handle server response. Unable to create temp file');
-                }
-                this.serverTmpFiles.set(content.serverHandle.id, path);
-                this.saveAndShowEditor(path, content.serverJson);
-            });
+        const rspExists: boolean = this.RSPServerProperties.has(rspId);
+        if (rspExists) {
+            const serverProps: ServerProperties = this.RSPServerProperties.get(rspId).find(prop => prop.server === content.serverHandle.id);
+            if (!serverProps) {
+                return this.saveAndShowEditor(
+                    serverProps.file,
+                    content.serverJson
+                );
+            }
         }
+
+        return this.createTmpFile(rspExists, rspId, content);
+    }
+
+    private async createTmpFile(rspExists: boolean, rspId: string, content: Protocol.GetServerJsonResponse) : Promise<void> {
+        return tmp.file({ prefix: `${this.PREFIX_TMP}-${content.serverHandle.id}-` , postfix: '.json' }, (err, path) => {
+            if (err) {
+                return Promise.reject('Could not handle server response. Unable to create temp file');
+            }
+            if (rspExists) {
+                this.RSPServerProperties.get(rspId).push({ server: content.serverHandle.id, file: path});
+            } else {
+                this.RSPServerProperties.set(rspId, [{ server: content.serverHandle.id, file: path}]);
+            }
+            this.saveAndShowEditor(path, content.serverJson);
+        });
     }
 
     private async saveAndShowEditor(path: string, content: string): Promise<void> {
@@ -80,15 +97,24 @@ export class ServerEditorAdapter {
             return Promise.reject('Unable to save server properties');
         }
         if (await this.isTmpServerPropsFile(doc.fileName)) {
-            const serverId = await Utils.getKeyByValueString<string>(this.serverTmpFiles, doc.uri.fsPath);
+            let rspId: string;
+            let serverId: string;
+            for (rspId of this.RSPServerProperties.keys()) {
+                const docInfo = this.RSPServerProperties.get(rspId).find(prop => prop.file === doc.uri.fsPath);
+                if (docInfo) {
+                    serverId = docInfo.server;
+                    break;
+                }
+            }
+
             if (!serverId) {
                 return Promise.reject('Unable to save server properties - server id is invalid');
             }
-            const serverHandle: Protocol.ServerHandle = this.explorer.getServerStateById(serverId).server;
+            const serverHandle: Protocol.ServerHandle = this.explorer.getServerStateById(rspId, serverId).server;
             if (!serverHandle) {
                 return Promise.reject('Unable to save server properties - server is invalid');
             }
-            return this.explorer.saveServerProperties(serverHandle, doc.getText()).then(status => {
+            return this.explorer.saveServerProperties(rspId, serverHandle, doc.getText()).then(status => {
                 vscode.window.showInformationMessage(`Server ${serverHandle.id} correctly saved`);
                 return status;
             });
