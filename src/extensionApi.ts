@@ -11,7 +11,7 @@ import { JavaDebugSession } from './debug/javaDebugSession';
 import { Protocol, RSPClient, ServerState, StatusSeverity } from 'rsp-client';
 import { ServerInfo } from './server';
 import { ServerEditorAdapter } from './serverEditorAdapter';
-import { RSPState, ServerExplorer, ServerStateNode, DeployableStateNode } from './serverExplorer';
+import { DeployableStateNode, RSPState, ServerExplorer, ServerStateNode } from './serverExplorer';
 import * as vscode from 'vscode';
 
 export interface ExtensionAPI {
@@ -38,7 +38,7 @@ export class CommandHandler {
             context = this.explorer.getServerStateById(rsp.id, serverId);
         }
 
-        const serverState = context.state;
+        const serverState = this.explorer.getServerStateById(context.rsp, context.server.id).state;
         if (!(serverState === ServerState.STOPPED
             || serverState === ServerState.UNKNOWN)) {
             return Promise.reject('The server is already running.');
