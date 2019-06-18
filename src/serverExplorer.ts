@@ -161,7 +161,6 @@ export class ServerExplorer implements TreeDataProvider<RSPState | ServerStateNo
     }
 
     public removeServer(rspId: string, handle: Protocol.ServerHandle): void {
-        //this.serverRSPProvider.delete(handle.id);
         this.RSPServersStatus.get(rspId).state.serverStates = this.RSPServersStatus.get(rspId).state.serverStates.
                                                                         filter(state => state.server.id !== handle.id);
         this.refresh();
@@ -464,7 +463,7 @@ export class ServerExplorer implements TreeDataProvider<RSPState | ServerStateNo
         if (this.isRSPElement(item)) {
             const state: RSPState = item as RSPState;
             const id1: string = state.type.visibilename;
-            const serverState: string = this.runStateEnum.get(state.state);
+            const serverState = `RSP ${this.runStateEnum.get(state.state)}`;
             const depStr = `${id1} (${serverState})`;
             return { label: `${depStr}`,
                 iconPath: Uri.file(path.join(__dirname, '../../images/server-light.png')),

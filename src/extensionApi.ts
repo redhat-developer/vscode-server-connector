@@ -237,8 +237,8 @@ export class CommandHandler {
     public async createServer(context?: RSPState): Promise<Protocol.Status> {
         this.assertExplorerExists();
         if (context === undefined) {
-            const rsp = await this.selectRSP('Select RSP provider you want to retrieve servers');
-            if (!rsp) return;
+            const rsp = await this.selectRSP('Select RSP provider you want to use to create a server');
+            if (!rsp || !rsp.id) return;
             context = this.explorer.RSPServersStatus.get(rsp.id).state;
         }
 
@@ -262,6 +262,11 @@ export class CommandHandler {
 
     public async addLocation(rspId: string): Promise<Protocol.Status> {
         if (this.explorer) {
+            if (!rspId) {
+                const rsp = await this.selectRSP('Select RSP provider you want to use');
+                if (!rsp || !rsp.id) return;
+                rspId = rsp.id;
+            }
             return this.explorer.addLocation(rspId);
         } else {
             return Promise.reject('Runtime Server Protocol (RSP) Server is starting, please try again later.');
@@ -269,6 +274,11 @@ export class CommandHandler {
     }
 
     public async downloadRuntime(rspId: string): Promise<Protocol.Status> {
+        if (!rspId) {
+            const rsp = await this.selectRSP('Select RSP provider you want to use');
+            if (!rsp || !rsp.id) return;
+            rspId = rsp.id;
+        }
         const client = this.explorer.getClientByRSP(rspId);
         const rtId: string = await this.promptDownloadableRuntimes(client);
         if (!rtId) {
