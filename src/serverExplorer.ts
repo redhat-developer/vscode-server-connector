@@ -150,7 +150,7 @@ export class ServerExplorer implements TreeDataProvider<RSPState | ServerStateNo
 
     private convertToDeployableStateNodes(rspId: string, states: Protocol.DeployableState[]): DeployableStateNode[] {
         const deployableNodes: DeployableStateNode[] = [];
-        if (!states && states.length > 0) {
+        if (states && states.length > 0) {
             for (const deployable of states) {
                 const deployableNode: DeployableStateNode = {rsp: rspId, ...deployable};
                 deployableNodes.push(deployableNode);
