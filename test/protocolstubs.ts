@@ -3,6 +3,7 @@
  *  Licensed under the EPL v2.0 License. See LICENSE file in the project root for license information.
  *-----------------------------------------------------------------------------------------------*/
 import { Protocol, ServerState } from 'rsp-client';
+import { RSPProperties, RSPState, RSPType, ServerStateNode } from '../src/serverExplorer';
 
 export class ProtocolStubs {
 
@@ -25,12 +26,13 @@ export class ProtocolStubs {
         state: 0
     };
 
-    public static readonly serverDebuggingState: Protocol.ServerState =  {
+    public static readonly serverDebuggingState: ServerStateNode =  {
         server: ProtocolStubs.serverHandle,
         deployableStates: [],
         publishState: 0,
         runMode: ServerState.RUN_MODE_DEBUG,
-        state: 2
+        state: 2,
+        rsp: 'id'
     };
 
     public static readonly okStatus: Protocol.Status = {
@@ -70,28 +72,31 @@ export class ProtocolStubs {
         status: ProtocolStubs.okStatus
     };
 
-    public static readonly unknownServerState: Protocol.ServerState =  {
+    public static readonly unknownServerState: ServerStateNode =  {
         server: ProtocolStubs.serverHandle,
         deployableStates: [],
         publishState: ServerState.PUBLISH_STATE_UNKNOWN,
         runMode: ServerState.RUN_MODE_RUN,
-        state: ServerState.UNKNOWN
+        state: ServerState.UNKNOWN,
+        rsp: 'id'
     };
 
-    public static readonly startedServerState: Protocol.ServerState = {
+    public static readonly startedServerState: ServerStateNode = {
         deployableStates: [],
         publishState: ServerState.PUBLISH_STATE_UNKNOWN,
         server: ProtocolStubs.serverHandle,
         runMode: ServerState.RUN_MODE_RUN,
-        state: ServerState.STARTED
+        state: ServerState.STARTED,
+        rsp: 'id'
     };
 
-    public static readonly stoppedServerState: Protocol.ServerState = {
+    public static readonly stoppedServerState: ServerStateNode = {
         deployableStates: [],
         publishState: ServerState.PUBLISH_STATE_UNKNOWN,
         server: ProtocolStubs.serverHandle,
         runMode: ServerState.RUN_MODE_RUN,
-        state: ServerState.STOPPED
+        state: ServerState.STOPPED,
+        rsp: 'id'
     };
 
     public static readonly javaCommandLine: Protocol.CommandLineDetails = {
@@ -103,5 +108,23 @@ export class ProtocolStubs {
             ['debug.details.port']: 'javaPort'
         }
     };
+
+    public static readonly rspType: RSPType = {
+        id: 'type',
+        visibilename: 'the type'
+    };
+
+    public static readonly rspState: RSPState = {
+        serverStates: [],
+        state: ServerState.UNKNOWN,
+        type: ProtocolStubs.rspType
+    };
+
+    public static readonly rspProperties: RSPProperties = {
+        client: undefined,
+        rspserverstderr: undefined,
+        rspserverstdout: undefined,
+        state: ProtocolStubs.rspState
+    }
 
 }
