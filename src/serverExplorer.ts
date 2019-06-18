@@ -73,7 +73,7 @@ export class ServerExplorer implements TreeDataProvider<RSPState | ServerStateNo
         new Map<string, {required: Protocol.Attributes, optional: Protocol.Attributes}>();
     private readonly viewer: TreeView< RSPState | ServerStateNode | Protocol.DeployableState>;
     public RSPServersStatus: Map<string, RSPProviderUtils> = new Map<string, RSPProviderUtils>();
-    public serverRSPProvider: Map<string, string> = new Map<string, string>();
+    //public serverRSPProvider: Map<string, string> = new Map<string, string>();
 
     constructor() {
         this.viewer = window.createTreeView('servers', { treeDataProvider: this }) ;
