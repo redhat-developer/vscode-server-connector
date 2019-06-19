@@ -72,7 +72,7 @@ export class CommandHandler {
             context = this.explorer.getServerStateById(rsp.id, serverId);
         }
 
-        const serverState = context.state;
+        const serverState = this.explorer.getServerStateById(context.rsp, context.server.id).state;
         if ((!forced && serverState === ServerState.STARTED)
             || (forced && (serverState === ServerState.STARTING
                             || serverState === ServerState.STOPPING))) {

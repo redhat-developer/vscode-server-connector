@@ -115,7 +115,7 @@ export class ProtocolStubs {
     };
 
     public static readonly rspState: RSPState = {
-        serverStates: [],
+        serverStates: [ProtocolStubs.startedServerState],
         state: ServerState.UNKNOWN,
         type: ProtocolStubs.rspType
     };
