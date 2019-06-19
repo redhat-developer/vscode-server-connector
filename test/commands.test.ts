@@ -369,7 +369,6 @@ suite('Command Handler', () => {
 
             statusStub = sandbox.stub(serverExplorer, 'getServerStateById').returns(serverStateInternal);
             sandbox.stub(serverExplorer, 'getClientByRSP').returns(stubs.client);
-            // statusStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverStateInternal);
             removeStub = stubs.outgoing.deleteServer.resolves(ProtocolStubs.okStatus);
             sandbox.stub(vscode.window, 'showQuickPick').resolves('id');
         });

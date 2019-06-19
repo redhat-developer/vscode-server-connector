@@ -9,7 +9,7 @@ import { ClientStubs } from './clientstubs';
 import * as path from 'path';
 import { ProtocolStubs } from './protocolstubs';
 import { Protocol, ServerState } from 'rsp-client';
-import { ServerExplorer } from '../src/serverExplorer';
+import { ServerExplorer, RSPProperties } from '../src/serverExplorer';
 import * as sinon from 'sinon';
 import * as sinonChai from 'sinon-chai';
 import { EventEmitter, OpenDialogOptions, OutputChannel, TreeItemCollapsibleState, Uri, window } from 'vscode';
@@ -41,8 +41,9 @@ suite('Server explorer', () => {
         stubs.outgoing.getServerHandles = sandbox.stub().resolves([]);
         stubs.outgoing.getServerState = sandbox.stub().resolves(ProtocolStubs.unknownServerState);
 
-        //serverExplorer = new ServerExplorer(stubs.client); // to be modified
+        serverExplorer = new ServerExplorer();
         getStub = sandbox.stub(serverExplorer.serverOutputChannels, 'get').returns(fakeChannel);
+        serverExplorer.RSPServersStatus.set('id', ProtocolStubs.rspProperties);
     });
 
     teardown(() => {
@@ -52,23 +53,24 @@ suite('Server explorer', () => {
     test('insertServer call should add server', async () => {
         // given
         sandbox.stub(serverExplorer, 'refresh');
-        stubs.outgoing.getServerState = sandbox.stub().resolves(ProtocolStubs.startedServerState);
-        // const insertStub = serverExplorer.serverStatus.set = sandbox.stub();
+        stubs.outgoing.getServerState = sandbox.stub().resolves(ProtocolStubs.startedServerStateProtocol);
+        sandbox.stub(serverExplorer, 'getClientByRSP').returns(stubs.client);
+        sandbox.stub(serverExplorer, 'convertToServerStateNode' as any).returns(ProtocolStubs.startedServerState);
+        const insertStub = serverExplorer.RSPServersStatus.get('id').state.serverStates.push = sandbox.stub();
         // when
-        //await serverExplorer.insertServer(ProtocolStubs.serverHandle);
+        await serverExplorer.insertServer('id', ProtocolStubs.serverHandle);
         // then
-        // expect(insertStub).to.be.calledOnceWith(ProtocolStubs.startedServerState.server.id, ProtocolStubs.startedServerState);
+        expect(insertStub).to.be.calledOnceWith(ProtocolStubs.startedServerState);
     });
 
     test('removeServer call should remove server', () => {
         // given
-        // serverExplorer.serverStatus.set(ProtocolStubs.startedServerState.server.id, ProtocolStubs.startedServerState);
-        // const deleteStub = serverExplorer.serverStatus.delete = sandbox.stub();
-        // sandbox.stub(serverExplorer, 'refresh')
-        // // when
-        // //serverExplorer.removeServer(ProtocolStubs.serverHandle);
-        // // then
-        // expect(deleteStub).to.be.calledOnceWith(ProtocolStubs.serverHandle.id);
+        serverExplorer.RSPServersStatus.set('id', ProtocolStubs.rspProperties);
+        sandbox.stub(serverExplorer, 'refresh');
+        // when
+        serverExplorer.removeServer('id', ProtocolStubs.serverHandle);
+        // then
+        expect(serverExplorer.RSPServersStatus.get('id').state.serverStates).to.not.include(ProtocolStubs.serverHandle);
     });
 
     test('showOutput call should show servers output channel', () => {
@@ -91,18 +93,18 @@ suite('Server explorer', () => {
 
     test('refresh element should fire event for element', () => {
         // given
-        // const fireStub = sandbox.stub(EventEmitter.prototype, 'fire');
-        // serverExplorer.selectNode = sandbox.stub();
-        // serverExplorer.serverStatus.set(ProtocolStubs.unknownServerState.server.id, ProtocolStubs.unknownServerState);
-        // // when
-        // serverExplorer.refresh(ProtocolStubs.unknownServerState);
-        // // then
-        // expect(fireStub).calledOnce;
+        const fireStub = sandbox.stub(EventEmitter.prototype, 'fire');
+        serverExplorer.selectNode = sandbox.stub();
+        //serverExplorer.serverStatus.set(ProtocolStubs.unknownServerState.server.id, ProtocolStubs.unknownServerState);
+        // when
+        serverExplorer.refresh(ProtocolStubs.unknownServerState);
+        // then
+        expect(fireStub).calledOnce;
     });
 
     suite('updateServer', () => {
 
-        let setStatusStub: sinon.SinonStub;
+        let findStatusStub: sinon.SinonStub;
 
         const stateChangeUnknown: Protocol.ServerState = {
             server: ProtocolStubs.serverHandle,
@@ -183,8 +185,7 @@ suite('Server explorer', () => {
         };
 
         setup(() => {
-            // serverExplorer.serverStatus =  new Map<string, Protocol.ServerState>([['server', ProtocolStubs.unknownServerState]]);
-            // setStatusStub = sandbox.stub(serverExplorer.serverStatus, 'set');
+            findStatusStub = serverExplorer.RSPServersStatus.get('id').state.serverStates.findIndex = sandbox.stub();
         });
 
         test('call should update server state to received in state change event (Stopped)', () => {
@@ -193,12 +194,12 @@ suite('Server explorer', () => {
             const children = serverExplorer.getChildren();
             const treeItem = serverExplorer.getTreeItem(ProtocolStubs.unknownServerState);
 
-            // serverExplorer.updateServer(stateChangeStopping);
-            // serverExplorer.updateServer(stateChangeStopped);
+            serverExplorer.updateServer('id', stateChangeStopping);
+            serverExplorer.updateServer('id', stateChangeStopped);
 
-            expect(setStatusStub).calledTwice;
+            expect(findStatusStub).calledTwice;
             expect(getStub).calledTwice;
-            expect(children).deep.equals([ProtocolStubs.unknownServerState]);
+            expect(children).deep.equals([ProtocolStubs.rspState]);
             expect(treeItem).deep.equals(serverStop);
         });
 
@@ -208,25 +209,23 @@ suite('Server explorer', () => {
             const children = serverExplorer.getChildren();
             const treeItem = serverExplorer.getTreeItem(ProtocolStubs.unknownServerState);
 
-            // serverExplorer.updateServer(stateChangeStarting);
-            // serverExplorer.updateServer(stateChangeStarted);
+            serverExplorer.updateServer('id', stateChangeStarting);
+            serverExplorer.updateServer('id', stateChangeStarted);
 
-            expect(setStatusStub).calledTwice;
+            expect(findStatusStub).calledTwice;
             expect(getStub).calledTwice;
-            expect(children).deep.equals([ProtocolStubs.unknownServerState]);
+            expect(children).deep.equals([ProtocolStubs.rspState]);
             expect(treeItem).deep.equals(serverStart);
         });
 
         test('call should update server state to received in state change event (Debugging)', () => {
-            //serverExplorer.serverStatus =  new Map<string, Protocol.ServerState>([['server', ProtocolStubs.serverDebuggingState]]);
-
             const children = serverExplorer.getChildren();
             const treeItem = serverExplorer.getTreeItem(ProtocolStubs.serverDebuggingState);
 
-            // serverExplorer.updateServer(stateChangeDebuggingStarting);
-            // serverExplorer.updateServer(stateChangeDebugging);
+            serverExplorer.updateServer('id', stateChangeDebuggingStarting);
+            serverExplorer.updateServer('id', stateChangeDebugging);
 
-            expect(children).deep.equals([ProtocolStubs.serverDebuggingState]);
+            expect(children).deep.equals([ProtocolStubs.rspState]);
             expect(treeItem).deep.equals(serverDebugging);
         });
 
@@ -236,11 +235,11 @@ suite('Server explorer', () => {
             const children = serverExplorer.getChildren();
             const treeItem = serverExplorer.getTreeItem(ProtocolStubs.unknownServerState);
 
-            // serverExplorer.updateServer(stateChangeUnknown);
+            serverExplorer.updateServer('id', stateChangeUnknown);
 
-            expect(setStatusStub).calledOnce;
+            expect(findStatusStub).calledOnce;
             expect(getStub).calledOnce;
-            expect(children).deep.equals([ProtocolStubs.unknownServerState]);
+            expect(children).deep.equals([ProtocolStubs.rspState]);
             expect(treeItem).deep.equals(serverUnknown);
         });
     });
@@ -298,6 +297,7 @@ suite('Server explorer', () => {
 
             showOpenDialogStub = sandbox.stub(window, 'showOpenDialog').resolves([userSelectedPath]);
             sandbox.stub(window, 'showQuickPick').resolves();
+            sandbox.stub(serverExplorer, 'getClientByRSP').returns(stubs.client);
         });
 
         test('should detect and create the server in a given location', async () => {
@@ -309,7 +309,7 @@ suite('Server explorer', () => {
             stubs.outgoing.getOptionalAttributes.resolves(noAttributes);
             stubs.outgoing.getRequiredAttributes.resolves(noAttributes);
 
-            //await serverExplorer.addLocation(); // to be modified
+            await serverExplorer.addLocation('id'); // to be modified
             expect(findServerStub).calledOnceWith(discoveryPath);
             expect(showOpenDialogStub).calledOnce;
             expect(createServerStub).calledOnceWith(serverBean, 'eap');
@@ -319,7 +319,7 @@ suite('Server explorer', () => {
             findServerStub.resolves([]);
 
             try {
-                //await serverExplorer.addLocation(); // to be modified
+                await serverExplorer.addLocation('id'); // to be modified
                 expect.fail();
             } catch (err) {
                 expect(err.message).length > 0;
@@ -330,7 +330,7 @@ suite('Server explorer', () => {
             findServerStub.resolves([serverBeanWithoutType]);
 
             try {
-                //await serverExplorer.addLocation(); // to be modified
+                await serverExplorer.addLocation('id'); // to be modified
                 expect.fail();
             } catch (err) {
                 expect(err.message).length > 0;
@@ -346,6 +346,18 @@ suite('Server explorer', () => {
 
         const userSelectedPath = { fsPath: 'path/path' };
 
+        const rspProperties: RSPProperties = {
+            client: undefined,
+            rspserverstderr: undefined,
+            rspserverstdout: undefined,
+            state: ProtocolStubs.rspState
+        };
+
+        setup(() => {
+            serverExplorer.RSPServersStatus.set('id', rspProperties);
+            sandbox.stub(serverExplorer, 'getClientByRSP').returns(stubs.client);
+        });
+
         test('check dialog options are set up correctly when choosing file in Windows', async () => {
             Object.defineProperty(process, 'platform', {
                 value: 'win32'
@@ -359,7 +371,7 @@ suite('Server explorer', () => {
                 openLabel: `Select File Deployment`
             };
             const stubDialog = sandbox.stub(window, 'showOpenDialog');
-            await serverExplorer.addDeployment(undefined);
+            await serverExplorer.addDeployment(ProtocolStubs.startedServerState);
 
             const filePickerResult = stubDialog.getCall(0).args[0];
             expect(JSON.stringify(filePickerResult)).equals(JSON.stringify(filePickerResponseWindows));
@@ -378,7 +390,7 @@ suite('Server explorer', () => {
                 openLabel: `Select Exploded Deployment`
             };
             const stubDialog = sandbox.stub(window, 'showOpenDialog');
-            await serverExplorer.addDeployment(undefined);
+            await serverExplorer.addDeployment(ProtocolStubs.startedServerState);
 
             const folderPickerResult = stubDialog.getCall(0).args[0];
             expect(JSON.stringify(folderPickerResult)).equals(JSON.stringify(folderPickerResponseWindows));
@@ -397,7 +409,7 @@ suite('Server explorer', () => {
                 openLabel: `Select File Deployment`
             };
             const stubDialog = sandbox.stub(window, 'showOpenDialog');
-            await serverExplorer.addDeployment(undefined);
+            await serverExplorer.addDeployment(ProtocolStubs.startedServerState);
 
             const filePickerResult = stubDialog.getCall(0).args[0];
             expect(JSON.stringify(filePickerResult)).equals(JSON.stringify(filePickerResponseLinux));
@@ -416,7 +428,7 @@ suite('Server explorer', () => {
                 openLabel: `Select Exploded Deployment`
             };
             const stubDialog = sandbox.stub(window, 'showOpenDialog');
-            await serverExplorer.addDeployment(undefined);
+            await serverExplorer.addDeployment(ProtocolStubs.startedServerState);
 
             const folderPickerResult = stubDialog.getCall(0).args[0];
             expect(JSON.stringify(folderPickerResult)).equals(JSON.stringify(folderPickerResponseLinux));
@@ -435,7 +447,7 @@ suite('Server explorer', () => {
                 openLabel: `Select file or exploded Deployment`
             };
             const stubDialog = sandbox.stub(window, 'showOpenDialog');
-            await serverExplorer.addDeployment(undefined);
+            await serverExplorer.addDeployment(ProtocolStubs.startedServerState);
 
             const pickerResult = stubDialog.getCall(0).args[0];
             expect(JSON.stringify(pickerResult)).equals(JSON.stringify(pickerResponseDialog));
@@ -445,7 +457,7 @@ suite('Server explorer', () => {
             sandbox.stub(serverExplorer, 'quickPickDeploymentType' as any).resolves(undefined);
 
             try {
-                await serverExplorer.addDeployment(undefined);
+                await serverExplorer.addDeployment(ProtocolStubs.startedServerState);
                 expect.fail();
             } catch (err) {
                 expect(err).equals(undefined);
@@ -454,14 +466,14 @@ suite('Server explorer', () => {
 
         test('check if user doesn\'t choose any file from dialog', async () => {
             sandbox.stub(window, 'showOpenDialog').resolves(undefined);
-            const result = await serverExplorer.addDeployment(undefined);
+            const result = await serverExplorer.addDeployment(ProtocolStubs.startedServerState);
             expect(result).equals(undefined);
         });
 
         test('check if user terminate before adding optional deployment parameters', async () => {
             sandbox.stub(window, 'showOpenDialog').resolves([userSelectedPath]);
             sandbox.stub(window, 'showQuickPick').resolves(undefined);
-            const result = await serverExplorer.addDeployment(undefined);
+            const result = await serverExplorer.addDeployment(ProtocolStubs.startedServerState);
             expect(result).equals(undefined);
         });
     });
