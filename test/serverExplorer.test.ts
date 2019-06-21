@@ -41,7 +41,7 @@ suite('Server explorer', () => {
         stubs.outgoing.getServerHandles = sandbox.stub().resolves([]);
         stubs.outgoing.getServerState = sandbox.stub().resolves(ProtocolStubs.unknownServerState);
 
-        serverExplorer = new ServerExplorer();
+        serverExplorer = ServerExplorer.getInstance();
         getStub = sandbox.stub(serverExplorer.serverOutputChannels, 'get').returns(fakeChannel);
         serverExplorer.RSPServersStatus.set('id', ProtocolStubs.rspProperties);
     });

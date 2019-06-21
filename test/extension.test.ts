@@ -10,7 +10,6 @@ import { ClientStubs } from './clientstubs';
 import { activate, deactivate } from '../src/extension';
 import { CommandHandler } from '../src/extensionApi';
 import { Protocol } from 'rsp-client';
-import * as server from '../src/server';
 import * as sinon from 'sinon';
 import * as sinonChai from 'sinon-chai';
 import * as vscode from 'vscode';
@@ -21,7 +20,7 @@ chai.use(sinonChai);
 // Defines a Mocha test suite to group tests of similar kind together
 suite('Extension Tests', () => {
     let sandbox: sinon.SinonSandbox;
-    let startStub;
+    //let startStub;
     let stubs: ClientStubs;
 
     class DummyMemento implements vscode.Memento {
@@ -45,29 +44,29 @@ suite('Extension Tests', () => {
         }
     };
 
-    const serverdata = {
-        port: '27511',
-        host: 'localhost',
-        process: {
-            stdout: {
-                on: (event: string, callback: (name: string) => void) => {
-                    return callback('some output');
-                }
-            },
-            stderr: {
-                on: (event: string, callback: (name: string) => void) => {
-                    return callback('some error');
-                }
-            }
-        }
-    };
+    // const serverdata = {
+    //     port: '27511',
+    //     host: 'localhost',
+    //     process: {
+    //         stdout: {
+    //             on: (event: string, callback: (name: string) => void) => {
+    //                 return callback('some output');
+    //             }
+    //         },
+    //         stderr: {
+    //             on: (event: string, callback: (name: string) => void) => {
+    //                 return callback('some error');
+    //             }
+    //         }
+    //     }
+    // };
 
     setup(() => {
         sandbox = sinon.createSandbox();
 
         stubs = new ClientStubs(sandbox);
 
-        startStub = sandbox.stub(server, 'start').resolves(serverdata);
+        //const startStub = sandbox.stub(server, 'start').resolves(serverdata);
 
         stubs.outgoing.getServerHandles.resolves([]);
         const capab: Protocol.ServerCapabilitiesResponse = {

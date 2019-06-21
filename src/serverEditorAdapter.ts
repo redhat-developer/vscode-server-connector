@@ -8,7 +8,6 @@ import * as fs from 'fs';
 import { Protocol } from 'rsp-client';
 import { ServerExplorer } from './serverExplorer';
 import * as tmp from 'tmp';
-import { Utils } from './utils';
 import * as vscode from 'vscode';
 
 interface ServerProperties {

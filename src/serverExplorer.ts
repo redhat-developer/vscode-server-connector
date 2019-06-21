@@ -72,6 +72,7 @@ export interface RSPProperties {
 
 export class ServerExplorer implements TreeDataProvider<RSPState | ServerStateNode | DeployableStateNode> {
 
+    private static instance: ServerExplorer;
     private _onDidChangeTreeData: EventEmitter<RSPState | ServerStateNode | undefined> = new EventEmitter<RSPState | ServerStateNode | undefined>();
     public readonly onDidChangeTreeData: Event<RSPState | ServerStateNode | undefined> = this._onDidChangeTreeData.event;
     public serverOutputChannels: Map<string, OutputChannel> = new Map<string, OutputChannel>();
@@ -82,7 +83,7 @@ export class ServerExplorer implements TreeDataProvider<RSPState | ServerStateNo
     private readonly viewer: TreeView< RSPState | ServerStateNode | DeployableStateNode>;
     public RSPServersStatus: Map<string, RSPProperties> = new Map<string, RSPProperties>();
 
-    constructor() {
+    private constructor() {
         this.viewer = window.createTreeView('servers', { treeDataProvider: this }) ;
 
         this.runStateEnum
@@ -101,15 +102,27 @@ export class ServerExplorer implements TreeDataProvider<RSPState | ServerStateNo
             .set(6, 'Unknown');
     }
 
+    public static getInstance(): ServerExplorer {
+        if (!this.instance) {
+            this.instance = new ServerExplorer();
+        }
+
+        return this.instance;
+    }
+
+
+
     public initTreeRsp() {
         Array.from(this.RSPServersStatus.keys()).forEach(async id => {
             const client: RSPClient = this.getClientByRSP(id);
-            const servers: Protocol.ServerHandle[] = await client.getOutgoingHandler().getServerHandles();
-            await servers.forEach(async serverHandle => {
-                const state = await client.getOutgoingHandler().getServerState(serverHandle);
-                const serverNode: ServerStateNode = this.convertToServerStateNode(id, state);
-                this.RSPServersStatus.get(id).state.serverStates.push(serverNode);
-            });
+            if (!client) {
+                const servers: Protocol.ServerHandle[] = await client.getOutgoingHandler().getServerHandles();
+                await servers.forEach(async serverHandle => {
+                    const state = await client.getOutgoingHandler().getServerState(serverHandle);
+                    const serverNode: ServerStateNode = this.convertToServerStateNode(id, state);
+                    this.RSPServersStatus.get(id).state.serverStates.push(serverNode);
+                });
+            }
 
             this.insertRSP(this.RSPServersStatus.get(id).state);
         });

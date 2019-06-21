@@ -35,7 +35,7 @@ suite('Command Handler', () => {
         stubs.outgoing.getServerHandles = sandbox.stub().resolves([ProtocolStubs.serverHandle]);
         stubs.outgoing.getServerState = sandbox.stub().resolves(ProtocolStubs.unknownServerState);
 
-        serverExplorer = new ServerExplorer();
+        serverExplorer = ServerExplorer.getInstance();
         handler = new CommandHandler(serverExplorer);
 
         serverExplorer.RSPServersStatus.set('rsp', ProtocolStubs.rspProperties);

@@ -9,13 +9,13 @@ import { DebugInfo } from './debug/debugInfo';
 import { DebugInfoProvider } from './debug/debugInfoProvider';
 import { JavaDebugSession } from './debug/javaDebugSession';
 import { Protocol, RSPClient, ServerState, StatusSeverity } from 'rsp-client';
-import { ServerInfo } from './server';
+//import { ServerInfo } from './server';
 import { ServerEditorAdapter } from './serverEditorAdapter';
 import { DeployableStateNode, RSPState, ServerExplorer, ServerStateNode } from './serverExplorer';
 import * as vscode from 'vscode';
 
 export interface ExtensionAPI {
-    readonly serverInfo: ServerInfo;
+    version: number;
 }
 
 export class CommandHandler {

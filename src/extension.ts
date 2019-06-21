@@ -4,7 +4,7 @@
  *-----------------------------------------------------------------------------------------------*/
 
 'use strict';
-import { CommandHandler } from './extensionApi';
+import { CommandHandler, ExtensionAPI } from './extensionApi';
 import { JobProgress } from './jobprogress';
 import { RSPClient, ServerState } from 'rsp-client';
 import { RSPProvider } from './rspProvider';
@@ -12,6 +12,7 @@ import * as server from './server';
 import { ServerEditorAdapter } from './serverEditorAdapter';
 import { RSPProperties, RSPState, ServerExplorer as ServersExplorer, ServerStateNode } from './serverExplorer';
 import * as vscode from 'vscode';
+//import { apiBroker } from './api/implementation/apiBroker';
 
 const rspProviders: Map<RSPProvider, RSPState> = new Map<RSPProvider, RSPState>(); //to be modified, id as key when we will use external providers
 let client: RSPClient;
@@ -20,27 +21,44 @@ let commandHandler: CommandHandler;
 
 const PROTOCOL_VERSION = '0.14.0';
 
-export async function activate(context: vscode.ExtensionContext): Promise<void> {
-    registerRSPProvider(); // TEST - to be removed when external extensions will register themselves automatically
-    serversExplorer = new ServersExplorer();
-    commandHandler = new CommandHandler(serversExplorer);
+export async function activate(context: vscode.ExtensionContext): Promise<ExtensionAPI> {
+    //registerRSPProvider(); // TEST - to be removed when external extensions will register themselves automatically
+    // serversExplorer = ServersExplorer.getInstance();
+    // commandHandler = new CommandHandler(serversExplorer);
 
-    Array.from(rspProviders.keys()).forEach(rsp => { // TEST - to be modified when external extensions will register themselves automatically
-        const rspserverstdout = vscode.window.createOutputChannel(`${rsp.getName()} (stdout)`);
-        const rspserverstderr = vscode.window.createOutputChannel(`${rsp.getName()} (stderr)`);
+    if ( false ) {
+        startRSPServers();
+        registerCommands(commandHandler, context);
+    }
 
-        const rspUtils: RSPProperties = {
-            state: rspProviders.get(rsp),
-            client: undefined,
-            rspserverstderr: rspserverstderr,
-            rspserverstdout: rspserverstdout
-        };
-        serversExplorer.RSPServersStatus.set(rsp.getId(), rspUtils);
-    });
+    // Array.from(rspProviders.keys()).forEach(rsp => { // TEST - to be modified when external extensions will register themselves automatically
+    //     const rspserverstdout = vscode.window.createOutputChannel(`${rsp.getName()} (stdout)`);
+    //     const rspserverstderr = vscode.window.createOutputChannel(`${rsp.getName()} (stderr)`);
 
-    await startRSPServers(); // TEST - to be modified when external extensions will register themselves automatically
-    serversExplorer.initTreeRsp(); // TEST - to be modified when external extensions will register themselves automatically
-    registerCommands(commandHandler, context);
+    //     const rspUtils: RSPProperties = {
+    //         state: rspProviders.get(rsp),
+    //         client: undefined,
+    //         rspserverstderr: rspserverstderr,
+    //         rspserverstdout: rspserverstdout
+    //     };
+    //     serversExplorer.RSPServersStatus.set(rsp.getId(), rspUtils);
+    // });
+
+    //await startRSPServers(); // TEST - to be modified when external extensions will register themselves automatically
+    //serversExplorer.initTreeRsp(); // TEST - to be modified when external extensions will register themselves automatically
+    // registerCommands(commandHandler, context);
+
+    // let api = {
+    //     sum(a, b) {
+    //         return a + b;
+    //     },
+    //     mul(a, b) {
+    //         return a * b;
+    //     }
+    // };
+    // 'export' public api-surface
+    //const apiB = apiBroker();
+    return { version: 1 };
 
 }
 
@@ -72,10 +90,10 @@ async function startRSPServers(): Promise<void> { // TEST - to be modified when 
 
 }
 
-function registerRSPProvider() {
-    const rspProv: RSPProvider = new RSPProvider();
-    rspProviders.set(rspProv, rspProv.getState());
-}
+// function registerRSPProvider() {
+//     const rspProv: RSPProvider = new RSPProvider();
+//     rspProviders.set(rspProv, rspProv.getState());
+// }
 
 async function initClient(serverInfo: server.ServerInfo): Promise<RSPClient> {
     const client = new RSPClient('localhost', serverInfo.port);
@@ -144,6 +162,45 @@ function registerCommands(commandHandler: CommandHandler, context: vscode.Extens
         context.subscriptions.push(element);
     }, this);
 }
+
+// export async function registerRSPProvider(rsp: RSPState): Promise<void> {
+//     let error: string;
+//     if (!rsp) {
+//         error = 'Unable to register RSP provider - RSP state is not valid.';
+//         vscode.window.showErrorMessage(error);
+//         return Promise.reject(error);
+//     }
+
+//     if (!rsp.type || !rsp.type.id) {
+//         error = 'Unable to register RSP provider - Id is not valid.';
+//         vscode.window.showErrorMessage(error);
+//         return Promise.reject(error);
+//     }
+
+//     const rspserverstdout = vscode.window.createOutputChannel(`${rsp.type.visibilename} (stdout)`);
+//     const rspserverstderr = vscode.window.createOutputChannel(`${rsp.type.visibilename} (stderr)`);
+
+//     const rspProperties: RSPProperties = {
+//         state: rsp,
+//         client: undefined,
+//         rspserverstderr: rspserverstderr,
+//         rspserverstdout: rspserverstdout
+//     };
+//     serversExplorer.RSPServersStatus.set(rsp.type.id, rspProperties);
+//     serversExplorer.initTreeRsp();
+// }
+
+// export async function deregisterRSPProvider(id: string): Promise<void> {
+//     if (!id) {
+//         const error = 'Unable to remove RSP provider - Id is not valid.';
+//         vscode.window.showErrorMessage(error);
+//         return Promise.reject(error);
+//     }
+
+//     serversExplorer.RSPServersStatus.get(id).rspserverstdout.dispose();
+//     serversExplorer.RSPServersStatus.get(id).rspserverstderr.dispose();
+//     serversExplorer.RSPServersStatus.delete(id);
+// }
 
 export function deactivate() {
     for (const rspProvider of serversExplorer.RSPServersStatus.values()) {
