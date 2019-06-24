@@ -3,6 +3,7 @@
  *  Licensed under the EPL v2.0 License. See LICENSE file in the project root for license information.
  *-----------------------------------------------------------------------------------------------*/
 
+import { fail } from 'assert';
 import * as chai from 'chai';
 import * as chaipromise from 'chai-as-promised';
 import { ClientStubs } from './clientstubs';
@@ -11,7 +12,6 @@ import { Protocol } from 'rsp-client';
 import * as sinon from 'sinon';
 import * as sinonChai from 'sinon-chai';
 import * as vscode from 'vscode';
-import { fail } from 'assert';
 
 const expect = chai.expect;
 chai.use(sinonChai);

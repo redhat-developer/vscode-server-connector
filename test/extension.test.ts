@@ -20,7 +20,6 @@ chai.use(sinonChai);
 // Defines a Mocha test suite to group tests of similar kind together
 suite('Extension Tests', () => {
     let sandbox: sinon.SinonSandbox;
-    //let startStub;
     let stubs: ClientStubs;
 
     class DummyMemento implements vscode.Memento {
@@ -44,30 +43,10 @@ suite('Extension Tests', () => {
         }
     };
 
-    // const serverdata = {
-    //     port: '27511',
-    //     host: 'localhost',
-    //     process: {
-    //         stdout: {
-    //             on: (event: string, callback: (name: string) => void) => {
-    //                 return callback('some output');
-    //             }
-    //         },
-    //         stderr: {
-    //             on: (event: string, callback: (name: string) => void) => {
-    //                 return callback('some error');
-    //             }
-    //         }
-    //     }
-    // };
-
     setup(() => {
         sandbox = sinon.createSandbox();
 
         stubs = new ClientStubs(sandbox);
-
-        //const startStub = sandbox.stub(server, 'start').resolves(serverdata);
-
         stubs.outgoing.getServerHandles.resolves([]);
         const capab: Protocol.ServerCapabilitiesResponse = {
             serverCapabilities: {
@@ -90,8 +69,6 @@ suite('Extension Tests', () => {
         sandbox.stub(CommandHandler.prototype, 'activate').resolves();
         const createTreeViewStub = sandbox.stub(vscode.window, 'createTreeView');
         await activate(context);
-        //expect(startStub).calledOnce;
-        //expect(result).deep.equals({serverInfo: serverdata});
         expect(createTreeViewStub).calledOnce;
     });
 

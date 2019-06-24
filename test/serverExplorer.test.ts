@@ -9,7 +9,7 @@ import { ClientStubs } from './clientstubs';
 import * as path from 'path';
 import { ProtocolStubs } from './protocolstubs';
 import { Protocol, ServerState } from 'rsp-client';
-import { ServerExplorer, RSPProperties } from '../src/serverExplorer';
+import { RSPProperties, ServerExplorer } from '../src/serverExplorer';
 import * as sinon from 'sinon';
 import * as sinonChai from 'sinon-chai';
 import { EventEmitter, OpenDialogOptions, OutputChannel, TreeItemCollapsibleState, Uri, window } from 'vscode';
@@ -95,7 +95,6 @@ suite('Server explorer', () => {
         // given
         const fireStub = sandbox.stub(EventEmitter.prototype, 'fire');
         serverExplorer.selectNode = sandbox.stub();
-        //serverExplorer.serverStatus.set(ProtocolStubs.unknownServerState.server.id, ProtocolStubs.unknownServerState);
         // when
         serverExplorer.refresh(ProtocolStubs.unknownServerState);
         // then
