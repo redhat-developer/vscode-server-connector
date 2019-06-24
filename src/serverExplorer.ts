@@ -392,11 +392,11 @@ export class ServerExplorer implements TreeDataProvider<RSPState | ServerStateNo
             prompt: `Provide the server name`,
             placeHolder: `Server name`,
             validateInput: (value: string) => {
-                if (!value || value.trim().length === 0) {stopServer
-                    return 'Cannot set empty server name';stopServer
+                if (!value || value.trim().length === 0) {
+                    return 'Cannot set empty server name';
                 }
-                if (this.RSPServersStatus.get(rspId).statestopServerserverStates.find(state => state.server.id === value)) {
-                    return 'Cannot set duplicate server nastopServere';
+                if (this.RSPServersStatus.get(rspId).state.serverStates.find(state => state.server.id === value)) {
+                    return 'Cannot set duplicate server nae';
                 }
             }
         };
