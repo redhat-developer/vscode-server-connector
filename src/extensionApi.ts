@@ -33,6 +33,12 @@ export class CommandHandler {
     }
 
     public async startRSP(context?: RSPState): Promise<void> {
+        if (context === undefined) {
+            const rsp = await this.selectRSP('Select RSP provider you want to start');
+            if (!rsp || !rsp.id) return null;
+            context = this.explorer.RSPServersStatus.get(rsp.id).state;
+        }
+
         const extension = await vscode.extensions.getExtension<ServerAPI>(context.type.id);
         if (!extension) {
             return Promise.reject(`Failed to retrieve ${context.type.visibilename} extension`);
