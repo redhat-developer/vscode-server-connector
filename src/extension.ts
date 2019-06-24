@@ -26,7 +26,7 @@ function registerCommands(commandHandler: CommandHandler, context: vscode.Extens
     const errorMessage = 'Unable to %ACTION% the server: ';
     const newLocal = [
         vscode.commands.registerCommand('server.startRSP',
-            context => executeCommand(commandHandler.startRSP, commandHandler, 'run', context, errorMessage.replace('%ACTION%', 'start'))),
+            context => executeCommand(commandHandler.startRSP, commandHandler, context, errorMessage.replace('%ACTION%', 'start'))),
         vscode.commands.registerCommand('server.start',
             context => executeCommand(commandHandler.startServer, commandHandler, 'run', context, errorMessage.replace('%ACTION%', 'start'))),
         vscode.commands.registerCommand('server.restart',
@@ -88,11 +88,6 @@ function stopServer(val: ServerStateNode) {
         const client: RSPClient = serversExplorer.RSPServersStatus.get(oneStat.server.id).client;
         client.getOutgoingHandler().stopServerAsync({ id: oneStat.server.id, force: true });
     }
-}
-
-export function displayLog(outputPanel: vscode.OutputChannel, message: string, show: boolean = true) {
-    if (show) outputPanel.show();
-    outputPanel.appendLine(message);
 }
 
 function onDidSaveTextDocument(doc: vscode.TextDocument) {

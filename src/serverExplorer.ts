@@ -110,7 +110,7 @@ export class ServerExplorer implements TreeDataProvider<RSPState | ServerStateNo
         return this.instance;
     }
 
-    public initTreeRsp() {
+    public refreshTree() {
         Array.from(this.RSPServersStatus.keys()).forEach(async id => {
             const client: RSPClient = this.getClientByRSP(id);
             if (client) {
@@ -122,12 +122,8 @@ export class ServerExplorer implements TreeDataProvider<RSPState | ServerStateNo
                 });
             }
 
-            this.insertRSP(this.RSPServersStatus.get(id).state);
+            this.refresh(this.RSPServersStatus.get(id).state);
         });
-    }
-
-    private async insertRSP(rspState: RSPState) {
-        this.refresh(rspState);
     }
 
     public async insertServer(rspId: string, event: Protocol.ServerHandle) {

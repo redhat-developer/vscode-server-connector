@@ -9,11 +9,10 @@ import { API } from './api/contract/api';
 import { initClient } from './rsp/client';
 import { DebugInfo } from './debug/debugInfo';
 import { DebugInfoProvider } from './debug/debugInfoProvider';
-import { displayLog } from './extension';
 import { JavaDebugSession } from './debug/javaDebugSession';
 import { Protocol, RSPClient, ServerState, StatusSeverity } from 'rsp-client';
 import { RSPProviderAPI } from './api/contract/rspProviderAPI';
-import { ServerAPI } from './rsp/server';
+import { ServerAPI, ServerInfo } from './rsp/server';
 import { ServerEditorAdapter } from './serverEditorAdapter';
 import { DeployableStateNode, RSPProperties, RSPState, ServerExplorer, ServerStateNode } from './serverExplorer';
 import * as vscode from 'vscode';
@@ -33,17 +32,19 @@ export class CommandHandler {
         this.debugSession = new JavaDebugSession();
     }
 
-    public async startRSP(mode: string, context?: RSPState): Promise<void> {
-        const extension = await vscode.extensions.getExtension<ServerAPI>('redhat.rspprovider-sample');
-        const rspProvider = await extension.activate();
-        const serverInfo = await rspProvider.startRSP(
+    public async startRSP(context?: RSPState): Promise<void> {
+        const extension = await vscode.extensions.getExtension<ServerAPI>(context.type.id);
+        const rspProvider: ServerAPI = await extension.activate();
+        const serverInfo: ServerInfo = await rspProvider.startRSP(
             (data: string) => {
-                const rspserverstdout = this.explorer.getRSPOutputChannel('redhat.rspprovider-sample');
-                displayLog(rspserverstdout, data.toString());
-            }, (data: string) => {
-            const rspserverstderr = this.explorer.getRSPErrorChannel('redhat.rspprovider-sample');
-            displayLog(rspserverstderr, data.toString());
-        });
+                const rspserverstdout = this.explorer.getRSPOutputChannel(context.type.id);
+                this.displayLog(rspserverstdout, data.toString());
+            },
+            (data: string) => {
+                const rspserverstderr = this.explorer.getRSPErrorChannel(context.type.id);
+                this.displayLog(rspserverstderr, data.toString());
+            }
+        );
 
         if (!serverInfo || !serverInfo.port) {
             return Promise.reject(`Failed to start the ${context.type.visibilename} rsp server`);
@@ -56,7 +57,7 @@ export class CommandHandler {
         rspUtils.state.serverStates = [];
         this.explorer.RSPServersStatus.set(context.type.id, rspUtils);
         await this.activate(context.type.id, client);
-        this.explorer.initTreeRsp();
+        this.explorer.refreshTree();
     }
 
     public async startServer(mode: string, context?: ServerStateNode): Promise<Protocol.StartServerResponse> {
@@ -499,6 +500,13 @@ export class CommandHandler {
 
     private hasJavaDebugExtension(): boolean {
         return vscode.extensions.getExtension('vscjava.vscode-java-debug') === undefined;
+    }
+
+    private displayLog(outputPanel: vscode.OutputChannel, message: string, show: boolean = true) {
+        if (outputPanel) {
+            if (show) outputPanel.show();
+            outputPanel.appendLine(message);
+        }
     }
 
     public async activate(rspId: string, client: RSPClient): Promise<void> {

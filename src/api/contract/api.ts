@@ -1,5 +1,5 @@
-import { ExtensionAPI } from "../../extensionApi";
-import { RSPProviderAPI } from "./rspProviderAPI";
+import { ExtensionAPI } from '../../extensionApi';
+import { RSPProviderAPI } from './rspProviderAPI';
 
 // The contents of this file are the core API contract used to discover actual
 // component APIs.  We can add new component APIs, or change the way APIBroker
