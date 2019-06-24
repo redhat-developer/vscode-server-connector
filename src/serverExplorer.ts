@@ -470,11 +470,11 @@ export class ServerExplorer implements TreeDataProvider<RSPState | ServerStateNo
         if (this.isRSPElement(item)) {
             const state: RSPState = item as RSPState;
             const id1: string = state.type.visibilename;
-            const serverState = `RSP ${this.runStateEnum.get(state.state)}`;
+            const serverState = `${this.runStateEnum.get(state.state)}`;
             const depStr = `${id1} (${serverState})`;
             return { label: `${depStr}`,
                 iconPath: Uri.file(path.join(__dirname, '../../images/server-light.png')),
-                contextValue: serverState, //state.type.id, //to be removed, edited and change context menu actions
+                contextValue: `RSP${serverState}`, //state.type.id, //to be removed, edited and change context menu actions
                 collapsibleState: TreeItemCollapsibleState.Expanded
             };
         } else if (this.isServerElement(item)) {
