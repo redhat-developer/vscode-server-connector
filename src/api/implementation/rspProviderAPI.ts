@@ -48,9 +48,19 @@ class RSPProviderAPIImpl implements RSPProviderAPI {
             vscode.window.showErrorMessage(error);
             return Promise.reject(error);
         }
+
         const serversExplorer = ServerExplorer.getInstance();
-        serversExplorer.RSPServersStatus.get(id).rspserverstdout.dispose();
-        serversExplorer.RSPServersStatus.get(id).rspserverstderr.dispose();
+        if (!serversExplorer.RSPServersStatus.has(id)) {
+            const error = 'No RSP Provider was found with this id.';
+            return Promise.reject(error);
+        }
+
+        if (serversExplorer.RSPServersStatus.get(id).rspserverstdout) {
+            serversExplorer.RSPServersStatus.get(id).rspserverstdout.dispose();
+        }
+        if (serversExplorer.RSPServersStatus.get(id).rspserverstderr) {
+            serversExplorer.RSPServersStatus.get(id).rspserverstderr.dispose();
+        }
         serversExplorer.RSPServersStatus.delete(id);
     }
 }

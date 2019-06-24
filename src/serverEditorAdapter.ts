@@ -65,7 +65,7 @@ export class ServerEditorAdapter {
         return this.createTmpFile(rspExists, rspId, content);
     }
 
-    private async createTmpFile(rspExists: boolean, rspId: string, content: Protocol.GetServerJsonResponse) : Promise<void> {
+    private async createTmpFile(rspExists: boolean, rspId: string, content: Protocol.GetServerJsonResponse): Promise<void> {
         return tmp.file({ prefix: `${this.PREFIX_TMP}-${content.serverHandle.id}-` , postfix: '.json' }, (err, path) => {
             if (err) {
                 return Promise.reject('Could not handle server response. Unable to create temp file');

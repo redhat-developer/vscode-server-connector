@@ -72,20 +72,19 @@ export function deactivate() {
     for (const rspProvider of serversExplorer.RSPServersStatus.values()) {
         if (rspProvider.client) {
             for (const server of rspProvider.state.serverStates) {
-                stopServer(server);
+                stopServer(rspProvider.client, server);
             }
             rspProvider.client.shutdownServer();
         }
     }
 }
 
-function stopServer(val: ServerStateNode) {
+function stopServer(client: RSPClient, val: ServerStateNode) {
     const oneStat: ServerStateNode = val;
     const stateNum = oneStat.state;
     if (stateNum !== ServerState.UNKNOWN
       && stateNum !== ServerState.STOPPED
       && stateNum !== ServerState.STOPPING) {
-        const client: RSPClient = serversExplorer.RSPServersStatus.get(oneStat.server.id).client;
         client.getOutgoingHandler().stopServerAsync({ id: oneStat.server.id, force: true });
     }
 }
