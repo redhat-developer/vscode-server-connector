@@ -11,11 +11,16 @@ import { JavaDebugSession } from './debug/javaDebugSession';
 import { Protocol, RSPClient, ServerState, StatusSeverity } from 'rsp-client';
 //import { ServerInfo } from './server';
 import { ServerEditorAdapter } from './serverEditorAdapter';
-import { DeployableStateNode, RSPState, ServerExplorer, ServerStateNode } from './serverExplorer';
+import { DeployableStateNode, RSPState, ServerExplorer, ServerStateNode, RSPProperties } from './serverExplorer';
 import * as vscode from 'vscode';
+import { RSPProviderAPI } from './api/contract/rspProviderAPI';
+import { API } from './api/contract/api';
+import { ServerAPI } from './rsp/server';
+import { displayLog } from './extension';
+import { initClient } from './rsp/client';
 
 export interface ExtensionAPI {
-    version: number;
+    get(): API<RSPProviderAPI>;
 }
 
 export class CommandHandler {
@@ -27,6 +32,33 @@ export class CommandHandler {
 
     constructor(private explorer: ServerExplorer) {
         this.debugSession = new JavaDebugSession();
+    }
+
+    public async startRSP(mode: string, context?: RSPState): Promise<void> {
+        const extension = await vscode.extensions.getExtension<ServerAPI>('redhat.rspprovider-sample');
+        const rspProvider = await extension.activate();
+        const serverInfo = await rspProvider.startRSP(
+            (data: string) => {
+                const rspserverstdout = this.explorer.getRSPOutputChannel('redhat.rspprovider-sample');
+                displayLog(rspserverstdout, data.toString());
+            }, (data: string) => {
+                const rspserverstderr = this.explorer.getRSPErrorChannel('redhat.rspprovider-sample');
+                displayLog(rspserverstderr, data.toString());
+            });
+        
+        if (!serverInfo || !serverInfo.port) {
+            return Promise.reject(`Failed to start the ${context.type.visibilename} rsp server`);
+        }
+
+        const client = await initClient(serverInfo);
+
+        const rspUtils: RSPProperties = this.explorer.RSPServersStatus.get(context.type.id);
+        rspUtils.client = client;
+        rspUtils.state.serverStates = [];
+        this.explorer.RSPServersStatus.set(context.type.id, rspUtils);
+        await this.activate(context.type.id, client);
+        this.explorer.initTreeRsp();
+        
     }
 
     public async startServer(mode: string, context?: ServerStateNode): Promise<Protocol.StartServerResponse> {

@@ -6,7 +6,6 @@ export function apiBroker(): APIBroker {
     return {
         get(): API<RSPProviderAPI> {
             return api();
-        },
-        version: 1
+        }
     };
 }

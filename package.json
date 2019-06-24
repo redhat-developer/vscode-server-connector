@@ -30,6 +30,8 @@
     "onCommand:server.createServer",
     "onCommand:server.addLocation",
     "onCommand:server.downloadRuntime",
+    "onCommand:server.startRSP",
+    "onCommand:server.stopRSP",
     "onCommand:server.start",
     "onCommand:server.debug",
     "onCommand:server.stop",
@@ -61,6 +63,16 @@
       {
         "command": "server.downloadRuntime",
         "title": "Download Server...",
+        "category": "Servers"
+      },
+      {
+        "command": "server.startRSP",
+        "title": "Start",
+        "category": "Servers"
+      },
+      {
+        "command": "server.stopRSP",
+        "title": "Stop",
         "category": "Servers"
       },
       {
@@ -146,6 +158,21 @@
         }
       ],
       "view/item/context": [
+        {
+          "command": "server.createServer",
+          "when": "view == servers && viewItem == '/RSP Started/'",
+          "group": "0_server-rspstartstop@1"
+        },
+        {
+          "command": "server.startRSP",
+          "when": "view == servers && viewItem =~ '/(RSP Unknown|RSP Stopped)/'",
+          "group": "0_server-rspstartstop@2"
+        },
+        {
+          "command": "server.stopRSP",
+          "when": "view == servers && viewItem =~ '/(RSP Unknown|RSP Started)/'",
+          "group": "0_server-rspstartstop@3"
+        },
         {
           "command": "server.start",
           "when": "view == servers && viewItem == 'Stopped'",

@@ -20,6 +20,5 @@ export type API<T> = APIAvailable<T> | APIUnavailable;
 
 // The extension activate method must return one of these
 export interface APIBroker extends ExtensionAPI {
-    version: number;
     get(): API<RSPProviderAPI>;
 }

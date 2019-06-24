@@ -110,12 +110,10 @@ export class ServerExplorer implements TreeDataProvider<RSPState | ServerStateNo
         return this.instance;
     }
 
-
-
     public initTreeRsp() {
         Array.from(this.RSPServersStatus.keys()).forEach(async id => {
             const client: RSPClient = this.getClientByRSP(id);
-            if (!client) {
+            if (client) {
                 const servers: Protocol.ServerHandle[] = await client.getOutgoingHandler().getServerHandles();
                 await servers.forEach(async serverHandle => {
                     const state = await client.getOutgoingHandler().getServerState(serverHandle);
@@ -394,11 +392,11 @@ export class ServerExplorer implements TreeDataProvider<RSPState | ServerStateNo
             prompt: `Provide the server name`,
             placeHolder: `Server name`,
             validateInput: (value: string) => {
-                if (!value || value.trim().length === 0) {
-                    return 'Cannot set empty server name';
+                if (!value || value.trim().length === 0) {stopServer
+                    return 'Cannot set empty server name';stopServer
                 }
-                if (this.RSPServersStatus.get(rspId).state.serverStates.find(state => state.server.id === value)) {
-                    return 'Cannot set duplicate server name';
+                if (this.RSPServersStatus.get(rspId).statestopServerserverStates.find(state => state.server.id === value)) {
+                    return 'Cannot set duplicate server nastopServere';
                 }
             }
         };
