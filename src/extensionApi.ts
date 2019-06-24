@@ -41,7 +41,7 @@ export class CommandHandler {
 
         const extension = await vscode.extensions.getExtension<ServerAPI>(context.type.id);
         if (!extension) {
-            return Promise.reject(`Failed to retrieve ${context.type.visibilename} extension`);
+            return Promise.reject(`Failed to retrieve ${context.type.id} extension`);
         }
         const rspProvider: ServerAPI = await extension.activate();
         const serverInfo: ServerInfo = await rspProvider.startRSP(
