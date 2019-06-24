@@ -34,6 +34,9 @@ export class CommandHandler {
 
     public async startRSP(context?: RSPState): Promise<void> {
         const extension = await vscode.extensions.getExtension<ServerAPI>(context.type.id);
+        if (!extension) {
+            return Promise.reject(`Failed to retrieve ${context.type.visibilename} extension`);
+        }
         const rspProvider: ServerAPI = await extension.activate();
         const serverInfo: ServerInfo = await rspProvider.startRSP(
             (data: string) => {
@@ -52,10 +55,10 @@ export class CommandHandler {
 
         const client = await initClient(serverInfo);
 
-        const rspUtils: RSPProperties = this.explorer.RSPServersStatus.get(context.type.id);
-        rspUtils.client = client;
-        rspUtils.state.serverStates = [];
-        this.explorer.RSPServersStatus.set(context.type.id, rspUtils);
+        const rspProperties: RSPProperties = this.explorer.RSPServersStatus.get(context.type.id);
+        rspProperties.client = client;
+        rspProperties.state.serverStates = [];
+        this.explorer.RSPServersStatus.set(context.type.id, rspProperties);
         await this.activate(context.type.id, client);
         this.explorer.refreshTree();
     }
