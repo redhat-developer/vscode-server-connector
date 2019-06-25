@@ -13,6 +13,8 @@ import { Protocol } from 'rsp-client';
 import * as sinon from 'sinon';
 import * as sinonChai from 'sinon-chai';
 import * as vscode from 'vscode';
+import { ProtocolStubs } from './protocolstubs';
+import { ServerExplorer, RSPProperties } from '../src/serverExplorer';
 
 const expect = chai.expect;
 chai.use(sinonChai);
@@ -21,6 +23,7 @@ chai.use(sinonChai);
 suite('Extension Tests', () => {
     let sandbox: sinon.SinonSandbox;
     let stubs: ClientStubs;
+    let serverExplorer: ServerExplorer;
 
     class DummyMemento implements vscode.Memento {
         public get<T>(key: string): Promise<T|undefined> {
@@ -55,6 +58,9 @@ suite('Extension Tests', () => {
         };
         stubs.outgoing.registerClientCapabilities.resolves(capab);
         stubs.incoming.onPromptString.resolves();
+
+        serverExplorer = ServerExplorer.getInstance();
+        serverExplorer.RSPServersStatus.set('id', ProtocolStubs.rspProperties);
     });
 
     teardown(() => {
@@ -66,15 +72,16 @@ suite('Extension Tests', () => {
     });
 
     test('Server is started at extension activation time', async () => {
-        sandbox.stub(CommandHandler.prototype, 'activate').resolves();
-        const createTreeViewStub = sandbox.stub(vscode.window, 'createTreeView');
+        const serverInstance = sandbox.stub(ServerExplorer, 'getInstance').returns(serverExplorer);
+        sandbox.stub(vscode.commands, 'registerCommand').resolves();
         await activate(context);
-        expect(createTreeViewStub).calledOnce;
+        expect(serverInstance).calledOnce;
     });
 
     test('should register all server commands', async () => {
         return await vscode.commands.getCommands(true).then(commands => {
             const SERVER_COMMANDS = [
+                'server.startRSP',
                 'server.start',
                 'server.restart',
                 'server.debug',
@@ -102,7 +109,20 @@ suite('Extension Tests', () => {
         });
     });
 
+    test('deactivation if rsp server doesnt have rsp client defined', () => {
+        deactivate();
+
+        sandbox.assert.notCalled(stubs.clientStub.shutdownServer);
+    });
+
     test('server has been stopped on deactivation', () => {
+        const rspProperties: RSPProperties = {
+            client: stubs.client,
+            rspserverstderr: undefined,
+            rspserverstdout: undefined,
+            state: ProtocolStubs.rspState
+        };
+        serverExplorer.RSPServersStatus.set('id', rspProperties);
         deactivate();
 
         expect(stubs.clientStub.shutdownServer).calledOnce;

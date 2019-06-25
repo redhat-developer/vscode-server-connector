@@ -38,7 +38,7 @@ suite('Command Handler', () => {
         serverExplorer = ServerExplorer.getInstance();
         handler = new CommandHandler(serverExplorer);
 
-        serverExplorer.RSPServersStatus.set('rsp', ProtocolStubs.rspProperties);
+        serverExplorer.RSPServersStatus.set('id', ProtocolStubs.rspProperties);
     });
 
     teardown(() => {
