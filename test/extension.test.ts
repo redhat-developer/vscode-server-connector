@@ -8,13 +8,12 @@ import * as assert from 'assert';
 import * as chai from 'chai';
 import { ClientStubs } from './clientstubs';
 import { activate, deactivate } from '../src/extension';
-import { CommandHandler } from '../src/extensionApi';
+import { ProtocolStubs } from './protocolstubs';
 import { Protocol } from 'rsp-client';
+import { RSPProperties, ServerExplorer } from '../src/serverExplorer';
 import * as sinon from 'sinon';
 import * as sinonChai from 'sinon-chai';
 import * as vscode from 'vscode';
-import { ProtocolStubs } from './protocolstubs';
-import { ServerExplorer, RSPProperties } from '../src/serverExplorer';
 
 const expect = chai.expect;
 chai.use(sinonChai);
