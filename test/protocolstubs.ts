@@ -3,7 +3,7 @@
  *  Licensed under the EPL v2.0 License. See LICENSE file in the project root for license information.
  *-----------------------------------------------------------------------------------------------*/
 import { Protocol, ServerState } from 'rsp-client';
-import { RSPProperties, RSPState, RSPType, ServerStateNode } from '../src/serverExplorer';
+import { DeployableStateNode, RSPProperties, RSPState, RSPType, ServerStateNode } from '../src/serverExplorer';
 
 export class ProtocolStubs {
 
@@ -138,6 +138,14 @@ export class ProtocolStubs {
     public static readonly deployableReference: Protocol.DeployableReference = {
         label: 'fake',
         path: 'fakepath'
-    }
+    };
+
+    public static readonly deployableStateNode: DeployableStateNode = {
+        rsp: 'id',
+        publishState: ServerState.PUBLISH_STATE_UNKNOWN,
+        server: ProtocolStubs.serverHandle,
+        state: ServerState.STARTED,
+        reference: ProtocolStubs.deployableReference
+    };
 
 }

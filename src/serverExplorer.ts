@@ -285,6 +285,9 @@ export class ServerExplorer implements TreeDataProvider<RSPState | ServerStateNo
 
     public async removeDeployment(rspId: string, server: Protocol.ServerHandle, deployableRef: Protocol.DeployableReference): Promise<Protocol.Status> {
         const client: RSPClient = this.getClientByRSP(rspId);
+        if (!client) {
+            return Promise.reject('Unable to contact the RSP server.');
+        }
         const req: Protocol.ServerDeployableReference = {
             server: server,
             deployableReference : deployableRef
@@ -298,6 +301,9 @@ export class ServerExplorer implements TreeDataProvider<RSPState | ServerStateNo
 
     public async publish(rspId: string, server: Protocol.ServerHandle, type: number): Promise<Protocol.Status> {
         const client: RSPClient = this.getClientByRSP(rspId);
+        if (!client) {
+            return Promise.reject('Unable to contact the RSP server.');
+        }
         const req: Protocol.PublishServerRequest = { server: server, kind : type};
         const status = await client.getOutgoingHandler().publish(req);
         if (!StatusSeverity.isOk(status)) {
@@ -308,6 +314,9 @@ export class ServerExplorer implements TreeDataProvider<RSPState | ServerStateNo
 
     public async addLocation(rspId: string): Promise<Protocol.Status> {
         const client: RSPClient = this.getClientByRSP(rspId);
+        if (!client) {
+            return Promise.reject('Unable to contact the RSP server.');
+        }
         const server: { name: string, bean: Protocol.ServerBean } = { name: null, bean: null };
         const folders = await window.showOpenDialog({
             canSelectFiles: false,
@@ -340,6 +349,9 @@ export class ServerExplorer implements TreeDataProvider<RSPState | ServerStateNo
 
     public async editServer(rspId: string, server: Protocol.ServerHandle): Promise<void> {
         const client: RSPClient = this.getClientByRSP(rspId);
+        if (!client) {
+            return Promise.reject('Unable to contact the RSP server.');
+        }
         const serverProperties = await client.getOutgoingHandler().getServerAsJson(server);
 
         if (!serverProperties || !serverProperties.serverJson ) {
@@ -354,6 +366,9 @@ export class ServerExplorer implements TreeDataProvider<RSPState | ServerStateNo
             throw new Error(`Unable to update server properties for server ${serverhandle.id}`);
         }
         const client: RSPClient = this.getClientByRSP(rspId);
+        if (!client) {
+            return Promise.reject('Unable to contact the RSP server.');
+        }
         const serverProps: Protocol.UpdateServerRequest = {
             handle: serverhandle,
             serverJson: content

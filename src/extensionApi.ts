@@ -319,7 +319,12 @@ export class CommandHandler {
             if (!rsp || !rsp.id) return;
             rspId = rsp.id;
         }
+
         const client = this.explorer.getClientByRSP(rspId);
+        if (!client) {
+            return Promise.reject('Failed to contact the RSP server.');
+        }
+
         const rtId: string = await this.promptDownloadableRuntimes(client);
         if (!rtId) {
             return;

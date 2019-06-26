@@ -9,7 +9,7 @@ import { ClientStubs } from './clientstubs';
 import * as path from 'path';
 import { ProtocolStubs } from './protocolstubs';
 import { Protocol, ServerState } from 'rsp-client';
-import { RSPProperties, ServerExplorer, ServerStateNode } from '../src/serverExplorer';
+import { RSPProperties, RSPState, ServerExplorer, ServerStateNode } from '../src/serverExplorer';
 import * as sinon from 'sinon';
 import * as sinonChai from 'sinon-chai';
 import { EventEmitter, OpenDialogOptions, OutputChannel, TreeItemCollapsibleState, Uri, window } from 'vscode';
@@ -615,6 +615,54 @@ suite('Server explorer', () => {
             serverExplorer.RSPServersStatus.set('stderr', rspPropertiesWithStderr);
             const result = await serverExplorer.getRSPErrorChannel('stderr');
             expect(result).equals(stderr);
+        });
+    });
+
+    suite('getTreeItem', () => {
+        test('return undefined if element is not a valid one', async () => {
+            const rsp: RSPState = {
+                type: undefined,
+                state: ServerState.UNKNOWN,
+                serverStates: []
+            };
+
+            const result = serverExplorer.getTreeItem(rsp);
+            expect(result).equals(undefined);
+        });
+
+        test('return valid node if RSPState is passed', async () => {
+            const nodeResult = {
+                label: `the type (Unknown)`,
+                iconPath: Uri.file(path.join(__dirname, '../../images/server-light.png')),
+                contextValue: `RSPUnknown`,
+                collapsibleState: TreeItemCollapsibleState.Expanded
+            };
+
+            const result = serverExplorer.getTreeItem(ProtocolStubs.rspState);
+            expect(result).deep.equals(nodeResult);
+        });
+
+        test('return valid node if ServerStateNode is passed', async () => {
+            const nodeResult = { label: `id (Unknown) (Unknown)`,
+                iconPath: Uri.file(path.join(__dirname, '../../images/server-light.png')),
+                contextValue: 'Unknown',
+                collapsibleState: TreeItemCollapsibleState.Expanded
+            };
+
+            const result = serverExplorer.getTreeItem(ProtocolStubs.unknownServerState);
+            expect(result).deep.equals(nodeResult);
+        });
+
+        test('return valid node if DeployableStateNode is passed', async () => {
+
+            const nodeResult = { label: `fake (Started) (Unknown)`,
+                iconPath: Uri.file(path.join(__dirname, '../../images/server-light.png')),
+                contextValue: 'Unknown',
+                collapsibleState: TreeItemCollapsibleState.None
+            };
+
+            const result = serverExplorer.getTreeItem(ProtocolStubs.deployableStateNode);
+            expect(result).deep.equals(nodeResult);
         });
     });
 });
