@@ -135,4 +135,9 @@ export class ProtocolStubs {
         state: ProtocolStubs.rspState
     };
 
+    public static readonly deployableReference: Protocol.DeployableReference = {
+        label: 'fake',
+        path: 'fakepath'
+    }
+
 }

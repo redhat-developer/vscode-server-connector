@@ -128,10 +128,14 @@ export class ServerExplorer implements TreeDataProvider<RSPState | ServerStateNo
 
     public async insertServer(rspId: string, event: Protocol.ServerHandle) {
         const client: RSPClient = this.getClientByRSP(rspId);
-        const state = await client.getOutgoingHandler().getServerState(event);
-        const serverNode: ServerStateNode = this.convertToServerStateNode(rspId, state);
-        this.RSPServersStatus.get(rspId).state.serverStates.push(serverNode);
-        this.refresh({rsp: rspId, ...state } as ServerStateNode);
+        if (client) {
+            const state = await client.getOutgoingHandler().getServerState(event);
+            const serverNode: ServerStateNode = this.convertToServerStateNode(rspId, state);
+            if (serverNode) {
+                this.RSPServersStatus.get(rspId).state.serverStates.push(serverNode);
+                this.refresh({rsp: rspId, ...state } as ServerStateNode);
+            }
+        }
     }
 
     public updateServer(rspId: string, event: Protocol.ServerState): void {
@@ -147,12 +151,16 @@ export class ServerExplorer implements TreeDataProvider<RSPState | ServerStateNo
     }
 
     private convertToServerStateNode(rspId: string, state: Protocol.ServerState): ServerStateNode {
-        const deployableNodes: DeployableStateNode[] = this.convertToDeployableStateNodes(rspId, state.deployableStates);
-        return {
-            ...state,
-            rsp: rspId,
-            deployableStates: deployableNodes
-        } as ServerStateNode;
+        if (state) {
+            const deployableNodes: DeployableStateNode[] = this.convertToDeployableStateNodes(rspId, state.deployableStates);
+            return {
+                ...state,
+                rsp: rspId,
+                deployableStates: deployableNodes
+            } as ServerStateNode;
+        }
+
+        return undefined;
     }
 
     private convertToDeployableStateNodes(rspId: string, states: Protocol.DeployableState[]): DeployableStateNode[] {
@@ -369,14 +377,23 @@ export class ServerExplorer implements TreeDataProvider<RSPState | ServerStateNo
     }
 
     public getClientByRSP(rspId: string): RSPClient {
+        if (!this.RSPServersStatus.has(rspId)) {
+            return undefined;
+        }
         return this.RSPServersStatus.get(rspId).client;
     }
 
     public getRSPOutputChannel(server: string): OutputChannel {
+        if (!this.RSPServersStatus.has(server)) {
+            return undefined;
+        }
         return this.RSPServersStatus.get(server).rspserverstdout;
     }
 
     public getRSPErrorChannel(server: string): OutputChannel {
+        if (!this.RSPServersStatus.has(server)) {
+            return undefined;
+        }
         return this.RSPServersStatus.get(server).rspserverstderr;
     }
 

@@ -1,7 +1,7 @@
 import { API } from '../contract/api';
 import { available } from '../implementation/apiUtils';
-import { RSPProviderAPI } from '../contract/rspProviderAPI';
-import { RSPProperties, RSPType, ServerExplorer } from '../../serverExplorer';
+import { RSPProviderAPI, RSPServer } from '../contract/rspProviderAPI';
+import { RSPProperties, ServerExplorer } from '../../serverExplorer';
 import * as vscode from 'vscode';
 
 export function api(): API<RSPProviderAPI> {
@@ -10,11 +10,6 @@ export function api(): API<RSPProviderAPI> {
 
 export function impl(): RSPProviderAPI {
     return new RSPProviderAPIImpl();
-}
-
-interface RSPServer {
-    type: RSPType;
-    state: number;
 }
 
 class RSPProviderAPIImpl implements RSPProviderAPI {

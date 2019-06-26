@@ -9,7 +9,7 @@ import { ClientStubs } from './clientstubs';
 import * as path from 'path';
 import { ProtocolStubs } from './protocolstubs';
 import { Protocol, ServerState } from 'rsp-client';
-import { RSPProperties, ServerExplorer } from '../src/serverExplorer';
+import { RSPProperties, ServerExplorer, ServerStateNode } from '../src/serverExplorer';
 import * as sinon from 'sinon';
 import * as sinonChai from 'sinon-chai';
 import { EventEmitter, OpenDialogOptions, OutputChannel, TreeItemCollapsibleState, Uri, window } from 'vscode';
@@ -42,6 +42,7 @@ suite('Server explorer', () => {
         stubs.outgoing.getServerState = sandbox.stub().resolves(ProtocolStubs.unknownServerState);
 
         serverExplorer = ServerExplorer.getInstance();
+        serverExplorer.serverOutputChannels.set('id', fakeChannel);
         getStub = sandbox.stub(serverExplorer.serverOutputChannels, 'get').returns(fakeChannel);
         serverExplorer.RSPServersStatus.set('id', ProtocolStubs.rspProperties);
     });
@@ -63,6 +64,19 @@ suite('Server explorer', () => {
         expect(insertStub).to.be.calledOnceWith(ProtocolStubs.startedServerState);
     });
 
+    test('insertServer doesn\'t call should add server if client is unavailable', async () => {
+        // given
+        sandbox.stub(serverExplorer, 'refresh');
+        stubs.outgoing.getServerState = sandbox.stub().resolves(ProtocolStubs.startedServerStateProtocol);
+        sandbox.stub(serverExplorer, 'getClientByRSP').returns(undefined);
+        sandbox.stub(serverExplorer, 'convertToServerStateNode' as any).returns(ProtocolStubs.startedServerState);
+        const insertStub = serverExplorer.RSPServersStatus.get('id').state.serverStates.push = sandbox.stub();
+        // when
+        await serverExplorer.insertServer('id', ProtocolStubs.serverHandle);
+        // then
+        sandbox.assert.notCalled(insertStub);
+    });
+
     test('removeServer call should remove server', () => {
         // given
         serverExplorer.RSPServersStatus.set('id', ProtocolStubs.rspProperties);
@@ -73,6 +87,26 @@ suite('Server explorer', () => {
         expect(serverExplorer.RSPServersStatus.get('id').state.serverStates).to.not.include(ProtocolStubs.serverHandle);
     });
 
+    test('removeServer should retrieve channel in serverOutputChannels', () => {
+        // given
+        serverExplorer.RSPServersStatus.set('id', ProtocolStubs.rspProperties);
+        sandbox.stub(serverExplorer, 'refresh');
+        // when
+        serverExplorer.removeServer('id', ProtocolStubs.serverHandle);
+        // then
+        expect(getStub).calledOnce;
+    });
+
+    test('removeServer should remove channel from serverOutputChannels', () => {
+        // given
+        serverExplorer.RSPServersStatus.set('id', ProtocolStubs.rspProperties);
+        sandbox.stub(serverExplorer, 'refresh');
+        // when
+        serverExplorer.removeServer('id', ProtocolStubs.serverHandle);
+        // then
+        expect(serverExplorer.serverOutputChannels.size).equals(0);
+    });
+
     test('showOutput call should show servers output channel', () => {
         // given
         const spy = sandbox.spy(fakeChannel, 'show');
@@ -81,6 +115,24 @@ suite('Server explorer', () => {
         // then
         expect(getStub).calledOnce;
         expect(spy).calledOnce;
+    });
+
+    test('showOutput call should show nothing if output channel doesn\'t exist', () => {
+        // given
+        getStub.reset();
+        const spy = sandbox.spy(fakeChannel, 'show');
+        const serverHandle: Protocol.ServerHandle = {
+            id: 'fakeid',
+            type: ProtocolStubs.serverType
+        };
+        const serverState: ServerStateNode = {
+            ...ProtocolStubs.unknownServerState,
+            server: serverHandle
+        };
+        // when
+        serverExplorer.showOutput(serverState);
+        // then
+        sandbox.assert.notCalled(spy);
     });
 
     test('addServerOutput call should show ServerOutput channel', () => {
@@ -474,6 +526,95 @@ suite('Server explorer', () => {
             sandbox.stub(window, 'showQuickPick').resolves(undefined);
             const result = await serverExplorer.addDeployment(ProtocolStubs.startedServerState);
             expect(result).equals(undefined);
+        });
+    });
+
+    suite('removeDeployment', () => {
+        test('check if removeDeployable is called once', async () => {
+            sandbox.stub(serverExplorer, 'getClientByRSP').returns(stubs.client);
+            const stubRemoveDeployable = stubs.outgoing.removeDeployable = sandbox.stub().resolves(ProtocolStubs.okStatus);
+            await serverExplorer.removeDeployment('id', ProtocolStubs.serverHandle, ProtocolStubs.deployableReference);
+            expect(stubRemoveDeployable).calledOnce;
+        });
+
+        test('check if deployable is removed correctly', async () => {
+            sandbox.stub(serverExplorer, 'getClientByRSP').returns(stubs.client);
+            stubs.outgoing.removeDeployable = sandbox.stub().resolves(ProtocolStubs.okStatus);
+            const result = await serverExplorer.removeDeployment('id', ProtocolStubs.serverHandle, ProtocolStubs.deployableReference);
+            expect(result).equals(ProtocolStubs.okStatus);
+        });
+
+        test('check if promise is rejected when removeDeployable fails', async () => {
+            sandbox.stub(serverExplorer, 'getClientByRSP').returns(stubs.client);
+            stubs.outgoing.removeDeployable = sandbox.stub().resolves(ProtocolStubs.errorStatus);
+            try {
+                await serverExplorer.removeDeployment('id', ProtocolStubs.serverHandle, ProtocolStubs.deployableReference);
+                expect.fail();
+            } catch (err) {
+                expect(err).equals(ProtocolStubs.errorStatus.message);
+            }
+        });
+    });
+
+    suite('getClientByRSP', () => {
+
+        test('check if return nothing if rsp server doesn\'t exists in map', async () => {
+            const result = await serverExplorer.getClientByRSP('fakeid');
+            expect(result).equals(undefined);
+        });
+
+        test('check if return right client when called with existing rsp id', async () => {
+            const rspPropertiesWithClient  = {
+                client: stubs.client,
+                rspserverstderr: undefined,
+                rspserverstdout: undefined,
+                state: ProtocolStubs.rspState
+            };
+            serverExplorer.RSPServersStatus.set('client', rspPropertiesWithClient);
+            const result = await serverExplorer.getClientByRSP('client');
+            expect(result).equals(stubs.client);
+        });
+    });
+
+    suite('getRSPOutputChannel', () => {
+
+        test('check if return nothing if rsp server doesn\'t exists in map', async () => {
+            const result = await serverExplorer.getRSPOutputChannel('fakeid');
+            expect(result).equals(undefined);
+        });
+
+        test('check if return right output channel when called with existing rsp id', async () => {
+            const stdout = window.createOutputChannel(`RSP (stdout)`);
+            const rspPropertiesWithStdOut  = {
+                client: undefined,
+                rspserverstderr: undefined,
+                rspserverstdout: stdout,
+                state: ProtocolStubs.rspState
+            };
+            serverExplorer.RSPServersStatus.set('stdout', rspPropertiesWithStdOut);
+            const result = await serverExplorer.getRSPOutputChannel('stdout');
+            expect(result).equals(stdout);
+        });
+    });
+
+    suite('getRSPErrorChannel', () => {
+
+        test('check if return nothing if rsp server doesn\'t exists in map', async () => {
+            const result = await serverExplorer.getRSPErrorChannel('fakeid');
+            expect(result).equals(undefined);
+        });
+
+        test('check if return right output channel when called with existing rsp id', async () => {
+            const stderr = window.createOutputChannel(`RSP (stderr)`);
+            const rspPropertiesWithStderr  = {
+                client: undefined,
+                rspserverstderr: stderr,
+                rspserverstdout: undefined,
+                state: ProtocolStubs.rspState
+            };
+            serverExplorer.RSPServersStatus.set('stderr', rspPropertiesWithStderr);
+            const result = await serverExplorer.getRSPErrorChannel('stderr');
+            expect(result).equals(stderr);
         });
     });
 });
