@@ -573,6 +573,8 @@ suite('Server explorer', () => {
             serverExplorer.RSPServersStatus.set('client', rspPropertiesWithClient);
             const result = await serverExplorer.getClientByRSP('client');
             expect(result).equals(stubs.client);
+            // clear map
+            serverExplorer.RSPServersStatus.delete('client');
         });
     });
 
@@ -594,6 +596,8 @@ suite('Server explorer', () => {
             serverExplorer.RSPServersStatus.set('stdout', rspPropertiesWithStdOut);
             const result = await serverExplorer.getRSPOutputChannel('stdout');
             expect(result).equals(stdout);
+            // clear map
+            serverExplorer.RSPServersStatus.delete('stdout');
         });
     });
 
@@ -615,6 +619,8 @@ suite('Server explorer', () => {
             serverExplorer.RSPServersStatus.set('stderr', rspPropertiesWithStderr);
             const result = await serverExplorer.getRSPErrorChannel('stderr');
             expect(result).equals(stderr);
+            // clear map
+            serverExplorer.RSPServersStatus.delete('stderr');
         });
     });
 
@@ -663,6 +669,63 @@ suite('Server explorer', () => {
 
             const result = serverExplorer.getTreeItem(ProtocolStubs.deployableStateNode);
             expect(result).deep.equals(nodeResult);
+        });
+    });
+
+    suite('getChildren', () => {
+        setup(() => {
+            serverExplorer.RSPServersStatus.get('id').state.serverStates = [ProtocolStubs.startedServerState];
+        });
+
+        test('return RSPState nodes if undefined is passed', async () => {
+            const rspNodes = serverExplorer.getChildren(undefined);
+            expect(rspNodes).deep.equals([ProtocolStubs.rspState]);
+        });
+
+        test('return list ServerState children nodes if rsp node is passed', async () => {
+            const serverNodes = serverExplorer.getChildren(ProtocolStubs.rspState);
+            expect(serverNodes).deep.equals([ProtocolStubs.startedServerState]);
+        });
+
+        test('return list DeployableState children nodes if server node is passed', async () => {
+            const deployableNodes = serverExplorer.getChildren(ProtocolStubs.startedServerState);
+            expect(deployableNodes).deep.equals([ProtocolStubs.deployableStateNode]);
+        });
+
+        test('return empty array if DeployableStateNode is passed', async () => {
+            const result = serverExplorer.getChildren(ProtocolStubs.deployableStateNode);
+            expect(result).deep.equals([]);
+        });
+    });
+
+    suite('getParent', () => {
+        test('return rsp element if serverState node is passed', async () => {
+            const rspNode = serverExplorer.getParent(ProtocolStubs.startedServerState);
+            expect(rspNode).deep.equals(ProtocolStubs.rspState);
+        });
+
+        test('return serverState element if deployablestate node is passed', async () => {
+            const serverNode = serverExplorer.getParent(ProtocolStubs.deployableStateNode);
+            expect(serverNode).deep.equals(ProtocolStubs.startedServerState);
+        });
+
+        test('return undefined if rspState node is passed', async () => {
+            const result = serverExplorer.getParent(ProtocolStubs.rspState);
+            expect(result).equals(undefined);
+        });
+    });
+
+    suite('getServerStateById', () => {
+        test('return serverStateNode by passing rsp id and server id', async () => {
+            const result = serverExplorer.getServerStateById('id', 'id');
+            expect(result).deep.equals(ProtocolStubs.startedServerState);
+        });
+    });
+
+    suite('getServerStatesByRSP', () => {
+        test('return serverStateNode array by passing rsp id', async () => {
+            const result = serverExplorer.getServerStatesByRSP('id');
+            expect(result).deep.equals([ProtocolStubs.startedServerState]);
         });
     });
 });

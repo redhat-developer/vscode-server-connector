@@ -89,8 +89,21 @@ export class ProtocolStubs {
         state: ServerState.STARTED
     };
 
+    public static readonly deployableReference: Protocol.DeployableReference = {
+        label: 'fake',
+        path: 'fakepath'
+    };
+
+    public static readonly deployableStateNode: DeployableStateNode = {
+        rsp: 'id',
+        publishState: ServerState.PUBLISH_STATE_UNKNOWN,
+        server: ProtocolStubs.serverHandle,
+        state: ServerState.STARTED,
+        reference: ProtocolStubs.deployableReference
+    };
+
     public static readonly startedServerState: ServerStateNode = {
-        deployableStates: [],
+        deployableStates: [ProtocolStubs.deployableStateNode],
         publishState: ServerState.PUBLISH_STATE_UNKNOWN,
         server: ProtocolStubs.serverHandle,
         runMode: ServerState.RUN_MODE_RUN,
@@ -133,19 +146,6 @@ export class ProtocolStubs {
         rspserverstderr: undefined,
         rspserverstdout: undefined,
         state: ProtocolStubs.rspState
-    };
-
-    public static readonly deployableReference: Protocol.DeployableReference = {
-        label: 'fake',
-        path: 'fakepath'
-    };
-
-    public static readonly deployableStateNode: DeployableStateNode = {
-        rsp: 'id',
-        publishState: ServerState.PUBLISH_STATE_UNKNOWN,
-        server: ProtocolStubs.serverHandle,
-        state: ServerState.STARTED,
-        reference: ProtocolStubs.deployableReference
     };
 
 }
