@@ -62,5 +62,11 @@ class RSPProviderAPIImpl implements RSPProviderAPI {
             serversExplorer.RSPServersStatus.get(id).rspserverstderr.dispose();
         }
         serversExplorer.RSPServersStatus.delete(id);
+        if (serversExplorer.RSPServersStatus.size > 0) {
+            serversExplorer.refreshTree();
+        } else {
+            // needed to refresh server view if last rsp provider was deactivated.
+            serversExplorer.refresh();
+        }
     }
 }
