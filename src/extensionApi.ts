@@ -39,6 +39,11 @@ export class CommandHandler {
             context = this.explorer.RSPServersStatus.get(rsp.id).state;
         }
 
+        if (!(context.state === ServerState.STOPPED
+            || context.state === ServerState.UNKNOWN)) {
+            return Promise.reject(`The RSP server ${context.type.visibilename} is already running.`);
+        }
+
         const extension = await vscode.extensions.getExtension<ServerAPI>(context.type.id);
         if (!extension) {
             return Promise.reject(`Failed to retrieve ${context.type.id} extension`);
@@ -57,7 +62,7 @@ export class CommandHandler {
         );
 
         if (!serverInfo || !serverInfo.port) {
-            return Promise.reject(`Failed to start the ${context.type.visibilename} rsp server`);
+            return Promise.reject(`Failed to start the ${context.type.visibilename} RSP server`);
         }
 
         const client = await initClient(serverInfo);
@@ -68,6 +73,46 @@ export class CommandHandler {
         this.explorer.RSPServersStatus.set(context.type.id, rspProperties);
         await this.activate(context.type.id, client);
         this.explorer.refreshTree();
+    }
+
+    public async stopRSP(forced: boolean, context?: RSPState): Promise<void> {
+        if (context === undefined) {
+            const rsp = await this.selectRSP('Select RSP provider you want to start');
+            if (!rsp || !rsp.id) return null;
+            context = this.explorer.RSPServersStatus.get(rsp.id).state;
+        }
+
+        if (context.state === ServerState.STARTED
+            || context.state === ServerState.STARTING
+            || context.state === ServerState.STOPPING) {
+            const client: RSPClient = this.explorer.getClientByRSP(context.type.id);
+            if (!client) {
+                return Promise.reject(`Failed to contact the RSP server ${context.type.visibilename}.`);
+            }
+
+            this.explorer.updateRSPServer(context.type.id, ServerState.STOPPING);
+
+            if (!forced) {
+                client.shutdownServer();
+            } else {
+                const extension = await vscode.extensions.getExtension<ServerAPI>(context.type.id);
+                if (!extension) {
+                    return Promise.reject(`Failed to retrieve ${context.type.id} extension`);
+                }
+                const rspProvider: ServerAPI = await extension.activate();
+                await rspProvider.stopRSP().then(() => {
+                    client.disconnect();
+                }).catch(err => {
+                    return Promise.reject(`Failed to terminate ${context.type.visibilename} - ${err}`);
+                });
+            }
+
+            this.explorer.updateRSPServer(context.type.id, ServerState.STOPPED);
+            this.explorer.disposeRSPProperties(context.type.id);
+            this.explorer.refresh();
+        } else {
+            return Promise.reject(`The RSP server ${context.type.visibilename} is already stopped.`);
+        }
     }
 
     public async startServer(mode: string, context?: ServerStateNode): Promise<Protocol.StartServerResponse> {

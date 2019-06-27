@@ -55,12 +55,7 @@ class RSPProviderAPIImpl implements RSPProviderAPI {
             return Promise.reject(error);
         }
 
-        if (serversExplorer.RSPServersStatus.get(id).rspserverstdout) {
-            serversExplorer.RSPServersStatus.get(id).rspserverstdout.dispose();
-        }
-        if (serversExplorer.RSPServersStatus.get(id).rspserverstderr) {
-            serversExplorer.RSPServersStatus.get(id).rspserverstderr.dispose();
-        }
+        serversExplorer.disposeRSPProperties(id);
         serversExplorer.RSPServersStatus.delete(id);
         if (serversExplorer.RSPServersStatus.size > 0) {
             serversExplorer.refreshTree();

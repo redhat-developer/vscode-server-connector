@@ -32,6 +32,7 @@
     "onCommand:server.downloadRuntime",
     "onCommand:server.startRSP",
     "onCommand:server.stopRSP",
+    "onCommand:server.terminateRSP",
     "onCommand:server.start",
     "onCommand:server.debug",
     "onCommand:server.stop",
@@ -73,6 +74,11 @@
       {
         "command": "server.stopRSP",
         "title": "Stop",
+        "category": "Servers"
+      },
+      {
+        "command": "server.terminateRSP",
+        "title": "Terminate",
         "category": "Servers"
       },
       {
@@ -166,6 +172,11 @@
         {
           "command": "server.stopRSP",
           "when": "view == servers && viewItem =~ '/^(RSPStarted)/'",
+          "group": "0_server-rspstartstop@2"
+        },
+        {
+          "command": "server.terminateRSP",
+          "when": "view == servers && viewItem =~ '/^(RSPStarted|RSPStarting|RSPStopping)/'",
           "group": "0_server-rspstartstop@2"
         },
         {
