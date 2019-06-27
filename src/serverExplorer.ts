@@ -138,6 +138,11 @@ export class ServerExplorer implements TreeDataProvider<RSPState | ServerStateNo
         }
     }
 
+    public updateRSPServer(rspId: string, state: number) {
+        this.RSPServersStatus.get(rspId).state.state = state;
+        this.refresh();
+    }
+
     public updateServer(rspId: string, event: Protocol.ServerState): void {
         const indexServer: number = this.RSPServersStatus.get(rspId).state.serverStates.
                                             findIndex(state => state.server.id === event.server.id);

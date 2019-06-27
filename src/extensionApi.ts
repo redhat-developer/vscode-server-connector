@@ -44,6 +44,7 @@ export class CommandHandler {
             return Promise.reject(`Failed to retrieve ${context.type.id} extension`);
         }
         const rspProvider: ServerAPI = await extension.activate();
+        this.setRSPListener(context.type.id, rspProvider);
         const serverInfo: ServerInfo = await rspProvider.startRSP(
             (data: string) => {
                 const rspserverstdout = this.explorer.getRSPOutputChannel(context.type.id);
@@ -521,6 +522,12 @@ export class CommandHandler {
             if (show) outputPanel.show();
             outputPanel.appendLine(message);
         }
+    }
+
+    public async setRSPListener(rspId: string, rspProvider: ServerAPI): Promise<void> {
+        rspProvider.onRSPServerStateChanged(state => {
+            this.explorer.updateRSPServer(rspId, state);
+        });
     }
 
     public async activate(rspId: string, client: RSPClient): Promise<void> {

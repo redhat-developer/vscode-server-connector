@@ -6,6 +6,7 @@ export interface ServerInfo {
 export interface ServerAPI {
     startRSP(stdoutCallback: (data: string) => void, stderrCallback: (data: string) => void ): Promise<ServerInfo>;
     stopRSP(): Promise<void>;
+    onRSPServerStateChanged(listener: (state: number) => void): void;
     getHost(): string;
     getPort(): number;
 }
