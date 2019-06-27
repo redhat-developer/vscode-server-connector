@@ -100,9 +100,7 @@ export class CommandHandler {
                     return Promise.reject(`Failed to retrieve ${context.type.id} extension`);
                 }
                 const rspProvider: ServerAPI = await extension.activate();
-                await rspProvider.stopRSP().then(() => {
-                    client.disconnect();
-                }).catch(err => {
+                await rspProvider.stopRSP().catch(err => {
                     return Promise.reject(`Failed to terminate ${context.type.visibilename} - ${err}`);
                 });
             }
