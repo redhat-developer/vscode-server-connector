@@ -159,17 +159,17 @@
       ],
       "view/item/context": [
         {
-          "command": "server.createServer",
-          "when": "view == servers && viewItem == '/RSPStarted/'",
+          "command": "server.startRSP",
+          "when": "view == servers && viewItem =~ '/^(RSPUnknown|RSPStopped)/'",
           "group": "0_server-rspstartstop@1"
         },
         {
-          "command": "server.startRSP",
-          "when": "view == servers && viewItem =~ '/^(RSPUnknown|RSPStopped)/'",
+          "command": "server.stopRSP",
+          "when": "view == servers && viewItem =~ '/^(RSPStarted)/'",
           "group": "0_server-rspstartstop@2"
         },
         {
-          "command": "server.stopRSP",
+          "command": "server.createServer",
           "when": "view == servers && viewItem =~ '/^(RSPStarted)/'",
           "group": "0_server-rspstartstop@3"
         },
