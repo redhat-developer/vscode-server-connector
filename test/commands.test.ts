@@ -11,12 +11,11 @@ import { DebugInfoProvider } from '../src/debugInfoProvider';
 import { CommandHandler } from '../src/extensionApi';
 import { ProtocolStubs } from './protocolstubs';
 import { Protocol, ServerState } from 'rsp-client';
+import { ServerAPI, ServerInfo } from '../src/rsp/server';
 import { ServerExplorer, ServerStateNode } from '../src/serverExplorer';
 import * as sinon from 'sinon';
 import * as sinonChai from 'sinon-chai';
 import * as vscode from 'vscode';
-import { initClient } from '../src/rsp/client';
-import { ServerAPI, ServerInfo } from '../src/rsp/server';
 
 const expect = chai.expect;
 chai.use(sinonChai);
