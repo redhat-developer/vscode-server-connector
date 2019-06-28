@@ -20,7 +20,7 @@
 - Automatically update publish state for a deployment if deployment source in vscode has changed
 - Clean up context menu to only show relevant actions [issue 203 / 204 / 206]
 - Red Hat Container Development Kit (CDK), found at https://developers.redhat.com/products/cdk, is not currently supported, but is planned. Attempts to create a CDK server adapter will fail. 
-- Configuration option added to choose which JDK to use when starting the RSP server itself. See https://github.com/redhat-developer/vscode-adapters/pull/229 to learn more.
+- Configuration option added to choose which JDK to use when starting the RSP server itself. See https://github.com/redhat-developer/vscode-server-connector/pull/229 to learn more.
 
 ## 0.0.1
 - Support for different Wildfly versions

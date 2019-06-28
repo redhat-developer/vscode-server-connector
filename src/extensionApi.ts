@@ -423,7 +423,7 @@ export class CommandHandler {
         }
 
         if (!debugInfo.isJavaType()) {
-            return `Vscode-Adapters doesn\'t support debugging with ${debugInfo.getType()} language at this time.`;
+            return `vscode-server-connector doesn\'t support debugging with ${debugInfo.getType()} language at this time.`;
         }
 
         if (this.hasJavaDebugExtension()) {

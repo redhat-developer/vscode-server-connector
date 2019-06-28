@@ -3,12 +3,13 @@
 [![Build Status](https://travis-ci.org/redhat-developer/vscode-server-connector.svg?branch=master)](https://travis-ci.org/redhat-developer/vscode-server-connector)
 [![License](https://img.shields.io/badge/license-EPLv2.0-brightgreen.svg)](https://github.com/redhat-developer/vscode-server-connector/blob/master/README.md)
 [![Visual Studio Marketplace](https://vsmarketplacebadge.apphb.com/version/redhat.vscode-server-connector.svg)](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-server-connector)
+[![Gitter](https://badges.gitter.im/redhat-developer/server-connector.svg)](https://gitter.im/redhat-developer/server-connector?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 A Visual Studio Code extension for interacting with different server adapters and runtimes.
 
 ## Commands and features
 
-![ screencast ](https://raw.githubusercontent.com/redhat-developer/vscode-server-connector/master/images/vscode-adapters.gif)
+![ screencast ](https://raw.githubusercontent.com/redhat-developer/vscode-server-connector/master/images/vscode-server-connector.gif)
 
 This extension supports a number of commands for interacting with supported server adapters; these are accessible via the command menu (`Cmd+Shift+P` on macOS or `Ctrl+Shift+P` on Windows and Linux) and may be bound to keys in the normal way.
 
@@ -53,6 +54,8 @@ Stable releases are archived under http://download.jboss.org/jbosstools/adapters
 **Issues:** If you have an issue/feature-request with Server Connector extension, please file it [here](https://github.com/redhat-developer/vscode-server-connector/issues).
 
 **Contributing:** Want to become a contributor and submit your own code? Have a look at our [development guide](https://github.com/redhat-developer/vscode-server-connector/blob/master/CONTRIBUTING.md).
+
+**Chat:** Chat with us on [Gitter](https://gitter.im/redhat-developer/server-connector).
 
 License
 =======
