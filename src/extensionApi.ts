@@ -62,7 +62,7 @@ export class CommandHandler {
         rspProperties.state.serverStates = [];
         this.explorer.RSPServersStatus.set(context.type.id, rspProperties);
         await this.activate(context.type.id, client);
-        this.explorer.refreshTree();
+        this.explorer.initRSPNode(context.type.id);
     }
 
     public async stopRSP(forced: boolean, context?: RSPState): Promise<void> {

@@ -39,7 +39,7 @@ class RSPProviderAPIImpl implements RSPProviderAPI {
         };
         const serversExplorer = ServerExplorer.getInstance();
         serversExplorer.RSPServersStatus.set(rsp.type.id, rspProperties);
-        serversExplorer.refreshTree();
+        serversExplorer.refresh();
     }
 
     public async deregisterRSPProvider(id: string): Promise<void> {
@@ -57,11 +57,6 @@ class RSPProviderAPIImpl implements RSPProviderAPI {
 
         serversExplorer.disposeRSPProperties(id);
         serversExplorer.RSPServersStatus.delete(id);
-        if (serversExplorer.RSPServersStatus.size > 0) {
-            serversExplorer.refreshTree();
-        } else {
-            // needed to refresh server view if last rsp provider was deactivated.
-            serversExplorer.refresh();
-        }
+        serversExplorer.refresh();
     }
 }

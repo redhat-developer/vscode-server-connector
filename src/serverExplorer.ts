@@ -110,20 +110,18 @@ export class ServerExplorer implements TreeDataProvider<RSPState | ServerStateNo
         return this.instance;
     }
 
-    public refreshTree() {
-        Array.from(this.RSPServersStatus.keys()).forEach(async id => {
-            const client: RSPClient = this.getClientByRSP(id);
-            if (client) {
-                const servers: Protocol.ServerHandle[] = await client.getOutgoingHandler().getServerHandles();
-                await servers.forEach(async serverHandle => {
-                    const state = await client.getOutgoingHandler().getServerState(serverHandle);
-                    const serverNode: ServerStateNode = this.convertToServerStateNode(id, state);
-                    this.RSPServersStatus.get(id).state.serverStates.push(serverNode);
-                });
-            }
+    public async initRSPNode(rspId: string) {
+        const client: RSPClient = this.getClientByRSP(rspId);
+        if (client) {
+            const servers: Protocol.ServerHandle[] = await client.getOutgoingHandler().getServerHandles();
+            await servers.forEach(async serverHandle => {
+                const state = await client.getOutgoingHandler().getServerState(serverHandle);
+                const serverNode: ServerStateNode = this.convertToServerStateNode(rspId, state);
+                this.RSPServersStatus.get(rspId).state.serverStates.push(serverNode);
+            });
+        }
 
-            this.refresh(this.RSPServersStatus.get(id).state);
-        });
+        this.refresh(this.RSPServersStatus.get(rspId).state);
     }
 
     public async insertServer(rspId: string, event: Protocol.ServerHandle) {

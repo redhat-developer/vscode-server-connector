@@ -1,19 +1,19 @@
 // The module 'assert' provides assertion methods from node
 import * as chai from 'chai';
+import { ProtocolStubs } from '../protocolstubs';
 import { RSPProviderAPI, RSPServer } from '../../src/api/contract/rspProviderAPI';
 import { impl } from '../../src/api/implementation/rspProviderAPI';
 import { ServerExplorer } from '../../src/serverExplorer';
 import * as sinon from 'sinon';
 import * as sinonChai from 'sinon-chai';
 import { window } from 'vscode';
-import { ProtocolStubs } from '../protocolstubs';
 
 const expect = chai.expect;
 chai.use(sinonChai);
 
 // Defines a Mocha test suite to group tests of similar kind together
 suite('RSPProviderAPI Tests', () => {
-    let sandbox: sinon.SinonSandbox;   
+    let sandbox: sinon.SinonSandbox;
     let serverExplorer: ServerExplorer;
     let rspProviderImpl: RSPProviderAPI;
 
@@ -107,9 +107,9 @@ suite('RSPProviderAPI Tests', () => {
         });
 
         test('check if refreshtree is called', async () => {
-            const stubRefreshtree = sandbox.stub(serverExplorer, 'refreshTree');
+            const stubRefresh = sandbox.stub(serverExplorer, 'refresh');
             await rspProviderImpl.registerRSPProvider(rspServer);
-            expect(stubRefreshtree).calledOnce;
+            expect(stubRefresh).calledOnce;
         });
     });
 

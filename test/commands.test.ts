@@ -122,10 +122,10 @@ suite('Command Handler', () => {
         });
 
         test('check refreshTree is called once', async () => {
-            const refreshTreeStub = sandbox.stub(serverExplorer, 'refreshTree');
+            const initRSPNodeStub = sandbox.stub(serverExplorer, 'initRSPNode');
             sandbox.stub(handler, 'activateExternalExtension' as any).resolves(rspProvider);
             await handler.startRSP(ProtocolStubs.rspState);
-            expect(refreshTreeStub).calledOnce;
+            expect(initRSPNodeStub).calledOnce;
         });
     });
 
