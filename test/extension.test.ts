@@ -81,6 +81,8 @@ suite('Extension Tests', () => {
         return await vscode.commands.getCommands(true).then(commands => {
             const SERVER_COMMANDS = [
                 'server.startRSP',
+                'server.stopRSP',
+                'server.terminateRSP',
                 'server.start',
                 'server.restart',
                 'server.debug',
@@ -109,6 +111,7 @@ suite('Extension Tests', () => {
     });
 
     test('deactivation if rsp server doesnt have rsp client defined', () => {
+        serverExplorer.RSPServersStatus.get('id').client = undefined;
         deactivate();
 
         sandbox.assert.notCalled(stubs.clientStub.shutdownServer);

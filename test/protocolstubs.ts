@@ -131,7 +131,7 @@ export class ProtocolStubs {
     };
 
     public static readonly rspType: RSPType = {
-        id: 'type',
+        id: 'id',
         visibilename: 'the type'
     };
 
@@ -146,6 +146,12 @@ export class ProtocolStubs {
         rspserverstderr: undefined,
         rspserverstdout: undefined,
         state: ProtocolStubs.rspState
+    };
+
+    public static readonly rspStateStarted: RSPState = {
+        serverStates: [],
+        state: ServerState.STARTED,
+        type: ProtocolStubs.rspType
     };
 
 }

@@ -15,6 +15,8 @@ import { ServerExplorer, ServerStateNode } from '../src/serverExplorer';
 import * as sinon from 'sinon';
 import * as sinonChai from 'sinon-chai';
 import * as vscode from 'vscode';
+import { initClient } from '../src/rsp/client';
+import { ServerAPI, ServerInfo } from '../src/rsp/server';
 
 const expect = chai.expect;
 chai.use(sinonChai);
@@ -52,12 +54,175 @@ suite('Command Handler', () => {
         stubs.incoming.onServerStateChanged.reset();
         stubs.incoming.onServerProcessOutputAppended.reset();
 
-        await handler.activate('id', stubs.client);
+        await handler.activate('type', stubs.client);
 
         expect(stubs.incoming.onServerAdded).calledOnce;
         expect(stubs.incoming.onServerRemoved).calledOnce;
         expect(stubs.incoming.onServerStateChanged).calledOnce;
         expect(stubs.incoming.onServerProcessOutputAppended).calledOnce;
+    });
+
+    suite('startRSP', () => {
+        let serverInfo: ServerInfo;
+        let rspProvider: ServerAPI;
+        setup(() => {
+            serverInfo = {
+                host: 'localhost',
+                port: 8080
+            };
+            rspProvider = {
+                getHost: () => 'localhost',
+                getPort: () => 8080,
+                onRSPServerStateChanged: () => {},
+                startRSP: (stdOut: (data: string) => void, stdErr: (data: string) => void) => Promise.resolve(serverInfo),
+                stopRSP: () => Promise.resolve()
+            };
+        });
+
+        test('error if state is different from STOPPED and UNKNOWN', async () => {
+            try {
+                await handler.startRSP(ProtocolStubs.rspStateStarted);
+                expect.fail();
+            } catch (err) {
+                expect(err).equals('The RSP server the type is already running.');
+            }
+        });
+
+        test('check if activateExternalExtension is called with right id', async () => {
+            const activateExtStub = sandbox.stub(handler, 'activateExternalExtension' as any).resolves(rspProvider);
+            await handler.startRSP(ProtocolStubs.rspState);
+            expect(activateExtStub).calledOnceWith('id');
+        });
+
+        test('error if activateExternalExtension receive id of an extension not installed', async () => {
+            sandbox.stub(vscode.extensions, 'getExtension').resolves(undefined);
+            try {
+                await handler.startRSP(ProtocolStubs.rspState);
+                expect.fail();
+            } catch (err) {
+                expect(err).equals(`Failed to retrieve id extension`);
+            }
+        });
+
+        test('check if setRSPListener is called with right params', async () => {
+            sandbox.stub(handler, 'activateExternalExtension' as any).resolves(rspProvider);
+            const listenerStub = sandbox.stub(handler, 'setRSPListener').resolves(undefined);
+            await handler.startRSP(ProtocolStubs.rspState);
+            expect(listenerStub).calledOnceWith('id', rspProvider);
+        });
+
+        test('error if rspProvider.startRSP returns not valid response', async () => {
+            sandbox.stub(handler, 'activateExternalExtension' as any).resolves(rspProvider);
+            rspProvider.startRSP = (stdOut: (data: string) => void, stdErr: (data: string) => void) => Promise.resolve(undefined);
+            try {
+                await handler.startRSP(ProtocolStubs.rspState);
+                expect.fail();
+            } catch (err) {
+                expect(err).equals('Failed to start the the type RSP server');
+            }
+        });
+
+        test('check refreshTree is called once', async () => {
+            const refreshTreeStub = sandbox.stub(serverExplorer, 'refreshTree');
+            sandbox.stub(handler, 'activateExternalExtension' as any).resolves(rspProvider);
+            await handler.startRSP(ProtocolStubs.rspState);
+            expect(refreshTreeStub).calledOnce;
+        });
+    });
+
+    suite('stopRSP', async () => {
+
+        let serverInfo: ServerInfo;
+        let rspProvider: ServerAPI;
+        setup(() => {
+            serverInfo = {
+                host: 'localhost',
+                port: 8080
+            };
+            rspProvider = {
+                getHost: () => 'localhost',
+                getPort: () => 8080,
+                onRSPServerStateChanged: () => {},
+                startRSP: (stdOut: (data: string) => void, stdErr: (data: string) => void) => Promise.resolve(serverInfo),
+                stopRSP: () => Promise.resolve()
+            };
+        });
+
+        test('error if state is STOPPED or UNKNOWN', async () => {
+            try {
+                await handler.stopRSP(false, ProtocolStubs.rspState);
+                expect.fail();
+            } catch (err) {
+                expect(err).equals('The RSP server the type is already stopped.');
+            }
+        });
+
+        test('check if getClient is called with right param', async () => {
+            const getClientStub = sandbox.stub(serverExplorer, 'getClientByRSP').returns(stubs.client);
+            await handler.stopRSP(false, ProtocolStubs.rspStateStarted);
+            expect(getClientStub).calledOnceWith('id');
+        });
+
+        test('error if rsp\'s client is undefined', async () => {
+            sandbox.stub(serverExplorer, 'getClientByRSP').returns(undefined);
+            try {
+                await handler.stopRSP(false, ProtocolStubs.rspStateStarted);
+                expect.fail();
+            } catch (err) {
+                expect(err).equals('Failed to contact the RSP server the type.');
+            }
+        });
+
+        test('check if updateState is called twice if not forced or forced and no error occured', async () => {
+            const updateStub = sandbox.stub(serverExplorer, 'updateRSPServer');
+            sandbox.stub(serverExplorer, 'getClientByRSP').returns(stubs.client);
+            await handler.stopRSP(false, ProtocolStubs.rspStateStarted);
+            expect(updateStub).calledTwice;
+        });
+
+        test('check that shutdown server is called if stop is not forced', async () => {
+            sandbox.stub(serverExplorer, 'getClientByRSP').returns(stubs.client);
+            await handler.stopRSP(false, ProtocolStubs.rspStateStarted);
+            expect(stubs.clientStub.shutdownServer).calledOnce;
+        });
+
+        test('check if external rsp provider is called if stop is forced', async () => {
+            const activateExtStub = sandbox.stub(handler, 'activateExternalExtension' as any).resolves(rspProvider);
+            await handler.stopRSP(true, ProtocolStubs.rspStateStarted);
+            expect(activateExtStub).calledOnceWith('id');
+        });
+
+        test('error if external rsp provider stopRSP method returns an error', async () => {
+            rspProvider.stopRSP = () => Promise.reject('error');
+            sandbox.stub(handler, 'activateExternalExtension' as any).resolves(rspProvider);
+            try {
+                await handler.stopRSP(true, ProtocolStubs.rspStateStarted);
+                expect.fail();
+            } catch (err) {
+                expect(err).equals('Failed to terminate the type - error');
+            }
+        });
+
+        test('check if updateState is called three times if forced and error occured', async () => {
+            const updateStub = sandbox.stub(serverExplorer, 'updateRSPServer');
+            rspProvider.stopRSP = () => Promise.reject('error');
+            sandbox.stub(handler, 'activateExternalExtension' as any).resolves(rspProvider);
+            try {
+                await handler.stopRSP(true, ProtocolStubs.rspStateStarted);
+                expect(updateStub).calledThrice;
+                expect.fail();
+            } catch (err) {
+                expect(err).equals('Failed to terminate the type - error');
+            }
+        });
+
+        test('check if disposeRSp is called with right param', async () => {
+            const disposeRSPStub = sandbox.stub(serverExplorer, 'disposeRSPProperties');
+            sandbox.stub(handler, 'activateExternalExtension' as any).resolves(rspProvider);
+            await handler.stopRSP(true, ProtocolStubs.rspStateStarted);
+            expect(disposeRSPStub).calledOnceWith('id');
+        });
+
     });
 
     suite('startServer', () => {

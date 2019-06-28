@@ -638,9 +638,9 @@ suite('Server explorer', () => {
 
         test('return valid node if RSPState is passed', async () => {
             const nodeResult = {
-                label: `the type (Unknown)`,
+                label: `the type (Stopped)`,
                 iconPath: Uri.file(path.join(__dirname, '../../images/server-light.png')),
-                contextValue: `RSPUnknown`,
+                contextValue: `RSPStopped`,
                 collapsibleState: TreeItemCollapsibleState.Expanded
             };
 
@@ -728,4 +728,60 @@ suite('Server explorer', () => {
             expect(result).deep.equals([ProtocolStubs.startedServerState]);
         });
     });
+
+    suite('disposeRSPProperties', () => {
+
+        test('check if disconnect client is called if client exists', async () => {
+            serverExplorer.RSPServersStatus.get('id').client = stubs.client;
+            serverExplorer.disposeRSPProperties('id');
+            expect(stubs.clientStub.disconnect).calledOnce;
+        });
+
+        test('check if dispose stdout output channel if exist', async () => {
+            const rspserverstdout: OutputChannel = window.createOutputChannel(`(stdout)`);
+            serverExplorer.RSPServersStatus.get('id').rspserverstdout = rspserverstdout;
+            const disposeStdOutStub = sandbox.stub(rspserverstdout, 'dispose');
+            serverExplorer.disposeRSPProperties('id');
+            expect(disposeStdOutStub).calledOnce;
+        });
+
+        test('check if dispose stderr output channel if exist', async () => {
+            const rspserverstderr = window.createOutputChannel(`(stderr)`);
+            serverExplorer.RSPServersStatus.get('id').rspserverstderr = rspserverstderr;
+            const disposeStdErrStub = sandbox.stub(rspserverstderr, 'dispose');
+            serverExplorer.disposeRSPProperties('id');
+            expect(disposeStdErrStub).calledOnce;
+        });
+
+        test('check if new properties is set', async () => {
+            const newProps = {
+                client: undefined,
+                rspserverstderr: undefined,
+                rspserverstdout: undefined,
+                state: {
+                    ...serverExplorer.RSPServersStatus.get('id').state,
+                    serverStates: undefined
+                }
+            };
+            const setPropsStub = sandbox.stub(serverExplorer.RSPServersStatus, 'set');
+            serverExplorer.disposeRSPProperties('id');
+            expect(setPropsStub).calledOnceWith('id', newProps);
+        });
+    });
+
+    suite('updateRSPServer', () => {
+        test('check if value is updated for rsp state', async () => {
+            let state = serverExplorer.RSPServersStatus.get('id').state.state;
+            expect(state).not.equals(0);
+            serverExplorer.updateRSPServer('id', 0);
+            state = serverExplorer.RSPServersStatus.get('id').state.state;
+            expect(state).equals(0);
+        });
+
+        test('check if refresh function is called correctly', async () => {
+            const refreshStub = sandbox.stub(serverExplorer, 'refresh');
+            serverExplorer.updateRSPServer('id', 0);
+            expect(refreshStub).calledOnce;
+        });
+    })
 });
