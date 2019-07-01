@@ -11,7 +11,7 @@ org.jboss.tools.rsp.distribution-*.zip
 *.vsix
 build/**
 coverage/**
-images/vscode-server-connector.gif
+images/vscode-adapters.gif
 test/**
 .travis.yml
 Jenkinsfile

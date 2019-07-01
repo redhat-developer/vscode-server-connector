@@ -2,7 +2,7 @@ const fs = require('fs-extra');
 const download = require('download');
 const decompress = require('decompress');
 
-const RSP_SERVER_JAR_NAME = 'org.jboss.tools.rsp.distribution-0.16.0-SNAPSHOT.zip';
+const RSP_SERVER_JAR_NAME = 'org.jboss.tools.rsp.distribution.wildfly-0.16.0-SNAPSHOT.zip';
 const RSP_SERVER_JAR_URL = `http://download.jboss.org/jbosstools/adapters/snapshots/rsp-server/${RSP_SERVER_JAR_NAME}`;
 
 function clean() {

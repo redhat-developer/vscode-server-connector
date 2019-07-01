@@ -11,14 +11,11 @@ import * as portfinder from 'portfinder';
 import * as requirements from './requirements';
 import * as vscode from 'vscode';
 import * as waitOn from 'wait-on';
+import { ServerInfo } from 'vscode-server-connector-api';
 
+let cpProcess: cp.ChildProcess;
 let javaHome: string;
 let port: number;
-
-export interface ServerInfo {
-    host: string;
-    port: number;
-}
 
 export function start(stdoutCallback: (data: string) => void, stderrCallback: (data: string) => void ): Promise<ServerInfo> {
     return requirements.resolveRequirements()
@@ -67,13 +64,25 @@ function getServerLocation(process: any): string {
     process.env.RSP_SERVER_LOCATION : path.resolve(__dirname, '..', '..', 'server');
 }
 
-function startServer(location: string, port: number, javaHome: string, stdoutCallback, stderrCallback): void {
+function startServer(location: string, port: number, javaHome: string, stdoutCallback: (data: string) => void, stderrCallback: (data: string) => void): void {
     const felix = path.join(location, 'bin', 'felix.jar');
     const java = path.join(javaHome, 'bin', 'java');
-  // Debuggable version
-  // const process = cp.spawn(java, [`-Xdebug`, `-Xrunjdwp:transport=dt_socket,server=y,address=8001,suspend=y`, `-Drsp.server.port=${port}`, '-jar', felix], { cwd: location });
-  // Production version
-    const process = cp.spawn(java, [`-Drsp.server.port=${port}`, '-jar', felix], { cwd: location });
-    process.stdout.on('data', stdoutCallback);
-    process.stderr.on('data', stderrCallback);
+    // Debuggable version
+    // const process = cp.spawn(java, [`-Xdebug`, `-Xrunjdwp:transport=dt_socket,server=y,address=8001,suspend=y`, `-Drsp.server.port=${port}`, '-jar', felix], { cwd: location });
+    // Production version
+    cpProcess = cp.spawn(java, [`-Drsp.server.port=${port}`, '-jar', felix], { cwd: location });
+    cpProcess.stdout.on('data', stdoutCallback);
+    cpProcess.stderr.on('data', stderrCallback);
+}
+
+export async function terminate(): Promise<void> {
+    try {
+        if (!cpProcess) {
+            cpProcess.removeAllListeners();   
+            cpProcess.kill();         
+        }
+    } catch (err) {
+        return Promise.reject(err);
+    }
+    
 }

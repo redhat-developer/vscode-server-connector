@@ -2,7 +2,7 @@
   "name": "vscode-server-connector",
   "displayName": "Server Connector",
   "description": "Connects vscode with different server adapters and runtimes",
-  "version": "0.16.0",
+  "version": "0.16.1",
   "license": "SEE LICENSE IN LICENSE",
   "publisher": "redhat",
   "author": "Red Hat",
@@ -22,229 +22,12 @@
     "server",
     "runtimes",
     "middleware",
-    "minishift",
     "adapters",
+    "jboss",
     "wildfly"
   ],
-  "icon": "images/server_connector_icon.png",
-  "activationEvents": [
-    "onCommand:server.createServer",
-    "onCommand:server.addLocation",
-    "onCommand:server.downloadRuntime",
-    "onCommand:server.start",
-    "onCommand:server.debug",
-    "onCommand:server.stop",
-    "onCommand:server.terminate",
-    "onCommand:server.restart",
-    "onCommand:server.restartDebug",
-    "onCommand:server.remove",
-    "onCommand:server.output",
-    "onCommand:server.add",
-    "onCommand:server.publish",
-    "onView:servers",
-    "onLanguage:plaintext"
-  ],
+  "icon": "images/jboss.eap.png",
   "main": "./out/src/extension",
-  "contributes": {
-    "commands": [
-      {
-        "command": "server.createServer",
-        "title": "Create New Server...",
-        "icon": "resources/dark/new-server.svg",
-        "category": "Servers"
-      },
-      {
-        "command": "server.addLocation",
-        "title": "Add Local Server...",
-        "icon": "resources/dark/add-location.svg",
-        "category": "Servers"
-      },
-      {
-        "command": "server.downloadRuntime",
-        "title": "Download Server...",
-        "category": "Servers"
-      },
-      {
-        "command": "server.start",
-        "title": "Start",
-        "category": "Servers"
-      },
-      {
-        "command": "server.debug",
-        "title": "Debug",
-        "category": "Servers"
-      },
-      {
-        "command": "server.stop",
-        "title": "Stop",
-        "category": "Servers"
-      },
-      {
-        "command": "server.terminate",
-        "title": "Terminate",
-        "category": "Servers"
-      },
-      {
-        "command": "server.restart",
-        "title": "Restart in Run Mode",
-        "category": "Servers"
-      },
-      {
-        "command": "server.restartDebug",
-        "title": "Restart in Debug Mode",
-        "category": "Servers"
-      },
-      {
-        "command": "server.remove",
-        "title": "Remove",
-        "category": "Servers"
-      },
-      {
-        "command": "server.output",
-        "title": "Show Output Channel",
-        "category": "Servers"
-      },
-      {
-        "command": "server.addDeployment",
-        "title": "Add Deployment to Server",
-        "category": "Servers"
-      },
-      {
-        "command": "server.removeDeployment",
-        "title": "Remove Deployment from Server",
-        "category": "Servers"
-      },
-      {
-        "command": "server.publishFull",
-        "title": "Publish Server (Full)",
-        "category": "Servers"
-      },
-      {
-        "command": "server.editServer",
-        "title": "Edit Server",
-        "category": "Servers"
-      },
-      {
-        "command": "server.infoServer",
-        "title": "Properties",
-        "category": "Servers"
-      }
-    ],
-    "views": {
-      "explorer": [
-        {
-          "id": "servers",
-          "name": "Servers"
-        }
-      ]
-    },
-    "menus": {
-      "view/title": [
-        {
-          "command": "server.createServer",
-          "when": "view == servers",
-          "group": "navigation"
-        }
-      ],
-      "view/item/context": [
-        {
-          "command": "server.start",
-          "when": "view == servers && viewItem == 'Stopped'",
-          "group": "1_server-startstop@1"
-        },
-        {
-          "command": "server.debug",
-          "when": "view == servers && viewItem == 'Stopped'",
-          "group": "1_server-startstop@2"
-        },
-        {
-          "command": "server.stop",
-          "when": "view == servers && viewItem =~ '/(Started|Debugging)/'",
-          "group": "1_server-startstop@3"
-        },
-        {
-          "command": "server.restart",
-          "when": "view == servers && viewItem =~ '/(Started|Debugging)/'",
-          "group": "1_server-startstop@4"
-        },
-        {
-          "command": "server.restartDebug",
-          "when": "view == servers && viewItem =~ '/(Started|Debugging)/'",
-          "group": "1_server-startstop@5"
-        },
-        {
-          "command": "server.terminate",
-          "when": "view == servers && viewItem =~ /(Starting|Stopping)/",
-          "group": "1_server-startstop@6"
-        },
-        {
-          "command": "server.remove",
-          "when": "view == servers && viewItem == 'Stopped'",
-          "group": "2_server-remove@1"
-        },
-        {
-          "command": "server.publishFull",
-          "when": "view == servers && viewItem =~ /(Starting|Started|Debugging|Stopping|Stopped|Unknown)/",
-          "group": "3_server-deployments@6"
-        },
-        {
-          "command": "server.addDeployment",
-          "when": "view == servers && viewItem =~ /(Starting|Started|Debugging|Stopping|Stopped|Unknown)/",
-          "group": "3_server-deployments@1"
-        },
-        {
-          "command": "server.removeDeployment",
-          "when": "view == servers && viewItem =~ /(Synchronized|Publish Required|Unknown)/",
-          "group": "3_server-deployments@2"
-        },
-        {
-          "command": "server.output",
-          "when": "view == servers && viewItem =~ '/(Starting|Started|Debugging|Stopping|Stopped)/'",
-          "group": "4_server-status@1"
-        },
-        {
-          "command": "server.downloadRuntime",
-          "when": "view == servers",
-          "group": "5_rsp@1"
-        },
-        {
-          "command": "server.addLocation",
-          "when": "view == servers",
-          "group": "5_rsp@2"
-        },
-        {
-          "command": "server.editServer",
-          "when": "view == servers && viewItem =~ /(Starting|Started|Debugging|Stopping|Stopped|Unknown)/'",
-          "group": "6_server-info@1"
-        },
-        {
-          "command": "server.infoServer",
-          "when": "view == servers && viewItem =~ /(Starting|Started|Debugging|Stopping|Stopped|Unknown)/'",
-          "group": "6_server-info@2"
-        }
-      ]
-    },
-    "configuration": {
-      "type": "object",
-      "title": "Servers View",
-      "properties": {
-        "vscodeAdapters.showChannelOnServerOutput": {
-          "type": "boolean",
-          "default": true,
-          "description": "Show Server's output channel when new text added to output stream."
-        },
-        "java.home": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "default": null,
-          "description": "Specifies the path to a JDK (version 8 or newer) which will be used to launch the Runtime Server Protocol (RSP) Server, as well as be the default java to launch any Java-based runtimes that the RSP will control.\nOn Windows, backslashes must be escaped, i.e.\n\"java.home\":\"C:\\\\Program Files\\\\Java\\\\jdk1.8.0_161\"",
-          "scope": "window"
-        }
-      }
-    }
-  },
   "scripts": {
     "package": "node ./build/package.js",
     "vscode:prepublish": "npm run compile",
@@ -284,16 +67,17 @@
     "file-url": "^2.0.2",
     "find-java-home": "^0.2.0",
     "fs-extra": "7.0.0",
-    "fstream": "^1.0.12",
+    "fstream": "^1.0.11",
     "mkdirp": "0.5.1",
     "path": "0.12.7",
     "path-exists": "^3.0.0",
-    "pify": "4.0.1",
+    "pify": "4.0.0",
     "portfinder": "^1.0.20",
-    "rsp-client": "^0.16.0",
-    "tmp": "^0.1.0",
+    "rsp-client": "^0.15.0",
     "vscode-jsonrpc": "^4.0.0",
     "vscode-languageclient": "^5.1.0",
+    "vscode-rsp-ui": "file:../vscode-rsp-ui",
+    "vscode-server-connector-api": "0.1.1",
     "wait-on": "^3.0.1"
   }
 }

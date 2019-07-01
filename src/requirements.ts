@@ -11,6 +11,7 @@ import * as findJavaHome from 'find-java-home';
 import * as path from 'path';
 import * as pathExists from 'path-exists';
 import { Uri, workspace } from 'vscode';
+//const expandHomeDir = require('expand-home-dir');
 
 const isWindows = process.platform.indexOf('win') === 0;
 const JAVAC_FILENAME = 'javac' + (isWindows ? '.exe' : '');
@@ -36,7 +37,7 @@ export async function resolveRequirements(): Promise<RequirementsData> {
 function checkJavaRuntime(): Promise<string> {
     return new Promise((resolve, reject) => {
         let source: string;
-        let javaHome: string = readJavaConfig();
+        let javaHome: string | undefined = readJavaConfig();
         if (javaHome) {
             source = 'The java.home variable defined in VS Code settings';
         } else {
@@ -48,8 +49,8 @@ function checkJavaRuntime(): Promise<string> {
                 source = 'The JAVA_HOME environment variable';
             }
         }
-        if (javaHome ) {
-            javaHome = expandHomeDir(javaHome);
+        if (javaHome) {
+            javaHome = expandHomeDir(javaHome) as string;
             if (!pathExists.sync(javaHome)) {
                 rejectWithDownloadUrl(reject, `${source} points to a missing folder`);
             }
@@ -71,7 +72,7 @@ function checkJavaRuntime(): Promise<string> {
 
 function readJavaConfig(): string {
     const config = workspace.getConfiguration();
-    return config.get<string>('java.home', null);
+    return config.get<string>('java.home', '');
 }
 
 function checkJavaVersion(javaHome: string): Promise<number> {
@@ -112,7 +113,7 @@ export function parseMajorVersion(content: string): number {
 }
 
 const newLocal = 'https://developers.redhat.com/products/openjdk/download/?sc_cid=701f2000000RWTnAAO';
-function rejectWithDownloadUrl(reject, message: string) {
+function rejectWithDownloadUrl(reject: { (reason?: any): void; (reason?: any): void; (reason?: any): void; (reason?: any): void; (arg0: { message: string; label: string; openUrl: Uri; replaceClose: boolean; }): void; }, message: string) {
     let jdkUrl = newLocal;
     if (process.platform === 'darwin') {
         jdkUrl = 'http://www.oracle.com/technetwork/java/javase/downloads/index.html';
