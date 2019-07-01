@@ -27,6 +27,6 @@ export class ClientStubs {
         this.clientStub.getIncomingHandler.returns(this.incoming as unknown as Incoming);
 
         this.serverCreation = sandbox.createStubInstance(ServerCreation);
-        this.clientStub.getServerCreation.returns(this.serverCreation);
+        this.clientStub.getServerCreation.returns(this.serverCreation as unknown as ServerCreation);
     }
 }

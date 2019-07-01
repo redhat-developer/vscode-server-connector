@@ -42,11 +42,12 @@ suite('Extension Tests', () => {
         globalState: new DummyMemento(),
         asAbsolutePath(relativePath: string): string {
             return '';
-        }
+        },
+        logPath: ''
     };
 
     const serverdata = {
-        port: '27511',
+        port: 27511,
         host: 'localhost',
         process: {
             stdout: {

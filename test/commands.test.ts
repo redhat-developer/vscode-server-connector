@@ -32,9 +32,10 @@ suite('Command Handler', () => {
         sandboxDebug = sinon.createSandbox();
 
         stubs = new ClientStubs(sandbox);
-        stubs.outgoing.getServerHandles = sandbox.stub().resolves([ProtocolStubs.serverHandle]);
-        stubs.outgoing.getServerState = sandbox.stub().resolves(ProtocolStubs.unknownServerState);
-
+        stubs.outgoing.getServerHandles = sandbox.stub<[number?], Promise<Protocol.ServerHandle[]>>().resolves([ProtocolStubs.serverHandle]);
+        stubs.outgoing.getServerState = sandbox.
+                                            stub<[Protocol.ServerHandle, number?], Promise<Protocol.ServerState>>().
+                                            resolves(ProtocolStubs.unknownServerState);
         serverExplorer = new ServerExplorer(stubs.client);
         handler = new CommandHandler(serverExplorer, stubs.client);
 
@@ -62,11 +63,13 @@ suite('Command Handler', () => {
 
     suite('startServer', () => {
         let statusStub: sinon.SinonStub;
-        let startStub: sinon.SinonStub;
+        let startStub: sinon.SinonStub<[Protocol.LaunchParameters, number?], Promise<Protocol.StartServerResponse>>;
 
         setup(() => {
             statusStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(ProtocolStubs.unknownServerState);
-            startStub = sandbox.stub().resolves(ProtocolStubs.okStartServerResponse);
+            startStub = sandbox.
+                            stub<[Protocol.LaunchParameters, number?], Promise<Protocol.StartServerResponse>>().
+                            resolves(ProtocolStubs.okStartServerResponse);
             stubs.outgoing.startServerAsync = startStub;
         });
 
@@ -86,7 +89,10 @@ suite('Command Handler', () => {
         });
 
         test('works without injected context', async () => {
-            sandbox.stub(vscode.window, 'showQuickPick').resolves('id');
+            const quickPickItem: vscode.QuickPickItem = {
+                label: 'id'
+            };
+            sandbox.stub(vscode.window, 'showQuickPick').resolves(quickPickItem);
             const result = await handler.startServer('run');
             const args: Protocol.LaunchParameters = {
                 mode: 'run',
@@ -129,7 +135,7 @@ suite('Command Handler', () => {
     });
 
     suite('debugServer', () => {
-        let startStub: sinon.SinonStub;
+        let startStub: sinon.SinonStub<[Protocol.LaunchParameters, number?], Promise<Protocol.StartServerResponse>>;
 
         const cmdDetails: Protocol.CommandLineDetails = {
             cmdLine: [''],
@@ -146,8 +152,8 @@ suite('Command Handler', () => {
         };
 
         setup(() => {
-            startStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(ProtocolStubs.unknownServerState);
-            startStub = sandbox.stub().resolves(response);
+            sandbox.stub(serverExplorer.serverStatus, 'get').returns(ProtocolStubs.unknownServerState);
+            startStub = sandbox.stub<[Protocol.LaunchParameters, number?], Promise<Protocol.StartServerResponse>>().resolves(response);
             stubs.outgoing.startServerAsync = startStub;
         });
 
@@ -188,7 +194,10 @@ suite('Command Handler', () => {
 
         test('starts server & debugging without given but prompted server', async () => {
             // given
-            sandbox.stub(vscode.window, 'showQuickPick').resolves('id');
+            const quickPickItem: vscode.QuickPickItem = {
+                label: 'id'
+            };
+            sandbox.stub(vscode.window, 'showQuickPick').resolves(quickPickItem);
             givenDebugTypeIsSupported(sandbox, handler);
             const startServerStub = givenServerStarted(sandbox, handler);
             const startDebuggingStub = sandbox.stub(vscode.debug, 'startDebugging');
@@ -204,12 +213,14 @@ suite('Command Handler', () => {
 
     suite('stopServer', () => {
         let statusStub: sinon.SinonStub;
-        let stopStub: sinon.SinonStub;
+        let stopStub: sinon.SinonStub<[Protocol.StopServerAttributes, number?], Promise<Protocol.Status>>;
 
         setup(() => {
             statusStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(ProtocolStubs.startedServerState);
-            stopStub = stubs.outgoing.stopServerAsync = sandbox.stub().resolves(ProtocolStubs.okStatus);
-            sandbox.stub(vscode.window, 'showQuickPick').resolves('id');
+            stopStub = stubs.outgoing.stopServerAsync = sandbox.
+                                                            stub<[Protocol.StopServerAttributes, number?], Promise<Protocol.Status>>().
+                                                            resolves(ProtocolStubs.okStatus);
+            sandbox.stub(vscode.window, 'showQuickPick').resolves('id' as unknown as  vscode.QuickPickItem);
         });
 
         test('works with injected context', async () => {
@@ -272,7 +283,7 @@ suite('Command Handler', () => {
 
             statusStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverStateInternal);
             stopStub = stubs.outgoing.stopServerAsync.resolves(ProtocolStubs.okStatus);
-            sandbox.stub(vscode.window, 'showQuickPick').resolves('id');
+            sandbox.stub(vscode.window, 'showQuickPick').resolves('id' as unknown as  vscode.QuickPickItem);
         });
 
         test('works with injected context', async () => {
@@ -314,6 +325,10 @@ suite('Command Handler', () => {
         let statusStub: sinon.SinonStub;
         let removeStub: sinon.SinonStub;
 
+        const message: vscode.MessageItem = {
+            title: 'Yes'
+        };
+
         setup(() => {
             const serverStateInternal: Protocol.ServerState =  {
                 server: ProtocolStubs.serverHandle,
@@ -325,11 +340,11 @@ suite('Command Handler', () => {
 
             statusStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverStateInternal);
             removeStub = stubs.outgoing.deleteServer.resolves(ProtocolStubs.okStatus);
-            sandbox.stub(vscode.window, 'showQuickPick').resolves('id');
+            sandbox.stub(vscode.window, 'showQuickPick').resolves('id' as unknown as  vscode.QuickPickItem);
         });
 
         test('works with injected context', async () => {
-            sandbox.stub(vscode.window, 'showWarningMessage').resolves('Yes');
+            sandbox.stub(vscode.window, 'showWarningMessage').resolves(message);
             const result = await handler.removeServer(ProtocolStubs.unknownServerState);
             const args: Protocol.ServerHandle = {
                 id: ProtocolStubs.serverHandle.id,
@@ -341,7 +356,7 @@ suite('Command Handler', () => {
         });
 
         test('works without injected context', async () => {
-            sandbox.stub(vscode.window, 'showWarningMessage').resolves('Yes');
+            sandbox.stub(vscode.window, 'showWarningMessage').resolves(message);
             const result = await handler.removeServer();
             const args: Protocol.ServerHandle = {
                 id: 'id',
@@ -353,7 +368,7 @@ suite('Command Handler', () => {
         });
 
         test('errors if the server is not stopped', async () => {
-            sandbox.stub(vscode.window, 'showWarningMessage').resolves('Yes');
+            sandbox.stub(vscode.window, 'showWarningMessage').resolves(message);
             statusStub.returns(ServerState.STARTED);
 
             try {
@@ -365,7 +380,7 @@ suite('Command Handler', () => {
         });
 
         test('throws any errors coming from the rsp client', async () => {
-            sandbox.stub(vscode.window, 'showWarningMessage').resolves('Yes');
+            sandbox.stub(vscode.window, 'showWarningMessage').resolves(message);
             removeStub.resolves(ProtocolStubs.errorStatus);
 
             try {
@@ -388,13 +403,17 @@ suite('Command Handler', () => {
 
         setup(() => {
             serverExplorer.serverStatus.set(ProtocolStubs.startedServerState.server.id, ProtocolStubs.startedServerState);
-            stopStub = stubs.outgoing.stopServerAsync = sandbox.stub().callsFake(() => {
-                // set server to stopped state if stopServer is called
-                serverExplorer.serverStatus.set(ProtocolStubs.stoppedServerState.server.id, ProtocolStubs.stoppedServerState);
-                return ProtocolStubs.okStatus;
-            });
-            startStub = stubs.outgoing.startServerAsync = sandbox.stub().resolves(ProtocolStubs.okStartServerResponse);
-            sandbox.stub(vscode.window, 'showQuickPick').resolves(ProtocolStubs.serverHandle.id);
+            stopStub = stubs.outgoing.stopServerAsync = sandbox.
+                                                            stub<[Protocol.StopServerAttributes, number?], Promise<Protocol.Status>>()
+                                                            .callsFake(() => {
+                                                                // set server to stopped state if stopServer is called
+                                                                serverExplorer.serverStatus.set(ProtocolStubs.stoppedServerState.server.id, ProtocolStubs.stoppedServerState);
+                                                                return Promise.resolve(ProtocolStubs.okStatus);
+                                                            });
+            startStub = stubs.outgoing.startServerAsync = sandbox.
+                                                            stub<[Protocol.LaunchParameters, number?], Promise<Protocol.StartServerResponse>>().
+                                                            resolves(ProtocolStubs.okStartServerResponse);
+            sandbox.stub(vscode.window, 'showQuickPick').resolves(ProtocolStubs.serverHandle.id as unknown as  vscode.QuickPickItem);
         });
 
         test('should restart with given server', async () => {
@@ -448,14 +467,20 @@ suite('Command Handler', () => {
 
         setup(() => {
             serverExplorer.serverStatus.set(ProtocolStubs.startedServerState.server.id, ProtocolStubs.startedServerState);
-            stopStub = stubs.outgoing.stopServerAsync = sandbox.stub().callsFake(() => {
-                // set server to stopped state if stopServer is called
-                serverExplorer.serverStatus.set(ProtocolStubs.stoppedServerState.server.id, ProtocolStubs.stoppedServerState);
-                return ProtocolStubs.okStatus;
-            });
-            debugStub = stubs.outgoing.startServerAsync = sandbox.stub().resolves(ProtocolStubs.okStartServerResponse);
-            stubs.outgoing.getLaunchCommand = sandbox.stub().resolves(ProtocolStubs.javaCommandLine);
-            sandbox.stub(vscode.window, 'showQuickPick').resolves(ProtocolStubs.serverHandle.id);
+            stopStub = stubs.outgoing.stopServerAsync = sandbox.
+                                                            stub<[Protocol.StopServerAttributes, number?], Promise<Protocol.Status>>().
+                                                            callsFake(() => {
+                                                                // set server to stopped state if stopServer is called
+                                                                serverExplorer.serverStatus.set(ProtocolStubs.stoppedServerState.server.id, ProtocolStubs.stoppedServerState);
+                                                                return Promise.resolve(ProtocolStubs.okStatus);
+                                                            });
+            debugStub = stubs.outgoing.startServerAsync = sandbox.
+                                                            stub<[Protocol.LaunchParameters, number?], Promise<Protocol.StartServerResponse>>().
+                                                            resolves(ProtocolStubs.okStartServerResponse);
+            stubs.outgoing.getLaunchCommand = sandbox.
+                                                stub<[Protocol.LaunchParameters, number?], Promise<Protocol.CommandLineDetails>>().
+                                                resolves(ProtocolStubs.javaCommandLine);
+            sandbox.stub(vscode.window, 'showQuickPick').resolves(ProtocolStubs.serverHandle.id as unknown as  vscode.QuickPickItem);
             sandbox.stub(handler, 'checkExtension' as any).resolves(undefined);
         });
 
@@ -551,15 +576,17 @@ function givenDebugTypeIsSupported(sandbox: sinon.SinonSandbox, handler: Command
 }
 
 function givenProcessOutput(sandbox: sinon.SinonSandbox, stubs: ClientStubs) {
-    stubs.incoming.onServerProcessOutputAppended = sandbox.stub().callsFake((listener: (arg: Protocol.ServerProcessOutput) => void) => {
-        // call listeners that's being registered with fake output
-        listener({
-            server: ProtocolStubs.serverHandle,
-            processId: 'papa smurf',
-            streamType: 1,
-            text: 'Listening for transport dt_socket'
-        });
-    });
+    stubs.incoming.onServerProcessOutputAppended = sandbox.
+                                                        stub<[(arg: Protocol.ServerProcessOutput) => void], void>().
+                                                        callsFake((listener: (arg: Protocol.ServerProcessOutput) => void) => {
+                                                            // call listeners that's being registered with fake output
+                                                            listener({
+                                                                server: ProtocolStubs.serverHandle,
+                                                                processId: 'papa smurf',
+                                                                streamType: 1,
+                                                                text: 'Listening for transport dt_socket'
+                                                            });
+                                                        });
 
 }
 

@@ -38,8 +38,10 @@ suite('Server explorer', () => {
         sandbox = sinon.createSandbox();
 
         stubs = new ClientStubs(sandbox);
-        stubs.outgoing.getServerHandles = sandbox.stub().resolves([]);
-        stubs.outgoing.getServerState = sandbox.stub().resolves(ProtocolStubs.unknownServerState);
+        stubs.outgoing.getServerHandles = sandbox.stub<[number?], Promise<Protocol.ServerHandle[]>>().resolves([]);
+        stubs.outgoing.getServerState = sandbox.
+                                            stub<[Protocol.ServerHandle, number?], Promise<Protocol.ServerState>>().
+                                            resolves(ProtocolStubs.unknownServerState);
 
         serverExplorer = new ServerExplorer(stubs.client);
         getStub = sandbox.stub(serverExplorer.serverOutputChannels, 'get').returns(fakeChannel);
@@ -52,7 +54,9 @@ suite('Server explorer', () => {
     test('insertServer call should add server', async () => {
         // given
         sandbox.stub(serverExplorer, 'refresh');
-        stubs.outgoing.getServerState = sandbox.stub().resolves(ProtocolStubs.startedServerState);
+        stubs.outgoing.getServerState = sandbox.
+                                            stub<[Protocol.ServerHandle, number?], Promise<Protocol.ServerState>>().
+                                            resolves(ProtocolStubs.startedServerState);
         const insertStub = serverExplorer.serverStatus.set = sandbox.stub();
         // when
         await serverExplorer.insertServer(ProtocolStubs.serverHandle);
@@ -287,7 +291,17 @@ suite('Server explorer', () => {
             invalidKeys: []
         };
 
-        const userSelectedPath = { fsPath: 'path/path' };
+        const userSelectedPath: Uri = {
+            fsPath: 'path/path',
+            authority: '',
+            fragment: '',
+            path: 'path',
+            query: '',
+            scheme: '',
+            toJSON: () => '',
+            toString: () => '',
+            with: () => Uri.parse('')
+        };
 
         const discoveryPath: Protocol.DiscoveryPath = {
             filepath: userSelectedPath.fsPath
@@ -344,7 +358,17 @@ suite('Server explorer', () => {
             exploded = 'Exploded'
         }
 
-        const userSelectedPath = { fsPath: 'path/path' };
+        const userSelectedPath: Uri = {
+            fsPath: 'path/path',
+            authority: '',
+            fragment: '',
+            path: 'path',
+            query: '',
+            scheme: '',
+            toJSON: () => '',
+            toString: () => '',
+            with: () => Uri.parse('')
+        };
 
         test('check dialog options are set up correctly when choosing file in Windows', async () => {
             Object.defineProperty(process, 'platform', {

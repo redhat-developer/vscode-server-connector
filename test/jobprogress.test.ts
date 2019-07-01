@@ -168,7 +168,7 @@ suite('Job Progress', () => {
     test('cancelling CancellationToken cancels job', () => {
         // given
         const onCancellationSpy = sandbox.spy(cancellationStub, 'onCancellationRequested');
-        stubs.outgoing.cancelJob = sandbox.stub().withArgs(job).resolves();
+        stubs.outgoing.cancelJob = sandbox.stub<[Protocol.JobHandle, number?], Promise<Protocol.Status>>().withArgs(job).resolves();
 
         JobProgress.create(stubs.client);
         callOnJobAddedListenerWith(job, stubs.incoming.onJobAdded);
