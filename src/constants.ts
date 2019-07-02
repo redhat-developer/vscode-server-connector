@@ -1,7 +1,7 @@
 /**
  * RSP Provider ID
  */
-export const RSP_PROVIDER_ID = 'redhat.rspprovider-sample';
+export const RSP_PROVIDER_ID = 'redhat.vscode-server-connector';
 /**
  * RSP Provider Name - it will be displayed in the tree node
  */
