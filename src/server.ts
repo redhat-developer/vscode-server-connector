@@ -10,8 +10,8 @@ import * as path from 'path';
 import * as portfinder from 'portfinder';
 import * as requirements from './requirements';
 import * as vscode from 'vscode';
-import * as waitOn from 'wait-on';
 import { ServerInfo } from 'vscode-server-connector-api';
+import * as waitOn from 'wait-on';
 
 let cpProcess: cp.ChildProcess;
 let javaHome: string;
@@ -78,11 +78,10 @@ function startServer(location: string, port: number, javaHome: string, stdoutCal
 export async function terminate(): Promise<void> {
     try {
         if (!cpProcess) {
-            cpProcess.removeAllListeners();   
-            cpProcess.kill();         
+            cpProcess.removeAllListeners();
+            cpProcess.kill();
         }
     } catch (err) {
         return Promise.reject(err);
     }
-    
 }

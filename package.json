@@ -76,7 +76,6 @@
     "rsp-client": "^0.15.0",
     "vscode-jsonrpc": "^4.0.0",
     "vscode-languageclient": "^5.1.0",
-    "vscode-rsp-ui": "file:../vscode-rsp-ui",
     "vscode-server-connector-api": "0.1.1",
     "wait-on": "^3.0.1"
   }

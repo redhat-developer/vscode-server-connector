@@ -1,9 +1,7 @@
-import * as server from './server';
-import { ServerAPI } from 'vscode-server-connector-api';
-import { ServerInfo } from 'vscode-server-connector-api';
-import { EventEmitter } from 'events';
-import { ServerState } from 'vscode-server-connector-api';
 import { RSP_PROVIDER_NAME } from './constants';
+import { EventEmitter } from 'events';
+import * as server from './server';
+import { ServerAPI, ServerInfo, ServerState } from 'vscode-server-connector-api';
 
 export class ExtensionAPI implements ServerAPI {
 

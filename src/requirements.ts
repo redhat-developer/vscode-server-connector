@@ -11,7 +11,6 @@ import * as findJavaHome from 'find-java-home';
 import * as path from 'path';
 import * as pathExists from 'path-exists';
 import { Uri, workspace } from 'vscode';
-//const expandHomeDir = require('expand-home-dir');
 
 const isWindows = process.platform.indexOf('win') === 0;
 const JAVAC_FILENAME = 'javac' + (isWindows ? '.exe' : '');
@@ -113,7 +112,18 @@ export function parseMajorVersion(content: string): number {
 }
 
 const newLocal = 'https://developers.redhat.com/products/openjdk/download/?sc_cid=701f2000000RWTnAAO';
-function rejectWithDownloadUrl(reject: { (reason?: any): void; (reason?: any): void; (reason?: any): void; (reason?: any): void; (arg0: { message: string; label: string; openUrl: Uri; replaceClose: boolean; }): void; }, message: string) {
+function rejectWithDownloadUrl(reject: {
+    (reason?: any): void;
+    (reason?: any): void;
+    (reason?: any): void;
+    (reason?: any): void;
+    (arg0: {
+        message: string;
+        label: string;
+        openUrl: Uri;
+        replaceClose: boolean;
+    }): void;
+}, message: string): void {
     let jdkUrl = newLocal;
     if (process.platform === 'darwin') {
         jdkUrl = 'http://www.oracle.com/technetwork/java/javase/downloads/index.html';
