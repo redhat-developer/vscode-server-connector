@@ -9,13 +9,13 @@ import { ExtensionAPI } from '../src/extensionApi';
 import * as server from '../src/server';
 import * as sinon from 'sinon';
 import * as sinonChai from 'sinon-chai';
-import { ServerInfo, ServerState } from 'vscode-server-connector-api';
+import { ServerInfo } from 'vscode-server-connector-api';
 
 const expect = chai.expect;
 chai.use(sinonChai);
 chai.use(chaipromise);
 
-suite('Command Handler', () => {
+suite('Extension API', () => {
     let sandbox: sinon.SinonSandbox;
     let extensionApi: ExtensionAPI;
 
