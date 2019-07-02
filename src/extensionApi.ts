@@ -6,9 +6,9 @@
 import { RSP_PROVIDER_NAME } from './constants';
 import { EventEmitter } from 'events';
 import * as server from './server';
-import { ServerAPI, ServerInfo, ServerState } from 'vscode-server-connector-api';
+import { RSPController, ServerInfo, ServerState } from 'vscode-server-connector-api';
 
-export class ExtensionAPI implements ServerAPI {
+export class ExtensionAPI implements RSPController {
 
     private host: string;
     private port: number;
