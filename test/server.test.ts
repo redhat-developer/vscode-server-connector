@@ -10,9 +10,8 @@ import * as requirements from '../src/requirements';
 import * as server from '../src/server';
 import * as sinon from 'sinon';
 import * as sinonChai from 'sinon-chai';
-import * as vscode from 'vscode';
 import { Readable } from 'stream';
-import * as portfinder from 'portfinder';
+import * as vscode from 'vscode';
 
 const expect = chai.expect;
 chai.use(sinonChai);
