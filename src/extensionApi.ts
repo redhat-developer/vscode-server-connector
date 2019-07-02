@@ -34,8 +34,8 @@ export class ExtensionAPI implements ServerAPI {
     }
 
     public async stopRSP(): Promise<void> {
-        server.terminate().catch(err => {
-            return err;
+        server.terminate().catch(error => {
+            return Promise.reject(`RSP Error - ${error ? error : ''}`);
         });
     }
 
