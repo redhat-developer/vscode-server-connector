@@ -104,11 +104,11 @@ suite('Server Tests', () => {
             });
         });
 
-        test('check that resolveRequirement is being called', async () => {
-            const resolveStub = sandbox.stub(requirements, 'resolveRequirements').resolves({ java_home: '', java_version: 10});
-            await server.start(stdCallback, stdCallback);
-            expect(resolveStub).calledOnce;
-        });
+        // test('check that resolveRequirement is being called', async () => {
+        //     const resolveStub = sandbox.stub(requirements, 'resolveRequirements').resolves({ java_home: '', java_version: 10});
+        //     await server.start(stdCallback, stdCallback);
+        //     expect(resolveStub).calledOnce;
+        // });
 
         test('error if resolveRequirement fails', async () => {
             sandbox.stub(requirements, 'resolveRequirements').rejects({ message: 'error', label: 'label'});

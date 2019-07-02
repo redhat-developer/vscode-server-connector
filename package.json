@@ -15,6 +15,9 @@
   "engines": {
     "vscode": "^1.30.0"
   },
+  "activationEvents": [
+		"onView:servers"
+	],
   "categories": [
     "Other"
   ],
