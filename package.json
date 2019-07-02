@@ -39,6 +39,9 @@
     "coverage:upload": "codecov -f coverage/coverage-final.json",
     "build": "npm run compile && npm run package"
   },
+  "extensionDependencies": [
+    "redhat.vscode-rsp-ui"
+  ],
   "devDependencies": {
     "@types/glob": "^7.1.1",
     "@types/mocha": "^5.2.7",
