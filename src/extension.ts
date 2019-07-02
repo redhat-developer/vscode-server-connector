@@ -1,3 +1,8 @@
+/*-----------------------------------------------------------------------------------------------
+ *  Copyright (c) Red Hat, Inc. All rights reserved.
+ *  Licensed under the EPL v2.0 License. See LICENSE file in the project root for license information.
+ *-----------------------------------------------------------------------------------------------*/
+
 import { RSP_PROVIDER_ID, RSP_PROVIDER_NAME } from './constants';
 import { ExtensionAPI } from './extensionApi';
 import * as vscode from 'vscode';
