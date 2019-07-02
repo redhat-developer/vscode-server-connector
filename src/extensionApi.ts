@@ -27,14 +27,14 @@ export class ExtensionAPI implements ServerAPI {
             this.port = serverInfo.port;
             this.updateRSPStateChanged(ServerState.STARTED);
             return serverInfo;
-        }).catch((error) => {
+        }).catch(error => {
             this.updateRSPStateChanged(ServerState.STOPPED);
             return Promise.reject(`RSP Error - ${RSP_PROVIDER_NAME} failed to start - ${error ? error : ''}`);
         });
     }
 
     public async stopRSP(): Promise<void> {
-        server.terminate().catch(err => { 
+        server.terminate().catch(err => {
             return err;
         });
     }

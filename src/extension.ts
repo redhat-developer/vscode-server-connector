@@ -8,7 +8,7 @@ import { ExtensionAPI } from './extensionApi';
 import * as vscode from 'vscode';
 import { extension, RSPServer, ServerAPI, ServerState } from 'vscode-server-connector-api';
 
-export async function activate(context: vscode.ExtensionContext): Promise<ServerAPI>{
+export async function activate(context: vscode.ExtensionContext): Promise<ServerAPI> {
 
     const api: ExtensionAPI = new ExtensionAPI();
 
