@@ -8,9 +8,9 @@ import { EventEmitter } from 'events';
 import * as path from 'path';
 import * as server from './server';
 import { Uri } from 'vscode';
-import { ServerAPI, ServerInfo, ServerState } from 'vscode-server-connector-api';
+import { RSPController, ServerInfo, ServerState } from 'vscode-server-connector-api';
 
-export class ExtensionAPI implements ServerAPI {
+export class ExtensionAPI implements RSPController {
 
     private host: string;
     private port: number;
@@ -41,7 +41,7 @@ export class ExtensionAPI implements ServerAPI {
         });
     }
 
-    public async getImage(serverType: string): Promise<Uri> {
+    public getImage(serverType: string): Uri {
         if (!serverType) {
             return null;
         }
