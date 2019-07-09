@@ -22,8 +22,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<RSPCon
     const serverConnectorUI = await retrieveUIExtension();
 
     if (serverConnectorUI.available) {
-        serverConnectorUI.api.registerRSPProvider(rsp).catch((x: string) =>
-            console.log('error' + x));
+        serverConnectorUI.api.registerRSPProvider(rsp);
     }
 
     return api;
