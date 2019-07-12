@@ -7,7 +7,7 @@ src/**
 tsconfig.json
 vsc-extension-quickstart.md
 tslint.json
-org.jboss.tools.rsp.distribution-*.zip
+org.jboss.tools.rsp.distribution*.zip
 *.vsix
 build/**
 coverage/**
@@ -16,3 +16,4 @@ test/**
 .travis.yml
 Jenkinsfile
 CONTRIBUTING.md
+screencast/

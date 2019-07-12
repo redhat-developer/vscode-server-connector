@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.20.0
+- Broke up UI into an RSP provider and a main UI for others to contribute to
+- Consume rsp-client 0.20.0
+- Support changing program and vm arguments for WildFly launches
+
 ## 0.15.3
 - Bundles updated rsp-server 0.15.3.Final
 - Support for WildFly 16
