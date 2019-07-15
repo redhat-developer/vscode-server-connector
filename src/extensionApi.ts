@@ -56,6 +56,8 @@ export class ExtensionAPI implements RSPController {
             return 'wildfly_icon.svg';
         } else if (serverType.startsWith('org.jboss.ide.eclipse.as.eap.')) {
             return 'jboss.eap.png';
+        } else if (serverType.startsWith('org.jboss.tools.openshift.cdk.server.type')) {
+            return 'Logotype_RH_OpenShift.svg';
         } else {
             return 'server-light.png';
         }
