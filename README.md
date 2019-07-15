@@ -5,11 +5,11 @@
 [![Visual Studio Marketplace](https://vsmarketplacebadge.apphb.com/version/redhat.vscode-server-connector.svg)](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-server-connector)
 [![Gitter](https://badges.gitter.im/redhat-developer/server-connector.svg)](https://gitter.im/redhat-developer/server-connector?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
-A Visual Studio Code extension for interacting with different server adapters and runtimes.
+A Visual Studio Code extension for interacting with Red Hat Servers and Runtimes.
 
 ## Commands and features
 
-![ screencast ](https://raw.githubusercontent.com/redhat-developer/vscode-server-connector/master/images/vscode-server-connector.gif)
+![ screencast ](https://raw.githubusercontent.com/redhat-developer/vscode-server-connector/master/screencast/vscode-server-connector.gif)
 
 This extension supports a number of commands for interacting with supported server adapters; these are accessible via the command menu (`Cmd+Shift+P` on macOS or `Ctrl+Shift+P` on Windows and Linux) and may be bound to keys in the normal way.
 
