@@ -112,7 +112,7 @@ suite('Server Tests', () => {
 
         test('error if resolveRequirement fails', async () => {
             sandbox.stub(requirements, 'resolveRequirements').rejects({ message: 'error', label: 'label'});
-            const errorStub = sandbox.stub(vscode.window, 'showErrorMessage');
+            const errorStub = sandbox.stub(vscode.window, 'showErrorMessage').resolves(undefined);
             try {
                 await server.start(stdCallback, stdCallback);
                 expect(errorStub).calledOnceWith('error', 'label');
