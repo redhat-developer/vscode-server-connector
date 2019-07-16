@@ -4,7 +4,6 @@
  *-----------------------------------------------------------------------------------------------*/
 
 import * as chai from 'chai';
-import * as chaipromise from 'chai-as-promised';
 import { ExtensionAPI } from '../src/extensionApi';
 import * as server from '../src/server';
 import * as sinon from 'sinon';
@@ -13,7 +12,6 @@ import { ServerInfo } from 'vscode-server-connector-api';
 
 const expect = chai.expect;
 chai.use(sinonChai);
-chai.use(chaipromise);
 
 suite('Extension API', () => {
     let sandbox: sinon.SinonSandbox;
@@ -56,9 +54,9 @@ suite('Extension API', () => {
             sandbox.stub(server, 'start').rejects();
             try {
                 await extensionApi.startRSP(stdCallback, stdCallback);
-                expect(updateRSPStateStub).calledTwice;
+                expect.fail('No error was thrown');
             } catch (err) {
-
+                expect(updateRSPStateStub).calledTwice;
             }
         });
 
@@ -66,7 +64,7 @@ suite('Extension API', () => {
             sandbox.stub(server, 'start').rejects();
             try {
                 await extensionApi.startRSP(stdCallback, stdCallback);
-                expect.fail();
+                expect.fail('No error was thrown');
             } catch (err) {
                 expect(err).equals('RSP Error - Red Hat RSP Server failed to start - Error: Error');
             }
@@ -85,7 +83,7 @@ suite('Extension API', () => {
 
     suite('getHost', () => {
 
-        test('check if correct host is returned after startRSp is called', async () => {
+        test('check if correct host is returned after startRSP is called', async () => {
             let host = extensionApi.getHost();
             expect(host).equals('');
             sandbox.stub(server, 'start').resolves(serverInfo);
