@@ -42,6 +42,9 @@
     "coverage:upload": "codecov -f coverage/coverage-final.json",
     "build": "npm run compile && npm run package"
   },
+  "extensionPack": [
+    "redhat.vscode-rsp-ui"
+  ],
   "extensionDependencies": [
     "redhat.vscode-rsp-ui"
   ],
