@@ -2,7 +2,7 @@
   "name": "vscode-server-connector",
   "displayName": "Server Connector",
   "description": "Starts, stops and deploys to Red Hat server and runtime products.",
-  "version": "0.20.0",
+  "version": "0.20.1",
   "license": "SEE LICENSE IN LICENSE",
   "publisher": "redhat",
   "author": "Red Hat",
