@@ -36,6 +36,7 @@ node('rhel7'){
 			archiveArtifacts artifacts: '*.vsix'
 		}
 	}
+
 	if(params.UPLOAD_LOCATION) {
 		stage('Snapshot') {
 			def filesToPush = findFiles(glob: '**.vsix')
@@ -43,9 +44,7 @@ node('rhel7'){
 			stash name:'vsix', includes:filesToPush[0].path
 		}
 	}
-}
 
-node('rhel7'){
 	if(publishToMarketPlace.equals('true')){
 		timeout(time:5, unit:'DAYS') {
 			input message:'Approve deployment?', submitter: 'rstryker'
@@ -65,4 +64,3 @@ node('rhel7'){
         }
 	}
 }
-
