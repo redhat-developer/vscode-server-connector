@@ -17,6 +17,7 @@ let cpProcess: cp.ChildProcess;
 let javaHome: string;
 let port: number;
 
+const rspid: string = "redhat-server-connector";
 export function start(stdoutCallback: (data: string) => void, stderrCallback: (data: string) => void ): Promise<ServerInfo> {
     return requirements.resolveRequirements()
     .catch(error => {
@@ -70,7 +71,7 @@ function startServer(location: string, port: number, javaHome: string, stdoutCal
     // Debuggable version
     // const process = cp.spawn(java, [`-Xdebug`, `-Xrunjdwp:transport=dt_socket,server=y,address=8001,suspend=y`, `-Drsp.server.port=${port}`, '-jar', felix], { cwd: location });
     // Production version
-    cpProcess = cp.spawn(java, [`-Drsp.server.port=${port}`, '-jar', felix], { cwd: location });
+    cpProcess = cp.spawn(java, [`-Drsp.server.port=${port}`, `-Dorg.jboss.tools.rsp.id=${rspid}`, '-jar', felix], { cwd: location });
     cpProcess.stdout.on('data', stdoutCallback);
     cpProcess.stderr.on('data', stderrCallback);
 }
