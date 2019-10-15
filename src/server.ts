@@ -9,8 +9,10 @@ import * as cp from 'child_process';
 import * as path from 'path';
 import * as portfinder from 'portfinder';
 import * as requirements from './requirements';
+import { ExtensionAPI } from './extensionApi';
+import { ServerInfo, ServerState } from 'vscode-server-connector-api';
 import * as vscode from 'vscode';
-import { ServerInfo } from 'vscode-server-connector-api';
+
 import * as waitOn from 'wait-on';
 
 let cpProcess: cp.ChildProcess;
@@ -18,7 +20,9 @@ let javaHome: string;
 let port: number;
 
 const rspid: string = "redhat-server-connector";
-export function start(stdoutCallback: (data: string) => void, stderrCallback: (data: string) => void ): Promise<ServerInfo> {
+export function start(stdoutCallback: (data: string) => void, 
+                      stderrCallback: (data: string) => void,
+                      api: ExtensionAPI ): Promise<ServerInfo> {
     return requirements.resolveRequirements()
     .catch(error => {
       // show error
@@ -38,7 +42,7 @@ export function start(stdoutCallback: (data: string) => void, stderrCallback: (d
     .then(serverPort => {
         port = serverPort;
         const serverLocation = getServerLocation(process);
-        startServer(serverLocation, serverPort, javaHome, stdoutCallback, stderrCallback);
+        startServer(serverLocation, serverPort, javaHome, stdoutCallback, stderrCallback, api);
       // return  new Promise(resolve=>{
       //  setTimeout(resolve, 5000)
       // });
@@ -65,7 +69,9 @@ function getServerLocation(process: any): string {
     process.env.RSP_SERVER_LOCATION : path.resolve(__dirname, '..', '..', 'server');
 }
 
-function startServer(location: string, port: number, javaHome: string, stdoutCallback: (data: string) => void, stderrCallback: (data: string) => void): void {
+function startServer(location: string, port: number, javaHome: string, 
+                stdoutCallback: (data: string) => void, stderrCallback: (data: string) => void,
+                api: ExtensionAPI): void {
     const felix = path.join(location, 'bin', 'felix.jar');
     const java = path.join(javaHome, 'bin', 'java');
     // Debuggable version
@@ -74,6 +80,12 @@ function startServer(location: string, port: number, javaHome: string, stdoutCal
     cpProcess = cp.spawn(java, [`-Drsp.server.port=${port}`, `-Dorg.jboss.tools.rsp.id=${rspid}`, '-jar', felix], { cwd: location });
     cpProcess.stdout.on('data', stdoutCallback);
     cpProcess.stderr.on('data', stderrCallback);
+    cpProcess.on('close', (code) => {
+        api.updateRSPStateChanged(ServerState.STOPPED);
+    });
+    cpProcess.on('exit', (code) => {
+        api.updateRSPStateChanged(ServerState.STOPPED);
+    });
 }
 
 export async function terminate(): Promise<void> {
