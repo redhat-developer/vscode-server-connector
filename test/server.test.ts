@@ -32,7 +32,7 @@ suite('Server Tests', () => {
             sandbox.stub(requirements, 'resolveRequirements').rejects({ message: 'error', label: 'label'});
             const errorStub = sandbox.stub(vscode.window, 'showErrorMessage').resolves(undefined);
             try {
-                await server.start(stdCallback, stdCallback);
+                await server.start(stdCallback, stdCallback, null);
                 expect.fail('No error was thrown');
             } catch (err) {
                 expect(errorStub).calledOnceWith('error', 'label');

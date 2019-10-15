@@ -24,7 +24,7 @@ export class ExtensionAPI implements RSPController {
 
     public async startRSP(stdoutCallback: (data: string) => void, stderrCallback: (data: string) => void ): Promise<ServerInfo>  {
         this.updateRSPStateChanged(ServerState.STARTING);
-        return await server.start(stdoutCallback, stderrCallback).then(serverInfo => {
+        return await server.start(stdoutCallback, stderrCallback, this).then(serverInfo => {
             this.host = serverInfo.host;
             this.port = serverInfo.port;
             this.updateRSPStateChanged(ServerState.STARTED);
@@ -67,7 +67,7 @@ export class ExtensionAPI implements RSPController {
         this.emitter.on('rspServerStateChanged', listener);
     }
 
-    private async updateRSPStateChanged(state: number): Promise<void> {
+    public async updateRSPStateChanged(state: number): Promise<void> {
         this.emitter.emit('rspServerStateChanged', state);
     }
 
