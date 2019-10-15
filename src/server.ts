@@ -81,10 +81,12 @@ function startServer(location: string, port: number, javaHome: string,
     cpProcess.stdout.on('data', stdoutCallback);
     cpProcess.stderr.on('data', stderrCallback);
     cpProcess.on('close', (code) => {
-        api.updateRSPStateChanged(ServerState.STOPPED);
+        if( api != null )
+            api.updateRSPStateChanged(ServerState.STOPPED);
     });
     cpProcess.on('exit', (code) => {
-        api.updateRSPStateChanged(ServerState.STOPPED);
+        if( api != null )
+            api.updateRSPStateChanged(ServerState.STOPPED);
     });
 }
 
