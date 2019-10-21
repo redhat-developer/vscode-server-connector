@@ -14,40 +14,52 @@ A Visual Studio Code extension for interacting with Red Hat Servers and Runtimes
 This extension depends on VSCode RSP UI Extension which is going to be installed automatically along with VSCode Server Connector Extension. RSP UI in conjuction with Server Connector Extension supports a number of commands for interacting with supported server adapters; these are accessible via the command menu (`Cmd+Shift+P` on macOS or `Ctrl+Shift+P` on Windows and Linux) and may be bound to keys in the normal way.
 
 ### Available Commands
+   This extension provides no additional commands other than those available in [rsp-ui](https://github.com/redhat-developer/vscode-rsp-ui#available-commands)
 
-   * `Add Server Location` - Selects the path of the server location and display in the SERVERS Explorer stack.
-   * `Start RSP` - From the list of rsp providers present, select the rsp provider to start.
-   * `Stop RSP` - From the list of rsp providers present, select the rsp provider to stop.
-   * `Create New Server` - Automatically download the runtime or use one you have locally to create a new server.
-   * `Start Server` - From the list of servers present, select the server to start.
-   * `Restart in Run Mode` - From the list of servers present, select the server to restart in run mode.
-   * `Restart in Debug Mode` - From the list of servers present, select the server to restart in debug mode.
-   * `Stop Server` - From the list of servers present, select the server to stop.
-   * `Remove Server` - From the list of servers present, select the server to be removed.
-   * `Debug` - From the list of servers present, select the server to run in Debug mode.
-   * `Add Deployment to Server` - Add a deployable file to the server to be published.
-   * `Remove Deployment from Server` - Remove a deployment from the server.
-   * `Publish Server (Full)` - Publish the server, synchronizing the content of deployments from your workspace to the server.
-   * `Show Output Channel` - Select a particular server from the list to show its output channel in the editor.
-   * `Edit Server` - Select a particular server from the list to edit its properties in the editor.
-   * `Info Server` - Select a particular server from the list to show its basic infos in the console.
+## Extension Settings
+   This extension provides no additional settings other than those available in [rsp-ui](https://github.com/redhat-developer/vscode-rsp-ui#extension-settings)
+
+## Server Parameters
+   This extension provides some ADDITIONAL server parameters in addition to those available in rsp-ui. To see a list of global server parameters, please go [here](https://github.com/redhat-developer/vscode-rsp-ui#server-parameters). Below are JBoss / WildFly specific parameters. 
+
+   * `"vm.args.override.string"` - allow to override vm arguments. Once you edited this flag, *make sure "args.override.boolean" is set to true before launching your server. Otherwise the server will attempt to auto-generate the launch arguments as it normally does.*
+   * `"program.args.override.string"` - allow to override program arguments. Once you edited this flag, *make sure "args.override.boolean" is set to true before launching your server. Otherwise the server will attempt to auto-generate the launch arguments as it normally does.*
+
+   * `"jboss.server.host"` - allow to set the host you want the current Jboss/Wildfly instance to bind to (default localhost)
+   * `"jboss.server.port"` - allow to set the port you want the current Jboss/Wildfly instance to bind to (default 8080)
+   * `"wildfly.server.config.file"` - name of the configuration file to be used for the current Jboss/Wildfly instance. The file has to be stored in the same folder as the default standalone.xml file. (e.g "wildfly.server.config.file": "newconfigfile.xml")
 
 ### Supported Servers
-   * Wildfly [8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17]
+   * Wildfly [8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18]
    * Red Hat Enterprise Application Platform (EAP) [4.3 | 5.0 | 6.0 | 6.1 | 6.2 | 6.3 | 6.4 | 7.0 | 7.1 | 7.2]
    * Minishift / Red Hat Container Development Kit (CDK) binaries
 
-## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+## FAQ
+---
 
-For example:
+### 1. How can i override Program and VM arguments?
+Due to some issues and requests we received from users we added an additional flag "args.override.boolean" to allow to override program and vm arguments. 
 
-This extension (with the RSP UI extension) contributes the following settings:
+When a user attempts to launch his server, we will first check the override boolean value to see if we are overriding. If the user is overriding (right-click your server -> Edit Server -> set "args.override.boolean": "true" ), we will generate the vm args and program args at that time and set them in the server object.
 
-* `vscodeAdapters.showChannelOnServerOutput`: enable/disable the server output channel logs
-* `rsp-ui.enableStartServerOnActivation`: enable/disable starting of rsp server on activation of extension
-* `java.home`: Specifies the path to a JDK (version 8 or newer) which will be used to launch the Runtime Server Protocol (RSP) Server
+At this point the user will be able to see two other properties in the server editor: "vm.args.override.string" and "program.args.override.string".
+
+Now, if the user wishes to change these flags, he can simply change the override.boolean value to true, and make whatever changes he requires to the program or vm arguments.      
+
+If "args.override.boolean" is set to false, the server will attempt to auto-generate the launch arguments as it normally does when launched.
+   
+### 2. Can I run my Wildfly Server on a different port than the default one?
+Yes. To run a Wildfly Server on a different port you first have to edit the port in the standalone.xml file. 
+
+The next step is to add the following setting through the Server Editor in VScode.
+
+Right-click your server -> Edit Server -> add "jboss.server.port": "8888". Change 8888 with the port you choose.
+
+Now if you start the server it should run on the specified port.
+
+### 3. Is there a video that explain how the VSCode Server Connector extension and the Runtime Server Protocol work?
+Yes. This is the video you can watch to learn more about this extension https://www.youtube.com/watch?v=sP2Hlw-C_7I
 
 -----------------------------------------------------------------------------------------------------------
 ## Install extension locally
