@@ -37,7 +37,11 @@ export function start(stdoutCallback: (data: string) => void,
     })
     .then(requirements => {
         javaHome = requirements.java_home;
-        return portfinder.getPortPromise();
+        const options: portfinder.PortFinderOptions = {
+            startPort: 8500,
+            stopPort: 9000
+        };
+        return portfinder.getPortPromise(options);
     })
     .then(serverPort => {
         port = serverPort;
