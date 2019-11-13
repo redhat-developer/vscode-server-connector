@@ -29,7 +29,7 @@ suite('Server Tests', () => {
     suite('startRSP', () => {
 
         test('error if resolveRequirement fails', async () => {
-            sandbox.stub(requirements, 'resolveRequirements').rejects({ message: 'error', label: 'label'});
+            sandbox.stub(requirements, 'resolveRequirements').rejects({ message: 'error', btns: [{ label: 'label'}]});
             const errorStub = sandbox.stub(vscode.window, 'showErrorMessage').resolves(undefined);
             try {
                 await server.start(stdCallback, stdCallback, null);
