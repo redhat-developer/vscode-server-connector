@@ -21,6 +21,11 @@ export interface RequirementsData {
     java_version: number;
 }
 
+interface ErrorMsgBtn {
+    label: string;
+    openUrl: Uri | undefined;
+}
+
 /**
  * Resolves the requirements needed to run the extension.
  * Returns a promise that will resolve to a RequirementsData if
@@ -117,14 +122,9 @@ export function parseMajorVersion(content: string): number {
 const newLocal = 'https://developers.redhat.com/products/openjdk/download/?sc_cid=701f2000000RWTnAAO';
 function rejectWithDownloadUrl(reject: {
     (reason?: any): void;
-    (reason?: any): void;
-    (reason?: any): void;
-    (reason?: any): void;
     (arg0: {
         message: string;
-        label: string;
-        openUrl: Uri;
-        replaceClose: boolean;
+        btns: ErrorMsgBtn[];
     }): void;
 }, message: string): void {
     let jdkUrl = newLocal;
@@ -133,8 +133,14 @@ function rejectWithDownloadUrl(reject: {
     }
     reject({
         message: message,
-        label: 'Get the Java Development Kit',
-        openUrl: Uri.parse(jdkUrl),
-        replaceClose: false
+        btns: [
+            {
+                label: 'Get the Java Development Kit',
+                openUrl: Uri.parse(jdkUrl)
+            },
+            {
+                label: 'Configure Java'
+            }
+        ]
     });
 }

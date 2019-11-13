@@ -25,10 +25,21 @@ export function start(stdoutCallback: (data: string) => void,
     return requirements.resolveRequirements()
     .catch(error => {
       // show error
-        vscode.window.showErrorMessage(error.message, error.label)
+        vscode.window.showErrorMessage(error.message, ...error.btns.map(btn => btn.label))
         .then(selection => {
-            if (error.label && error.label === selection && error.openUrl) {
-                vscode.commands.executeCommand('vscode.open', error.openUrl);
+            const btnSelected = error.btns.find(btn => btn.label === selection);
+            if (btnSelected) {
+                if (btnSelected.openUrl) {
+                    vscode.commands.executeCommand('vscode.open', btnSelected.openUrl);
+                } else {
+                    vscode.window.showInformationMessage(
+                        `To configure Java for Server Connector Extension add "java.home" property to your settings file
+                        (ex. "java.home": "/usr/local/java/jdk1.8.0_45").`);
+                    vscode.commands.executeCommand(
+                        'workbench.action.quickOpen',
+                        '> Preferences: Open Settings (JSON)'  // only cut file extension
+                    );
+                }
             }
         });
       // rethrow to disrupt the chain.
@@ -83,12 +94,12 @@ function startServer(
     cpProcess = cp.spawn(java, [`-Drsp.server.port=${port}`, `-Dorg.jboss.tools.rsp.id=${rspid}`, '-jar', felix], { cwd: location });
     cpProcess.stdout.on('data', stdoutCallback);
     cpProcess.stderr.on('data', stderrCallback);
-    cpProcess.on('close', (code) => {
+    cpProcess.on('close', () => {
         if ( api != null ) {
             api.updateRSPStateChanged(ServerState.STOPPED);
         }
     });
-    cpProcess.on('exit', (code) => {
+    cpProcess.on('exit', () => {
         if ( api != null ) {
             api.updateRSPStateChanged(ServerState.STOPPED);
         }
