@@ -6,30 +6,39 @@
 'use strict';
 
 import * as cp from 'child_process';
+import { ExtensionAPI } from './extensionApi';
 import * as path from 'path';
 import * as portfinder from 'portfinder';
 import * as requirements from './requirements';
-import { ExtensionAPI } from './extensionApi';
-import { ServerInfo, ServerState } from 'vscode-server-connector-api';
 import * as vscode from 'vscode';
-
+import { ServerInfo, ServerState } from 'vscode-server-connector-api';
 import * as waitOn from 'wait-on';
 
 let cpProcess: cp.ChildProcess;
 let javaHome: string;
 let port: number;
 
-const rspid: string = "redhat-server-connector";
-export function start(stdoutCallback: (data: string) => void, 
+const rspid = 'redhat-server-connector';
+export function start(stdoutCallback: (data: string) => void,
                       stderrCallback: (data: string) => void,
                       api: ExtensionAPI ): Promise<ServerInfo> {
     return requirements.resolveRequirements()
     .catch(error => {
       // show error
-        vscode.window.showErrorMessage(error.message, error.label)
+        vscode.window.showErrorMessage(error.message, ...error.btns.map(btn => btn.label))
         .then(selection => {
-            if (error.label && error.label === selection && error.openUrl) {
-                vscode.commands.executeCommand('vscode.open', error.openUrl);
+            const btnSelected = error.btns.find(btn => btn.label === selection);
+            if (btnSelected) {
+                if (btnSelected.openUrl) {
+                    vscode.commands.executeCommand('vscode.open', btnSelected.openUrl);
+                } else {
+                    vscode.window.showInformationMessage(
+                        `To configure Java for Server Connector Extension add "java.home" property to your settings file
+                        (ex. "java.home": "/usr/local/java/jdk1.8.0_45").`);
+                    vscode.commands.executeCommand(
+                        'workbench.action.openSettingsJson'
+                    );
+                }
             }
         });
       // rethrow to disrupt the chain.
@@ -73,9 +82,9 @@ function getServerLocation(process: any): string {
     process.env.RSP_SERVER_LOCATION : path.resolve(__dirname, '..', '..', 'server');
 }
 
-function startServer(location: string, port: number, javaHome: string, 
-                stdoutCallback: (data: string) => void, stderrCallback: (data: string) => void,
-                api: ExtensionAPI): void {
+function startServer(
+    location: string, port: number, javaHome: string,
+    stdoutCallback: (data: string) => void, stderrCallback: (data: string) => void, api: ExtensionAPI): void {
     const felix = path.join(location, 'bin', 'felix.jar');
     const java = path.join(javaHome, 'bin', 'java');
     // Debuggable version
@@ -84,13 +93,15 @@ function startServer(location: string, port: number, javaHome: string,
     cpProcess = cp.spawn(java, [`-Drsp.server.port=${port}`, `-Dorg.jboss.tools.rsp.id=${rspid}`, '-jar', felix], { cwd: location });
     cpProcess.stdout.on('data', stdoutCallback);
     cpProcess.stderr.on('data', stderrCallback);
-    cpProcess.on('close', (code) => {
-        if( api != null )
+    cpProcess.on('close', () => {
+        if ( api != null ) {
             api.updateRSPStateChanged(ServerState.STOPPED);
+        }
     });
-    cpProcess.on('exit', (code) => {
-        if( api != null )
+    cpProcess.on('exit', () => {
+        if ( api != null ) {
             api.updateRSPStateChanged(ServerState.STOPPED);
+        }
     });
 }
 

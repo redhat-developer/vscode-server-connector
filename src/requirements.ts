@@ -21,6 +21,11 @@ export interface RequirementsData {
     java_version: number;
 }
 
+interface ErrorMsgBtn {
+    label: string;
+    openUrl: Uri | undefined;
+}
+
 /**
  * Resolves the requirements needed to run the extension.
  * Returns a promise that will resolve to a RequirementsData if
@@ -79,9 +84,12 @@ function checkJavaVersion(javaHome: string): Promise<number> {
         const javaExecutable = path.resolve(javaHome, 'bin', JAVA_FILENAME);
         cp.execFile(javaExecutable, ['-version'], {}, (error, stdout, stderr) => {
             const javaVersion = parseMajorVersion(stderr);
-            if (javaVersion < 8) {
-                rejectWithDownloadUrl(reject, `Java 8 or newer is required to run this extension.
-                Java ${javaVersion} was found at ${javaHome}. Please download and install a recent JDK`);
+            if (!javaVersion) {
+                rejectWithDownloadUrl(reject, `Java 8 or newer is required. No Java was found on your system..
+                Please get a recent JDK or configure it for "Servers View" if it already exists`);
+            } else if (javaVersion < 8) {
+                rejectWithDownloadUrl(reject, `Java 8 or newer is required. Java ${javaVersion} was found at ${javaHome}.
+                Please get a recent JDK or configure it for "Servers View" if it already exists`);
             } else {
                 resolve(javaVersion);
             }
@@ -93,7 +101,7 @@ export function parseMajorVersion(content: string): number {
     let regexp = /version "(.*)"/g;
     let match = regexp.exec(content);
     if (!match) {
-        return 0;
+        return undefined;
     }
     let version = match[1];
     // Ignore '1.' prefix for legacy Java versions
@@ -114,14 +122,9 @@ export function parseMajorVersion(content: string): number {
 const newLocal = 'https://developers.redhat.com/products/openjdk/download/?sc_cid=701f2000000RWTnAAO';
 function rejectWithDownloadUrl(reject: {
     (reason?: any): void;
-    (reason?: any): void;
-    (reason?: any): void;
-    (reason?: any): void;
     (arg0: {
         message: string;
-        label: string;
-        openUrl: Uri;
-        replaceClose: boolean;
+        btns: ErrorMsgBtn[];
     }): void;
 }, message: string): void {
     let jdkUrl = newLocal;
@@ -130,8 +133,14 @@ function rejectWithDownloadUrl(reject: {
     }
     reject({
         message: message,
-        label: 'Get the Java Development Kit',
-        openUrl: Uri.parse(jdkUrl),
-        replaceClose: false
+        btns: [
+            {
+                label: 'Get the Java Development Kit',
+                openUrl: Uri.parse(jdkUrl)
+            },
+            {
+                label: 'Configure Java'
+            }
+        ]
     });
 }
