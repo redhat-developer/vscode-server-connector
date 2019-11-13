@@ -13,6 +13,9 @@ import * as requirements from './requirements';
 import * as vscode from 'vscode';
 import { ServerInfo, ServerState } from 'vscode-server-connector-api';
 import * as waitOn from 'wait-on';
+import * as tcpPort from 'tcp-port-used';
+
+const fs = require('fs-extra');
 
 let cpProcess: cp.ChildProcess;
 let javaHome: string;
@@ -52,9 +55,12 @@ export function start(stdoutCallback: (data: string) => void,
         };
         return portfinder.getPortPromise(options);
     })
-    .then(serverPort => {
+    .then(async serverPort => {
         port = serverPort;
         const serverLocation = getServerLocation(process);
+        if (await isWorkspaceLocked()) {
+            return Promise.reject('Workspace is locked. Please verify workspace is not in use');
+        }
         startServer(serverLocation, serverPort, javaHome, stdoutCallback, stderrCallback, api);
       // return  new Promise(resolve=>{
       //  setTimeout(resolve, 5000)
@@ -76,6 +82,26 @@ export function start(stdoutCallback: (data: string) => void,
         return Promise.reject(error);
     });
 }
+
+async function isWorkspaceLocked() {
+    let isLocked = true;
+    const lockFile = path.resolve('./.rsp', rspid, '.lock');
+    if (fs.existsSync(lockFile)) {
+        const port = await fs.readFile(lockFile, 'utf8');
+        const isBusy = await tcpPort.check(+port);
+        if (!isBusy) {
+            await fs.unlink(lockFile);
+            isLocked = false;
+        }
+    } else {
+        isLocked = false;
+    }
+    return isLocked;
+}
+
+// function hasLockFile(files) {
+//     return fs.existsSync(path.join(files, '.lock'));
+// }
 
 function getServerLocation(process: any): string {
     return  process.env.RSP_SERVER_LOCATION ?
