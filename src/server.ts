@@ -36,8 +36,7 @@ export function start(stdoutCallback: (data: string) => void,
                         `To configure Java for Server Connector Extension add "java.home" property to your settings file
                         (ex. "java.home": "/usr/local/java/jdk1.8.0_45").`);
                     vscode.commands.executeCommand(
-                        'workbench.action.quickOpen',
-                        '> Preferences: Open Settings (JSON)'  // only cut file extension
+                        'workbench.action.openSettingsJson'
                     );
                 }
             }
