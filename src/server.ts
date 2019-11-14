@@ -99,10 +99,6 @@ async function isWorkspaceLocked() {
     return isLocked;
 }
 
-// function hasLockFile(files) {
-//     return fs.existsSync(path.join(files, '.lock'));
-// }
-
 function getServerLocation(process: any): string {
     return  process.env.RSP_SERVER_LOCATION ?
     process.env.RSP_SERVER_LOCATION : path.resolve(__dirname, '..', '..', 'server');
