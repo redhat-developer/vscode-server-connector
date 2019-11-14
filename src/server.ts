@@ -85,7 +85,11 @@ export function start(stdoutCallback: (data: string) => void,
 
 async function isWorkspaceLocked() {
     let isLocked = true;
-    const lockFile = path.resolve('./.rsp', rspid, '.lock');
+    let root = './';
+    if (process.platform === 'win32') {
+        root = process.env.USERPROFILE;
+    }
+    const lockFile = path.resolve(root, '.rsp', rspid, '.lock');
     if (fs.existsSync(lockFile)) {
         const port = await fs.readFile(lockFile, 'utf8');
         const isBusy = await tcpPort.check(+port);
