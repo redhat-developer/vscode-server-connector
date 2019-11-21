@@ -74,7 +74,8 @@
     "tslint": "^5.18.0",
     "tslint-eslint-rules": "^5.4.0",
     "typescript": "^3.5.2",
-    "vscode": "^1.1.35"
+    "vscode": "^1.1.35",
+    "vscode-test": "^1.2.3"
   },
   "dependencies": {
     "expand-home-dir": "0.0.3",
