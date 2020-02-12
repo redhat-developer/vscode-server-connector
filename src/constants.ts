@@ -10,4 +10,4 @@ export const RSP_PROVIDER_ID = 'redhat.vscode-server-connector';
 /**
  * RSP Provider Name - it will be displayed in the tree node
  */
-export const RSP_PROVIDER_NAME = 'Red Hat RSP Server';
+export const RSP_PROVIDER_NAME = 'Red Hat Server Connector';
