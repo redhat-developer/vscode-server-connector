@@ -6,3 +6,4 @@ node_modules
 server
 coverage/
 felix-cache/
+test-resources/

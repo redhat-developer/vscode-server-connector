@@ -1,9 +1,9 @@
 #!/usr/bin/env groovy
 
-node('rhel7'){
+node('rhel8'){
 	stage('Checkout repo') {
 		deleteDir()
-		git url: 'https://github.com/redhat-developer/vscode-server-connector.git'
+		git url: "https://github.com/${params.FORK}/vscode-server-connector.git", branch: params.BRANCH
 	}
 
 	stage('Install requirements') {
@@ -21,6 +21,7 @@ node('rhel7'){
         stage('Test') {
     		wrap([$class: 'Xvnc']) {
     			sh "npm test --silent"
+				sh "npm run ui-test"
     			//cobertura coberturaReportFile: 'coverage/cobertura-coverage.xml'
     			junit 'report.xml'
     		}
