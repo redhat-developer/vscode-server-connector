@@ -7,16 +7,10 @@ node_js:
 matrix:
   include:
     - os: linux
-      dist: trusty
     - os: osx
 
-before_install:
-- if [ $TRAVIS_OS_NAME == "linux" ]; then
-      export CXX="g++-4.9" CC="gcc-4.9" DISPLAY=:99.0;
-      sh -e /etc/init.d/xvfb start;
-      sleep 3;
-    fi
-- npm install -g typescript
+services:
+- xvfb
 
 install:
 - npm install
@@ -24,4 +18,5 @@ install:
 
 script:
 - npm test --silent
+- npm run ui-test
 - npm run coverage:upload
