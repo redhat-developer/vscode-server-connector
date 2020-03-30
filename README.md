@@ -22,15 +22,15 @@ This extension depends on VSCode RSP UI Extension which is going to be installed
 ## Server Parameters
    This extension provides some ADDITIONAL server parameters in addition to those available in rsp-ui. To see a list of global server parameters, please go [here](https://github.com/redhat-developer/vscode-rsp-ui#server-parameters). Below are JBoss / WildFly specific parameters. 
 
-   * `"vm.args.override.string"` - allow to override vm arguments. Once you edited this flag, *make sure "args.override.boolean" is set to true before launching your server. Otherwise the server will attempt to auto-generate the launch arguments as it normally does.*
-   * `"program.args.override.string"` - allow to override program arguments. Once you edited this flag, *make sure "args.override.boolean" is set to true before launching your server. Otherwise the server will attempt to auto-generate the launch arguments as it normally does.*
+   * `"args.vm.override.string"` - allow to override vm arguments. Once you edited this flag, *make sure "args.override.boolean" is set to true before launching your server. Otherwise the server will attempt to auto-generate the launch arguments as it normally does.*
+   * `"args.program.override.string"` - allow to override program arguments. Once you edited this flag, *make sure "args.override.boolean" is set to true before launching your server. Otherwise the server will attempt to auto-generate the launch arguments as it normally does.*
 
    * `"jboss.server.host"` - allow to set the host you want the current Jboss/Wildfly instance to bind to (default localhost)
    * `"jboss.server.port"` - allow to set the port you want the current Jboss/Wildfly instance to bind to (default 8080)
    * `"wildfly.server.config.file"` - name of the configuration file to be used for the current Jboss/Wildfly instance. The file has to be stored in the same folder as the default standalone.xml file. (e.g "wildfly.server.config.file": "newconfigfile.xml")
 
 ### Supported Servers
-   * Wildfly [8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18]
+   * Wildfly [8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19]
    * Red Hat Enterprise Application Platform (EAP) [4.3 | 5.0 | 6.0 | 6.1 | 6.2 | 6.3 | 6.4 | 7.0 | 7.1 | 7.2 | 7.3] 
    * Minishift / Red Hat Container Development Kit (CDK) / Red Hat Code-Ready Containers (CRC) binaries
 
@@ -43,9 +43,9 @@ Due to some issues and requests we received from users we added an additional fl
 
 When a user attempts to launch his server, we will first check the override boolean value to see if we are overriding. If the user is overriding (right-click your server -> Edit Server -> set "args.override.boolean": "true" ), we will generate the vm args and program args at that time and set them in the server object.
 
-At this point the user will be able to see two other properties in the server editor: "vm.args.override.string" and "program.args.override.string".
+At this point the user will be able to see two other properties in the server editor: "args.vm.override.string" and "args.program.override.string".
 
-Now, if the user wishes to change these flags, he can simply change the override.boolean value to true, and make whatever changes he requires to the program or vm arguments.      
+Now, if the user wishes to change these flags, he can simply change the override.boolean value to true, and make whatever changes he requires to the program or vm arguments.
 
 If "args.override.boolean" is set to false, the server will attempt to auto-generate the launch arguments as it normally does when launched.
    
