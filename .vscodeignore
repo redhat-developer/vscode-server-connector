@@ -18,3 +18,4 @@ test/**
 Jenkinsfile
 CONTRIBUTING.md
 screencast/
+*.tgz
