@@ -133,7 +133,7 @@ function startServer(
 
 export async function terminate(): Promise<void> {
     try {
-        if (!cpProcess) {
+        if (cpProcess) {
             cpProcess.removeAllListeners();
             cpProcess.kill();
         }
