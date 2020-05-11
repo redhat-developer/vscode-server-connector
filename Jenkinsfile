@@ -18,6 +18,8 @@ node('rhel8'){
 			def baseUrl = "https://download.jboss.org/jbosstools/adapters/snapshots/vscode-middleware-tools"
 			sh "wget ${baseUrl}/vscode-server-connector-api/vscode-server-connector-api-latest.tgz"
 			sh "npm install vscode-server-connector-api-latest.tgz"
+		} else {
+			env.RSP_QUALIFIER="stable"
 		}
 		sh "npm run build"
 	}
