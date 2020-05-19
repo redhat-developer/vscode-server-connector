@@ -6,6 +6,7 @@ import { notificationExists, serverHasState } from "./server/serverUtils";
 import { expect } from 'chai'
 import { fail } from "assert";
 import * as os from "os";
+import { AdaptersConstants } from "./common/adaptersContants";
 
 
 const ERROR_CREATE_NEW_SERVER = 'Unable to create the server';
@@ -34,7 +35,7 @@ export function rspServerProviderActionsTest() {
         beforeEach(async function() {
             this.timeout(30000);
             await serversActivityBar.open();
-            serverProvider = await serversActivityBar.getServerProvider();
+            serverProvider = await serversActivityBar.getServerProvider(AdaptersConstants.RSP_SERVER_PROVIDER_NAME);
             const state = await serverProvider.getServerState();
             if (state == ServerState.Unknown || state == ServerState.Starting)
                 await driver.wait(async () => { return await serverHasState(serverProvider, ServerState.Started);}, 10000 , "Server was not started within 10 s on startup");
@@ -49,7 +50,7 @@ export function rspServerProviderActionsTest() {
         });
 
 
-        it('Verify rsp server provider operation - terminate - skipped due to #432', async function() {
+        it('Verify rsp server provider operation - terminate', async function() {
             this.timeout(8000);
             await serverProvider.terminateServerProvider();
         });
@@ -93,7 +94,7 @@ export function rspServerProviderActionsTest() {
             const notifications = await nc.getNotifications(NotificationType.Any);
             if (notifications.length > 0) {
                 await nc.clearAllNotifications();
-            } 
+            }
             await nc.close();
         })
     });
