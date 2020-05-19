@@ -21,3 +21,9 @@ export async function notificationExists(text: string): Promise<Notification | u
 export async function waitForEvent(func: Function, timeout: number): Promise<any | undefined> {
     return await VSBrowser.instance.driver.wait(func, timeout);
 }
+
+export const asyncFilter = async (arr, predicate) => {
+	const results = await Promise.all(arr.map(predicate));
+
+	return arr.filter((_v, index) => results[index]);
+}

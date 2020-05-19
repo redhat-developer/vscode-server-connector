@@ -1,4 +1,4 @@
-import { ActivityBar, SideBarView, ViewControl, TitleActionButton, VSBrowser } from 'vscode-extension-tester';
+import { ActivityBar, SideBarView, ViewControl, TitleActionButton, ViewSection, VSBrowser } from 'vscode-extension-tester';
 import { AdaptersConstants } from '../../common/adaptersContants';
 import { RSPServerProvider } from './rspServerProvider';
 
@@ -33,26 +33,26 @@ export class ServersActivityBar {
         return this.sideBarView;
     }
 
-    async getServerProvider(): Promise<RSPServerProvider> {
+    async getServerProviderTreeSection(): Promise<ViewSection> {
+        await this.open();
         const sections = await (await this.getSideBarView()).getContent().getSections();
-        const treeSection = sections[0];
-        await VSBrowser.instance.driver.wait(async () => {
-            const treeItems = await treeSection.getVisibleItems();
-            return  treeItems.length > 0; 
-        }, 3000);
-        const items = await treeSection.getVisibleItems();
-        const filteredItems = await Promise.all(items.filter(async (item) => {
-            return (await item.getText()).indexOf(AdaptersConstants.RSP_SERVER_PROVIDER_NAME) >= 0;
-        }));
-        if (filteredItems.length > 1) {
-            throw Error("Unambiguous items found for rsp server provider, should be only one");
-        }
-        return new RSPServerProvider(filteredItems[0]);
+        await VSBrowser.instance.driver.wait(() => { return this.sectionHasItems(sections[0]);}, 3000 );
+        return sections[0];
+    }
+
+    async getServerProvider(name: string): Promise<RSPServerProvider> {
+        await this.open();
+        return new RSPServerProvider(this, name);
+
     }
 
     async getActionButton(): Promise<TitleActionButton> {
         await this.open();
         const titlePart = this.sideBarView.getTitlePart();
         return await titlePart.getAction(AdaptersConstants.RSP_SERVER_PROVIDER_CREATE_NEW_SERVER);
+    }
+
+    async sectionHasItems(section: ViewSection): Promise<boolean> {
+        return (await section.getVisibleItems()).length > 0;
     }
 }
