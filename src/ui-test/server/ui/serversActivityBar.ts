@@ -1,6 +1,7 @@
 import { ActivityBar, SideBarView, ViewControl, TitleActionButton, ViewSection, VSBrowser } from 'vscode-extension-tester';
 import { AdaptersConstants } from '../../common/adaptersContants';
 import { RSPServerProvider } from './rspServerProvider';
+import { sectionHasItem } from '../../common/util/serverUtils';
 
 /**
  * Servers activity bar representation
@@ -35,9 +36,9 @@ export class ServersActivityBar {
 
     async getServerProviderTreeSection(): Promise<ViewSection> {
         await this.open();
-        const sections = await (await this.getSideBarView()).getContent().getSections();
-        await VSBrowser.instance.driver.wait(() => { return this.sectionHasItems(sections[0]);}, 3000 );
-        return sections[0];
+        const sideBarView = await this.getSideBarView();
+        await VSBrowser.instance.driver.wait( async () => { return await sectionHasItem(sideBarView, 'Servers');}, 3000 );
+        return await sideBarView.getContent().getSection('Servers');
     }
 
     async getServerProvider(name: string): Promise<RSPServerProvider> {
@@ -50,9 +51,5 @@ export class ServersActivityBar {
         await this.open();
         const titlePart = this.sideBarView.getTitlePart();
         return await titlePart.getAction(AdaptersConstants.RSP_SERVER_PROVIDER_CREATE_NEW_SERVER);
-    }
-
-    async sectionHasItems(section: ViewSection): Promise<boolean> {
-        return (await section.getVisibleItems()).length > 0;
     }
 }
