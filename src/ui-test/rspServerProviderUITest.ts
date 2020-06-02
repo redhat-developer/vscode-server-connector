@@ -1,9 +1,9 @@
 import { ServersActivityBar } from "./server/ui/serversActivityBar";
 import { expect } from 'chai'
 import { AdaptersConstants } from "./common/adaptersContants";
-import { ServerState } from "./common/serverState";
+import { ServerState } from "./common/enum/serverState";
 import { WebDriver, VSBrowser } from "vscode-extension-tester";
-import { serverHasState } from "./server/serverUtils";
+import { serverHasState } from "./common/util/serverUtils";
 
 
 /**
