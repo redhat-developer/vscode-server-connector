@@ -56,16 +56,21 @@ export function start(stdoutCallback: (data: string) => void,
         return portfinder.getPortPromise(options);
     })
     .then(async serverPort => {
-        port = serverPort;
-        const serverLocation = getServerLocation(process);
-        if (await isWorkspaceLocked()) {
-            return Promise.reject('Workspace is locked. Please verify workspace is not in use');
+        const lockFile = await getLockFile();
+        const lockFileExist = await lockFileExists(lockFile);
+        const portInUse = await lockFilePortInUse(lockFile);
+
+        if( lockFileExist && portInUse ) {
+            port = await getLockFilePort(lockFile);
+        } else {
+            if( lockFileExist && !portInUse ) {
+                await fs.unlink(lockFile);
+            }
+            port = serverPort;
+            const serverLocation = getServerLocation(process);
+            startServer(serverLocation, serverPort, javaHome, stdoutCallback, stderrCallback, api);
         }
-        startServer(serverLocation, serverPort, javaHome, stdoutCallback, stderrCallback, api);
-      // return  new Promise(resolve=>{
-      //  setTimeout(resolve, 5000)
-      // });
-        return waitOn({ resources: [`tcp:localhost:${serverPort}`] });
+        return waitOn({ resources: [`tcp:localhost:${port}`] });
     })
     .then(() => {
         if (!port) {
@@ -83,24 +88,35 @@ export function start(stdoutCallback: (data: string) => void,
     });
 }
 
-async function isWorkspaceLocked() {
-    let isLocked = true;
-    let root = './';
-    if (process.platform === 'win32') {
-        root = process.env.USERPROFILE;
+async function getLockFile() {
+    const homedir = require('os').homedir();
+    const lockFile = path.resolve(homedir, '.rsp', rspid, '.lock');
+    return lockFile;
+}
+
+async function lockFileExists(lockFile: string) {
+    if (fs.existsSync(lockFile)) {
+        return true;
     }
-    const lockFile = path.resolve(root, '.rsp', rspid, '.lock');
+    return false;
+}
+
+async function getLockFilePort(lockFile: string) {
+    if (fs.existsSync(lockFile)) {
+        const port = await fs.readFile(lockFile, 'utf8');
+        return port;
+    }
+    return null;
+}
+
+
+async function lockFilePortInUse(lockFile: string) {
     if (fs.existsSync(lockFile)) {
         const port = await fs.readFile(lockFile, 'utf8');
         const isBusy = await tcpPort.check(+port);
-        if (!isBusy) {
-            await fs.unlink(lockFile);
-            isLocked = false;
-        }
-    } else {
-        isLocked = false;
+        return isBusy;
     }
-    return isLocked;
+    return false;
 }
 
 function getServerLocation(process: any): string {
