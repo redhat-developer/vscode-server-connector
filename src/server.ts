@@ -20,6 +20,7 @@ const fs = require('fs-extra');
 let cpProcess: cp.ChildProcess;
 let javaHome: string;
 let port: number;
+let spawned: boolean;
 
 const rspid = 'redhat-server-connector';
 export function start(stdoutCallback: (data: string) => void,
@@ -62,11 +63,13 @@ export function start(stdoutCallback: (data: string) => void,
 
         if( lockFileExist && portInUse ) {
             port = await getLockFilePort(lockFile);
+            spawned = false;
         } else {
             if( lockFileExist && !portInUse ) {
                 await fs.unlink(lockFile);
             }
             port = serverPort;
+            spawned = true;
             const serverLocation = getServerLocation(process);
             startServer(serverLocation, serverPort, javaHome, stdoutCallback, stderrCallback, api);
         }
@@ -78,7 +81,8 @@ export function start(stdoutCallback: (data: string) => void,
         } else {
             return Promise.resolve({
                 port: port,
-                host: 'localhost'
+                host: 'localhost',
+                spawned: spawned
             });
         }
     })

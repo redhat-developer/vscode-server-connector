@@ -87,7 +87,7 @@
     "path-exists": "^3.0.0",
     "portfinder": "^1.0.20",
     "tcp-port-used": "^1.0.1",
-    "vscode-server-connector-api": "0.1.5",
+    "vscode-server-connector-api": "0.1.7",
     "wait-on": "^3.0.1"
   }
 }
