@@ -73,7 +73,13 @@ export function start(stdoutCallback: (data: string) => void,
             const serverLocation = getServerLocation(process);
             startServer(serverLocation, serverPort, javaHome, stdoutCallback, stderrCallback, api);
         }
-        return waitOn({ resources: [`tcp:localhost:${port}`] });
+        var opts = {
+            resources: [`tcp:localhost:${port}`],
+            delay: 1500, // initial delay in ms, default 0
+            interval: 500, // poll interval in ms, default 250ms
+	    simultaneous: 1 // limit connection attempts to one per resource at a time
+        }
+        return waitOn(opts);
     })
     .then(() => {
         if (!port) {
