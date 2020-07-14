@@ -44,7 +44,7 @@
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "test": "npm run compile && node ./out/test/test-runner.js",
-    "ui-test": "npm run compile && extest setup-and-run out/src/ui-test/allTestsSuite.js",
+    "ui-test": "npm run compile && extest setup-and-run out/src/ui-test/allTestsSuite.js -c 1.46.0",
     "update-deps": "node_modules/.bin/ncu --upgrade --loglevel verbose --packageFile package.json && npm update",
     "coverage:upload": "codecov -f coverage/coverage-final.json",
     "build": "npm run compile && npm run package"
