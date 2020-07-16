@@ -1,6 +1,6 @@
 #!/usr/bin/env groovy
 
-node('rhel8'){
+node('fedora31'){
 	stage('Checkout repo') {
 		deleteDir()
 		git url: "https://github.com/${params.FORK}/vscode-server-connector.git", branch: params.BRANCH
