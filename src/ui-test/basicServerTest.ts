@@ -1,4 +1,3 @@
-/*
 import { WebDriver, VSBrowser, NotificationType, Workbench, InputBox } from "vscode-extension-tester";
 import { RSPServerProvider } from "./server/ui/rspServerProvider";
 import { serverHasState, stopAllServers, deleteAllServers } from "./common/util/serverUtils";
@@ -9,13 +8,12 @@ import { AdaptersConstants } from "./common/adaptersContants";
 import { ServersConstants } from "./common/serverConstants";
 import { downloadServer } from "./common/util/downloadServerUtil";
 import { ServersTab } from "./server/ui/serversTab";
-*/
 /**
  * @author Ondrej Dockal <odockal@redhat.com>
  */
 export function wildflyE2EBasicTest() {
     describe('Verify that E2E use case scenario for server adapter is working properly', function() {
-/*
+
         let driver: WebDriver;
         let serverProvider: RSPServerProvider;
         let serversTab: ServersTab;
@@ -51,8 +49,11 @@ export function wildflyE2EBasicTest() {
                 expect(serversNames).to.include.members([serverName]);
                 const server = await serverProvider.getServer(serverName);
                 await server.start();
+                await driver.wait( async () => { return await serverHasState(server, ServerState.Started);}, 3000 );
                 await server.restart();
+                await driver.wait( async () => { return await serverHasState(server, ServerState.Started);}, 3000 );
                 await server.stop();
+                await driver.wait( async () => { return await serverHasState(server, ServerState.Stopped);}, 3000 );
             });
         }
 
@@ -74,6 +75,5 @@ export function wildflyE2EBasicTest() {
             await stopAllServers(serverProvider);
             await deleteAllServers(serverProvider);
         });
-       */
     });
 }
