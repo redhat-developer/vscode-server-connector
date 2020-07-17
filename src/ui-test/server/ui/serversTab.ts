@@ -4,17 +4,16 @@ import { RSPServerProvider } from './rspServerProvider';
 import { sectionHasItem } from '../../common/util/serverUtils';
 
 /**
- * Servers activity bar representation, can be used only after servers tab is drag-n-dropped into activity bar
- * Since vscode-rsp-ui 0.23.1
+ * Servers tab representation
  * @author Ondrej Dockal <odockal@redhat.com>
  */
-export class ServersActivityBar {
+export class ServersTab {
 
     private viewControl: ViewControl;
     private sideBarView: SideBarView;
 
     constructor() {
-        this.viewControl = new ActivityBar().getViewControl(AdaptersConstants.RSP_CONNECTOR_NAME);
+        this.viewControl = new ActivityBar().getViewControl('Explorer');
     }
 
     async getSideBarView(): Promise<SideBarView> {
@@ -38,8 +37,11 @@ export class ServersActivityBar {
     async getServerProviderTreeSection(): Promise<ViewSection> {
         await this.open();
         const sideBarView = await this.getSideBarView();
+        await this.collapseAllSections('Servers');
         await VSBrowser.instance.driver.wait( async () => { return await sectionHasItem(sideBarView, 'Servers');}, 3000 );
-        return await sideBarView.getContent().getSection('Servers');
+        const section = await sideBarView.getContent().getSection('Servers');
+        await section.expand();
+        return section;
     }
 
     async getServerProvider(name: string): Promise<RSPServerProvider> {
@@ -52,5 +54,14 @@ export class ServersActivityBar {
         await this.open();
         const titlePart = this.sideBarView.getTitlePart();
         return await titlePart.getAction(AdaptersConstants.RSP_SERVER_PROVIDER_CREATE_NEW_SERVER);
+    }
+
+    private async collapseAllSections(exceptSection?: string): Promise<void> {
+        const sections = await (await this.getSideBarView()).getContent().getSections();
+        for (let section of sections) {
+            if (await section.isExpanded() && await section.getTitle() != exceptSection) {
+                await section.collapse();
+            }
+        }
     }
 }

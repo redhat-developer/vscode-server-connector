@@ -1,9 +1,9 @@
-import { ServersActivityBar } from "./server/ui/serversActivityBar";
 import { expect } from 'chai'
 import { AdaptersConstants } from "./common/adaptersContants";
 import { ServerState } from "./common/enum/serverState";
 import { WebDriver, VSBrowser } from "vscode-extension-tester";
 import { serverHasState } from "./common/util/serverUtils";
+import { ServersTab } from "./server/ui/serversTab";
 
 
 /**
@@ -20,7 +20,7 @@ export function rspServerProviderUITest() {
 
         it('Verify rsp server provider tree item is available', async function() {
             this.timeout(10000);
-            const servers = new ServersActivityBar();
+            const servers = new ServersTab();
             await servers.open();
             const serverProvider = await servers.getServerProvider(AdaptersConstants.RSP_SERVER_PROVIDER_NAME);
             expect(await serverProvider.getServerName()).to.include(AdaptersConstants.RSP_SERVER_PROVIDER_NAME);
@@ -29,7 +29,7 @@ export function rspServerProviderUITest() {
 
         it('Verify rsp server provider is started on startup', async function() {
             this.timeout(15000);
-            const servers = new ServersActivityBar();
+            const servers = new ServersTab();
             await servers.open();
             const serverProvider = await servers.getServerProvider(AdaptersConstants.RSP_SERVER_PROVIDER_NAME);
             // initial server provider is starting automatically on bar activation
