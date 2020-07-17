@@ -14,7 +14,7 @@ import { ServersTab } from "./server/ui/serversTab";
  */
 export function wildflyE2EBasicTest() {
     describe('Verify that E2E use case scenario for server adapter is working properly', function() {
-
+/*
         let driver: WebDriver;
         let serverProvider: RSPServerProvider;
         let serversTab: ServersTab;
@@ -73,5 +73,6 @@ export function wildflyE2EBasicTest() {
             await stopAllServers(serverProvider);
             await deleteAllServers(serverProvider);
         });
+       */
     });
 }
