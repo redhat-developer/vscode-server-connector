@@ -1,3 +1,4 @@
+/*
 import { WebDriver, VSBrowser, NotificationType, Workbench, InputBox } from "vscode-extension-tester";
 import { RSPServerProvider } from "./server/ui/rspServerProvider";
 import { serverHasState, stopAllServers, deleteAllServers } from "./common/util/serverUtils";
@@ -8,7 +9,7 @@ import { AdaptersConstants } from "./common/adaptersContants";
 import { ServersConstants } from "./common/serverConstants";
 import { downloadServer } from "./common/util/downloadServerUtil";
 import { ServersTab } from "./server/ui/serversTab";
-
+*/
 /**
  * @author Ondrej Dockal <odockal@redhat.com>
  */
