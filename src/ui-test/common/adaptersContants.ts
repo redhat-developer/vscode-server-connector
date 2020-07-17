@@ -16,7 +16,7 @@ export class AdaptersConstants {
     // RSP server provider constants
     public static readonly RSP_SERVER_PROVIDER_NAME = 'Red Hat Server Connector';
     public static readonly RSP_SERVER_PROVIDER_CREATE_NEW_SERVER = 'Create New Server...';
-    public static readonly RSP_SERVER_PROVIDER_START = 'Start RSP Provider';
+    public static readonly RSP_SERVER_PROVIDER_START = 'Start / Connect to RSP Provider';
     public static readonly RSP_SERVER_PROVIDER_STOP = 'Stop RSP Provider';
     public static readonly RSP_SERVER_PROVIDER_TERMINATE = 'Terminate RSP Provider';
 

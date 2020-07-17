@@ -1,4 +1,3 @@
-import { ServersActivityBar } from "./server/ui/serversActivityBar";
 import { WebDriver, VSBrowser, NotificationType, Workbench, InputBox } from "vscode-extension-tester";
 import { RSPServerProvider } from "./server/ui/rspServerProvider";
 import { serverHasState, notificationExistsWithObject } from "./common/util/serverUtils";
@@ -9,6 +8,7 @@ import { AdaptersConstants } from "./common/adaptersContants";
 import { ServersConstants } from "./common/serverConstants";
 import { ServerState } from "./common/enum/serverState";
 import { downloadableListIsAvailable } from "./common/util/downloadServerUtil";
+import { ServersTab } from "./server/ui/serversTab";
 
 
 const ERROR_CREATE_NEW_SERVER = 'Unable to create the server';
@@ -24,20 +24,20 @@ export function rspServerProviderActionsTest() {
 
         let driver: WebDriver;
         let serverProvider: RSPServerProvider;
-        let serversActivityBar: ServersActivityBar;
+        let serversTab: ServersTab;
 
         before(function() {
             if (os.platform() === 'darwin') {
                 this.skip();
             }
             driver = VSBrowser.instance.driver;
-            serversActivityBar = new ServersActivityBar();
+            serversTab = new ServersTab();
         });
 
         beforeEach(async function() {
             this.timeout(30000);
-            await serversActivityBar.open();
-            serverProvider = await serversActivityBar.getServerProvider(AdaptersConstants.RSP_SERVER_PROVIDER_NAME);
+            await serversTab.open();
+            serverProvider = await serversTab.getServerProvider(AdaptersConstants.RSP_SERVER_PROVIDER_NAME);
             const state = await serverProvider.getServerState();
             if (state == ServerState.Unknown || state == ServerState.Starting)
                 await driver.wait(async () => { return await serverHasState(serverProvider, ServerState.Started);}, 10000 , "Server was not started within 10 s on startup");

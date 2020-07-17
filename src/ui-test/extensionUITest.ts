@@ -32,11 +32,14 @@ export function extensionUIAssetsTest() {
         });
 
         afterEach(async function() {
-            this.timeout(4000);
+            this.timeout(10000);
             if (sideBar && await sideBar.isDisplayed()) {
                 sideBar = await new ActivityBar().getViewControl('Extensions').openView();
-                const actionButton = await sideBar.getTitlePart().getAction('Clear Extensions Input');
-                await actionButton.click();
+                const titlePart = sideBar.getTitlePart();
+                const actionButton = await titlePart.getAction('Clear Extensions Search Results');
+                if (actionButton.isEnabled()) {
+                    await actionButton.click();
+                }
             }
         });
 

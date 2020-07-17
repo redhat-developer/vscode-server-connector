@@ -1,8 +1,8 @@
 import { InputBox, ViewItem, Workbench, TreeItem, VSBrowser } from "vscode-extension-tester";
 import { AdaptersConstants } from "../../common/adaptersContants";
-import { ServersActivityBar } from "./serversActivityBar";
 import { Server } from "./server";
 import { AbstractServer } from "./abstractServer";
+import { IServersProvider } from "./IServersProvider";
 
 
 /**
@@ -11,19 +11,19 @@ import { AbstractServer } from "./abstractServer";
  */
 export class RSPServerProvider extends AbstractServer {
 
-    private _serversActivityBar: ServersActivityBar;
+    private _serversProvider: IServersProvider;
 
-    constructor(sbar: ServersActivityBar, name: string) {
+    constructor(sbar: IServersProvider, name: string) {
         super(name);
-        this._serversActivityBar = sbar;
+        this._serversProvider = sbar;
     }
 
-    public get serversActivityBar(): ServersActivityBar {
-        return this._serversActivityBar;
+    public get serversProvider(): IServersProvider {
+        return this._serversProvider;
     }
 
     async getTreeItem(): Promise<ViewItem> {
-        const section = await this.serversActivityBar.getServerProviderTreeSection();
+        const section = await this.serversProvider.getServerProviderTreeSection();
         VSBrowser.instance.driver.wait( async () => { return (await section.getVisibleItems()).length > 0;}, 3000);
         const rspServerItem = await section.findItem(this.serverName);
         if (!rspServerItem) {
