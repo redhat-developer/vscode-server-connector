@@ -1,3 +1,4 @@
 module.exports = {
-    timeout: 99999999
+    timeout: 99999999,
+    fullTrace: true
 }

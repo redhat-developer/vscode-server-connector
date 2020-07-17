@@ -43,7 +43,9 @@ export abstract class AbstractServer implements IServer {
 
     async performServerOperation(contextMenuItem: string, expectedState: ServerState, timeout: number): Promise<void> {
         await (await this.getTreeItem()).select();
-        const menu = await (await this.getTreeItem()).openContextMenu();
+        const treeItem = await this.getTreeItem();
+        await treeItem.select();
+        const menu = await treeItem.openContextMenu();
         await menu.select(contextMenuItem);
         await VSBrowser.instance.driver.wait( async () => { return await serverHasState(this, expectedState);}, timeout );
     }

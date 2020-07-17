@@ -86,7 +86,7 @@ export function rspServerProviderActionsTest() {
                 console.log(error);
                 const nc = await new Workbench().openNotificationsCenter();
                 fail('Failed to obtain Create new server warning notification, available notifications are: ' 
-                + (await nc.getNotifications(NotificationType.Any)).map(async (item) => await item.getText()));
+                + (await Promise.all((await nc.getNotifications(NotificationType.Any)).map(async (item) => await item.getText()))));
             }
             expect(await notification.getType()).equals(NotificationType.Warning);
             expect(await notification.getMessage()).to.include(ERROR_NO_RSP_PROVIDER);
