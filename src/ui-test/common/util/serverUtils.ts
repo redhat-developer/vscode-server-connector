@@ -6,9 +6,9 @@ import { RSPServerProvider } from '../../server/ui/rspServerProvider';
 /**
  * @author Ondrej Dockal <odockal@redhat.com>
  */
-export async function serverHasState(server: IServer, state: ServerState): Promise<boolean> {
-    var stateActual = await server.getServerState();
-    return stateActual === state;
+export async function serverHasState(server: IServer, ...states: ServerState[]): Promise<boolean> {
+    const stateActual = await server.getServerState();
+    return states.includes(stateActual);
 }
 
 export async function findNotification(text: string): Promise<Notification | undefined> {
@@ -26,14 +26,14 @@ export async function findNotification(text: string): Promise<Notification | und
 
 export async function deleteAllServers(rsp: RSPServerProvider): Promise<void> {
     const servers = await rsp.getServers();
-    for (let server of servers) {
+    for (const server of servers) {
         await server.delete();
     }
 }
 
 export async function stopAllServers(rsp: RSPServerProvider): Promise<void> {
     const servers = await rsp.getServers();
-    for (let server of servers) {
+    for (const server of servers) {
         await server.stop();
     }
 }
@@ -76,19 +76,18 @@ export async function notificationExistsWithObject(text: string): Promise<Notifi
 }
 
 export async function getNotifications(type: NotificationType = NotificationType.Any): Promise<Notification[]> {
-    await new Workbench().openNotificationsCenter();
-    return await (new NotificationsCenter()).getNotifications(type);
+    const center = await new Workbench().openNotificationsCenter();
+    return await center.getNotifications(type);
 }
 
-export async function waitForEvent(func: Function, timeout: number): Promise<any | undefined> {
+export async function waitForEvent(func: () => void, timeout: number): Promise<any | undefined> {
     return await VSBrowser.instance.driver.wait(func, timeout);
 }
 
 export const asyncFilter = async (arr, predicate) => {
-	const results = await Promise.all(arr.map(predicate));
-
-	return arr.filter((_v, index) => results[index]);
-}
+    const results = await Promise.all(arr.map(predicate));
+    return arr.filter((_v, index) => results[index]);
+};
 
 export async function sectionHasItems(sideBar: SideBarView): Promise<boolean> {
     const sections = await sideBar.getContent().getSections();

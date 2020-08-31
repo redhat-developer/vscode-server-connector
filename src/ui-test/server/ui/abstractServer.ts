@@ -24,7 +24,11 @@ export abstract class AbstractServer implements IServer {
     }
 
     async getServerStateLabel(): Promise<string> {
-        const text = await (await (await this.getTreeItem()).findElement(By.className('label-description'))).getText();
+        const treeItem = await this.getTreeItem();
+        const element = await treeItem.findElement(By.className('label-description'));
+        // https://stackoverflow.com/questions/23804123/selenium-gettext
+        // const text = await element.getText();
+        const text = await element.getAttribute('innerHTML');
         return text.slice(text.indexOf('(') + 1, text.indexOf(')'));
     }
 
@@ -47,7 +51,10 @@ export abstract class AbstractServer implements IServer {
         await treeItem.select();
         const menu = await treeItem.openContextMenu();
         await menu.select(contextMenuItem);
-        await VSBrowser.instance.driver.wait( async () => { return await serverHasState(this, expectedState);}, timeout );
+        await VSBrowser.instance.driver.wait( 
+            async () => { return await serverHasState(this, expectedState);}, 
+            timeout, 
+            'Failed to get expected server state ' + ServerState[expectedState] + ' for ' + await this.getServerName() + ', actual state was ' + ServerState[await this.getServerState()]);
     }
 
     async start(timeout: number=10000): Promise<void> {

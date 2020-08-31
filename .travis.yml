@@ -19,5 +19,5 @@ install:
 
 script:
 - npm test --silent
-- npm run ui-test
+- npm run public-ui-test
 - npm run coverage:upload
