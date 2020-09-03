@@ -19,14 +19,14 @@ export function extensionUIAssetsTest() {
 
         it('Dependent Remote Server Protocol UI extension is installed', async function() {
             this.timeout(5000);
-            const section = await sideBar.getContent().getSection('Enabled') as ExtensionsViewSection;
+            const section = await sideBar.getContent().getSection('Installed') as ExtensionsViewSection;
             const item = await section.findItem(`@installed ${AdaptersConstants.RSP_UI_NAME}`) as ExtensionsViewItem;
             expect(item).not.undefined;
         });
 
         it('Server Connector extension is installed', async function() {
             this.timeout(5000);
-            const section = await sideBar.getContent().getSection('Enabled') as ExtensionsViewSection;
+            const section = await sideBar.getContent().getSection('Installed') as ExtensionsViewSection;
             const item = await section.findItem(`@installed ${AdaptersConstants.RSP_CONNECTOR_NAME}`) as ExtensionsViewItem;
             expect(item).not.undefined;
         });
