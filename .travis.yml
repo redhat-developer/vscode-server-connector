@@ -7,6 +7,7 @@ node_js:
 matrix:
   include:
     - os: linux
+      dist: focal
     - os: osx
 
 services:
