@@ -23,11 +23,7 @@ jobs:
         node-version: ${{ matrix.node }}
     - run: npm install
     - run: npm run build
-    - name: Run tests
+    - name: Run Unit tests
       uses: GabrielBB/xvfb-action@v1.0
       with:
         run: npm test
-    - name: Run UI tests
-      uses: GabrielBB/xvfb-action@v1.0
-      with:
-        run: npm run public-ui-test
