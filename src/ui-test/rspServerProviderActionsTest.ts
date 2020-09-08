@@ -20,7 +20,7 @@ const USE_FROM_DISK = 'No, use server on disk';
  * @author Ondrej Dockal <odockal@redhat.com>
  */
 export function rspServerProviderActionsTest() {
-    describe('Verify RSP Server provider actions', function() {
+    describe('Verify RSP Server provider actions', () => {
 
         let driver: WebDriver;
         let serverProvider: RSPServerProvider;
@@ -39,9 +39,10 @@ export function rspServerProviderActionsTest() {
             await serversTab.open();
             serverProvider = await serversTab.getServerProvider(AdaptersConstants.RSP_SERVER_PROVIDER_NAME);
             const state = await serverProvider.getServerState();
-            if (state == ServerState.Unknown || state == ServerState.Starting)
-                await driver.wait(async () => { return await serverHasState(serverProvider, ServerState.Started);}, 15000 , "Server was not started within 15 s on startup");
-            else if (state != ServerState.Started) {
+            if (state === ServerState.Unknown || state === ServerState.Starting) {
+                await driver.wait(async () => await serverHasState(serverProvider, ServerState.Started), 15000 , 'Server was not started within 15 s on startup');
+            }
+            else if (state !== ServerState.Started) {
                 await serverProvider.start(20000);
             }
         });
@@ -49,16 +50,16 @@ export function rspServerProviderActionsTest() {
         it('Verify rsp server provider operation - Create New Server', async function() {
             this.timeout(20000);
             const quick = await serverProvider.getCreateNewServerBox();
-            let options = await quick.getQuickPicks();
-            expect(await Promise.all(options.map(async (item) => await item.getText()))).to.have.members([YES, USE_FROM_DISK]);
+            const options = await quick.getQuickPicks();
+            expect(await Promise.all(options.map(async item => await item.getText()))).to.have.members([YES, USE_FROM_DISK]);
             await quick.selectQuickPick(YES);
-            await VSBrowser.instance.driver.wait( async () => { return await downloadableListIsAvailable(quick);}, 5000 );
+            await VSBrowser.instance.driver.wait( async () =>  await downloadableListIsAvailable(quick), 5000 );
             const input = await InputBox.create();
             await input.setText('WildFly 20');
-            let optionsText = await Promise.all((await input.getQuickPicks()).map(async (item) => { return (await item.getText());}));
+            const optionsText = await Promise.all((await input.getQuickPicks()).map(async item => await item.getText()));
             await input.clear();
             await input.setText('Red Hat EAP');
-            optionsText.push(...(await Promise.all((await input.getQuickPicks()).map(async (item) => { return (await item.getText());}))));
+            optionsText.push(...(await Promise.all((await input.getQuickPicks()).map(async item => await item.getText()))));
             expect(optionsText).to.include.members(Object.keys(ServersConstants.TEST_SERVERS).map(key => ServersConstants.TEST_SERVERS[key]));
             await quick.cancel();
         });
@@ -74,13 +75,13 @@ export function rspServerProviderActionsTest() {
             // normally we would be expecting input box to appear
             await serverProvider.createNewServerCommand();
             let notification;
-            try { 
-                notification = await driver.wait(() => { return notificationExistsWithObject(ERROR_CREATE_NEW_SERVER);}, 3000 );
+            try {
+                notification = await driver.wait(() => notificationExistsWithObject(ERROR_CREATE_NEW_SERVER), 3000 );
             } catch (error) {
                 console.log(error);
                 const nc = await new Workbench().openNotificationsCenter();
-                fail('Failed to obtain Create new server warning notification, available notifications are: ' 
-                + (await Promise.all((await nc.getNotifications(NotificationType.Any)).map(async (item) => await item.getText()))));
+                fail('Failed to obtain Create new server warning notification, available notifications are: '
+                + (await Promise.all((await nc.getNotifications(NotificationType.Any)).map(async item => await item.getText()))));
             }
             expect(await notification.getType()).equals(NotificationType.Warning);
             expect(await notification.getMessage()).to.include(ERROR_NO_RSP_PROVIDER);
@@ -101,9 +102,9 @@ export function rspServerProviderActionsTest() {
             }
             const errors = await getNotifications(NotificationType.Error);
             if (errors && errors.length > 0) {
-                const report = errors.map(async (error) => {
+                const report = errors.map(async error => {
                     return `${await error.getSource()} ${await error.getMessage()} \r\n`;
-                })
+                });
                 console.log('Error appeared during creating local server adapter: ' + report);
             }
             // clean up notifications
@@ -116,12 +117,13 @@ export function rspServerProviderActionsTest() {
         });
 
         after(async function() {
+            this.timeout(20000);
             // Check error messages if any
             const errors = await getNotifications(NotificationType.Error);
             if (errors && errors.length > 0) {
-                const report = errors.map(async (error) => {
+                const report = errors.map(async error => {
                     return `${await error.getSource()} ${await error.getMessage()} \r\n`;
-                })
+                });
                 console.log('Error appeared during creating local server adapter: ' + report);
             }
             const tab = new ServersTab();

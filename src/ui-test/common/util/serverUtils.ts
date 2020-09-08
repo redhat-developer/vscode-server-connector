@@ -11,6 +11,11 @@ export async function serverHasState(server: IServer, ...states: ServerState[]):
     return states.includes(stateActual);
 }
 
+export async function serverStateChanged(server: IServer, state: ServerState): Promise<boolean> {
+    const stateActual = await server.getServerState();
+    return state !== stateActual;
+}
+
 export async function findNotification(text: string): Promise<Notification | undefined> {
     await new Workbench().openNotificationsCenter();
     const notifications = await (new NotificationsCenter()).getNotifications(NotificationType.Any);

@@ -10,31 +10,34 @@ export function extensionUIAssetsTest() {
 
         let view: ViewControl;
         let sideBar: SideBarView;
+        let section: ExtensionsViewSection;
 
         beforeEach(async function() {
             this.timeout(4000);
             view = new ActivityBar().getViewControl('Extensions');
             sideBar = await view.openView();
+            const content = sideBar.getContent();
+            section = await content.getSection('Installed') as ExtensionsViewSection;
         });
 
         it('Dependent Remote Server Protocol UI extension is installed', async function() {
-            this.timeout(5000);
-            const section = await sideBar.getContent().getSection('Installed') as ExtensionsViewSection;
+            this.timeout(15000);
             const item = await section.findItem(`@installed ${AdaptersConstants.RSP_UI_NAME}`) as ExtensionsViewItem;
             expect(item).not.undefined;
+            expect(await item.getTitle()).to.equal(AdaptersConstants.RSP_UI_NAME);
         });
 
         it('Server Connector extension is installed', async function() {
-            this.timeout(5000);
-            const section = await sideBar.getContent().getSection('Installed') as ExtensionsViewSection;
+            this.timeout(20000);
             const item = await section.findItem(`@installed ${AdaptersConstants.RSP_CONNECTOR_NAME}`) as ExtensionsViewItem;
             expect(item).not.undefined;
+            expect(await item.getTitle()).to.equal(AdaptersConstants.RSP_CONNECTOR_NAME);
         });
 
         afterEach(async function() {
             this.timeout(10000);
             if (sideBar && await sideBar.isDisplayed()) {
-                sideBar = await new ActivityBar().getViewControl('Extensions').openView();
+                sideBar = await (new ActivityBar().getViewControl('Extensions')).openView();
                 const titlePart = sideBar.getTitlePart();
                 const actionButton = await titlePart.getAction('Clear Extensions Search Results');
                 if (actionButton.isEnabled()) {
@@ -44,7 +47,7 @@ export function extensionUIAssetsTest() {
         });
 
         after(async () => {
-            if (sideBar && await sideBar.isDisplayed()) {
+            if (sideBar && await sideBar.isDisplayed() && view) {
                 await view.closeView();
             }
         });

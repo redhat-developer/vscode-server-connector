@@ -2,7 +2,7 @@ import { ViewItem, By, VSBrowser, TreeItem } from "vscode-extension-tester";
 import { DialogHandler } from "vscode-extension-tester-native";
 import { IServer } from "./IServer";
 import { ServerState } from "../../common/enum/serverState";
-import { serverHasState } from "../../common/util/serverUtils";
+import { serverHasState, serverStateChanged } from "../../common/util/serverUtils";
 import { AdaptersConstants } from "../../common/adaptersContants";
 
 /**
@@ -23,7 +23,7 @@ export abstract class AbstractServer implements IServer {
         this._serverName = value;
     }
 
-    async getServerStateLabel(): Promise<string> {
+    public async getServerStateLabel(): Promise<string> {
         const treeItem = await this.getTreeItem();
         const element = await treeItem.findElement(By.className('label-description'));
         // https://stackoverflow.com/questions/23804123/selenium-gettext
@@ -32,12 +32,12 @@ export abstract class AbstractServer implements IServer {
         return text.slice(text.indexOf('(') + 1, text.indexOf(')'));
     }
 
-    async getServerState(): Promise<ServerState> {
-        var label = (await this.getServerStateLabel());
+    public async getServerState(): Promise<ServerState> {
+        const label = (await this.getServerStateLabel());
         return ServerState[label];
     }
-    
-    async getServerName(): Promise<string> {
+
+    public async getServerName(): Promise<string> {
         const item = (await this.getTreeItem()) as TreeItem;
         if (!item) {
             throw Error('TreeItem of the object in undefined');
@@ -45,31 +45,42 @@ export abstract class AbstractServer implements IServer {
         return item.getLabel();
     }
 
-    async performServerOperation(contextMenuItem: string, expectedState: ServerState, timeout: number): Promise<void> {
-        await (await this.getTreeItem()).select();
+    protected async performServerOperation(contextMenuItem: string, expectedState: ServerState, timeout: number): Promise<void> {
         const treeItem = await this.getTreeItem();
         await treeItem.select();
+        if (!(await treeItem.isSelected())) {
+            console.log("treeItem reselecting");
+            await treeItem.select();
+        }
+        const oldState = await this.getServerState();
         const menu = await treeItem.openContextMenu();
         await menu.select(contextMenuItem);
-        await VSBrowser.instance.driver.wait( 
-            async () => { return await serverHasState(this, expectedState);}, 
-            timeout, 
+        try {
+            await VSBrowser.instance.driver.wait(async () => await serverStateChanged(this, oldState), 3000);
+        } catch (error) {
+            console.log("Server state has not changed yet");
+            const menu = await treeItem.openContextMenu();
+            await menu.select(contextMenuItem);
+        }
+        await VSBrowser.instance.driver.wait(
+            async () => await serverHasState(this, expectedState),
+            timeout,
             'Failed to get expected server state ' + ServerState[expectedState] + ' for ' + await this.getServerName() + ', actual state was ' + ServerState[await this.getServerState()]);
     }
 
-    async start(timeout: number=10000): Promise<void> {
+    public async start(timeout: number = 10000): Promise<void> {
         await this.performServerOperation(AdaptersConstants.RSP_SERVER_PROVIDER_START, ServerState.Started, timeout);
     }
 
-    async stop(timeout: number = 10000): Promise<void> {
+    public async stop(timeout: number = 10000): Promise<void> {
         await this.performServerOperation(AdaptersConstants.RSP_SERVER_PROVIDER_STOP, ServerState.Stopped, timeout);
     }
 
-    async terminate(timeout: number = 7000): Promise<void> {
+    public async terminate(timeout: number = 10000): Promise<void> {
         await this.performServerOperation(AdaptersConstants.RSP_SERVER_PROVIDER_TERMINATE, ServerState.Stopped, timeout);
     }
 
-    async delete(): Promise<void> {
+    public async delete(): Promise<void> {
         const serverItem = await this.getTreeItem();
         const menu = await serverItem.openContextMenu();
         if (await menu.hasItem(AdaptersConstants.SERVER_REMOVE)) {
@@ -81,5 +92,5 @@ export abstract class AbstractServer implements IServer {
         }
     }
 
-    abstract getTreeItem(): Promise<ViewItem>;
+    protected abstract getTreeItem(): Promise<ViewItem>;
 }

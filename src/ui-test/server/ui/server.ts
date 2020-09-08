@@ -24,25 +24,25 @@ export class Server extends AbstractServer {
         this._serverParent = value;
     }
 
-    async getTreeItem(): Promise<ViewItem> {
+    protected async getTreeItem(): Promise<ViewItem> {
         const parent = await this.serverParent.getTreeItem();
         const treeItem = await (parent as TreeItem).findChildItem(this.serverName);
         return treeItem;
     }
 
-    async start(timeout: number = 20000): Promise<void> {
+    public async start(timeout: number = 20000): Promise<void> {
         await this.performServerOperation(AdaptersConstants.SERVER_START, ServerState.Started, timeout);
     }
 
-    async stop(timeout: number = 20000): Promise<void> {
+    public async stop(timeout: number = 20000): Promise<void> {
         await this.performServerOperation(AdaptersConstants.SERVER_STOP, ServerState.Stopped, timeout);
     }
 
-    async terminate(timeout: number = 10000): Promise<void> {
+    public async terminate(timeout: number = 10000): Promise<void> {
         await this.performServerOperation(AdaptersConstants.SERVER_TERMINATE, ServerState.Stopped, timeout);
     }
 
-    async restart(timeout: number=30000): Promise<void> {
+    public async restart(timeout: number = 30000): Promise<void> {
         await super.performServerOperation(AdaptersConstants.SERVER_RESTART_RUN, ServerState.Started, timeout);
     }
 }
