@@ -1,9 +1,9 @@
 # Server Connector
 
-![.github/workflows/ci-prcheck.yml](https://github.com/redhat-developer/vscode-server-connector/workflows/Server%20Connector%20CI/badge.svg)
-[![License](https://img.shields.io/badge/license-EPLv2.0-brightgreen.svg)](https://github.com/redhat-developer/vscode-server-connector/blob/master/README.md)
-[![Visual Studio Marketplace](https://vsmarketplacebadge.apphb.com/version/redhat.vscode-server-connector.svg)](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-server-connector)
-[![Gitter](https://badges.gitter.im/redhat-developer/server-connector.svg)](https://gitter.im/redhat-developer/server-connector?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+![.github/workflows/ci-prcheck.yml](https://img.shields.io/github/workflow/status/redhat-developer/vscode-server-connector/CI)
+[![License](https://img.shields.io/badge/license-EPLv2.0-brightgreen.png)](https://github.com/redhat-developer/vscode-server-connector/blob/master/README.md)
+[![Visual Studio Marketplace](https://vsmarketplacebadge.apphb.com/version/redhat.vscode-server-connector.png)](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-server-connector)
+[![Gitter](https://badges.gitter.im/redhat-developer/server-connector.png)](https://gitter.im/redhat-developer/server-connector?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 A Visual Studio Code extension for interacting with Red Hat Servers and Runtimes.
 
