@@ -49,16 +49,16 @@ export abstract class AbstractServer implements IServer {
         const treeItem = await this.getTreeItem();
         await treeItem.select();
         if (!(await treeItem.isSelected())) {
-            console.log("treeItem reselecting");
             await treeItem.select();
         }
         const oldState = await this.getServerState();
         const menu = await treeItem.openContextMenu();
+        await VSBrowser.instance.driver.wait(async () => await menu.hasItem(contextMenuItem), 2000);
+        await new Promise(res => setTimeout(res, 1000));
         await menu.select(contextMenuItem);
         try {
             await VSBrowser.instance.driver.wait(async () => await serverStateChanged(this, oldState), 3000);
         } catch (error) {
-            console.log("Server state has not changed yet");
             const menu = await treeItem.openContextMenu();
             await menu.select(contextMenuItem);
         }

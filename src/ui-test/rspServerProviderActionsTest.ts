@@ -53,7 +53,7 @@ export function rspServerProviderActionsTest() {
             const options = await quick.getQuickPicks();
             expect(await Promise.all(options.map(async item => await item.getText()))).to.have.members([YES, USE_FROM_DISK]);
             await quick.selectQuickPick(YES);
-            await VSBrowser.instance.driver.wait( async () =>  await downloadableListIsAvailable(quick), 5000 );
+            await driver.wait( async () =>  await downloadableListIsAvailable(quick), 10000 );
             const input = await InputBox.create();
             await input.setText('WildFly 20');
             const optionsText = await Promise.all((await input.getQuickPicks()).map(async item => await item.getText()));
@@ -76,7 +76,7 @@ export function rspServerProviderActionsTest() {
             await serverProvider.createNewServerCommand();
             let notification;
             try {
-                notification = await driver.wait(() => notificationExistsWithObject(ERROR_CREATE_NEW_SERVER), 3000 );
+                notification = await driver.wait(async () => await notificationExistsWithObject(ERROR_CREATE_NEW_SERVER), 3000 );
             } catch (error) {
                 console.log(error);
                 const nc = await new Workbench().openNotificationsCenter();

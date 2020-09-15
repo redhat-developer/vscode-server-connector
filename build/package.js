@@ -16,6 +16,7 @@ function clean() {
 
 Promise.resolve()
     .then(clean)
+    .then(()=> console.log(`Downloading ${RSP_SERVER_JAR_URL}`))
     .then(()=> download(RSP_SERVER_JAR_URL, './'))
     .then(()=> decompress(RSP_SERVER_JAR_NAME, './server', { strip: 1 }))
     .catch((err)=>{ throw err; });

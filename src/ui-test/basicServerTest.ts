@@ -61,7 +61,7 @@ export function basicE2ETest(testServers: object) {
                     });
                 } else {
                     it(`Create the ${serverDownloadName} server from the disk location`, async function() {
-                        this.timeout(150000);
+                        this.timeout(240000);
                         await downloadExtractFile(EAP_URL, downloadLocation, extractLocation);
                         expect(fs.existsSync(extractLocation)).to.be.true;
                         try {
