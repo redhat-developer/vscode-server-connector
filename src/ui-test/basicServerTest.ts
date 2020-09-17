@@ -1,6 +1,6 @@
 import { WebDriver, VSBrowser, NotificationType, Workbench, InputBox } from "vscode-extension-tester";
 import { RSPServerProvider } from "./server/ui/rspServerProvider";
-import { serverHasState, stopAllServers, deleteAllServers, getNotifications } from "./common/util/serverUtils";
+import { serverHasState, stopAllServers, deleteAllServers } from "./common/util/serverUtils";
 import { expect } from 'chai';
 import * as os from "os";
 import { ServerState } from "./common/enum/serverState";
@@ -10,6 +10,7 @@ import { ServersTab } from "./server/ui/serversTab";
 
 import * as fs from 'fs';
 import path = require('path');
+import { getNotifications, showErrorNotifications } from "./common/util/testUtils";
 
 /**
  * @author Ondrej Dockal <odockal@redhat.com>
@@ -117,13 +118,7 @@ export function basicE2ETest(testServers: object) {
                     } catch (error) {
                         // no input box, not need to close it
                     }
-                    const errors = await getNotifications(NotificationType.Error);
-                    if (errors && errors.length > 0) {
-                        const report = errors.map(async error => {
-                            return `${await error.getSource()} ${await error.getMessage()} \r\n`;
-                        });
-                        console.log('Error appeared during creating local server adapter: ' + report);
-                    }
+                    await showErrorNotifications();
                     // clean up notifications
                     const nc = await new Workbench().openNotificationsCenter();
                     const notifications = await nc.getNotifications(NotificationType.Any);

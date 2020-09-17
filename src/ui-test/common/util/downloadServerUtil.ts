@@ -1,12 +1,12 @@
 import { AdaptersConstants } from '../adaptersContants';
 import { RSPServerProvider } from '../../server/ui/rspServerProvider';
-import { notificationExists, safeNotificationExists } from './serverUtils';
 import { InputBox, VSBrowser } from 'vscode-extension-tester';
 
 import * as fs from 'fs-extra';
 import request = require('request');
 import { Unpack } from './unpack';
 import { DialogHandler } from 'vscode-extension-tester-native';
+import { notificationExists, safeNotificationExists } from './testUtils';
 
 /**
  * @author Ondrej Dockal <odockal@redhat.com>

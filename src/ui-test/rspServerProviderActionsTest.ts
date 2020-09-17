@@ -1,6 +1,6 @@
 import { WebDriver, VSBrowser, NotificationType, Workbench, InputBox } from "vscode-extension-tester";
 import { RSPServerProvider } from "./server/ui/rspServerProvider";
-import { serverHasState, notificationExistsWithObject, getNotifications } from "./common/util/serverUtils";
+import { serverHasState } from "./common/util/serverUtils";
 import { expect } from 'chai'
 import { fail } from "assert";
 import * as os from "os";
@@ -9,6 +9,7 @@ import { ServersConstants } from "./common/serverConstants";
 import { ServerState } from "./common/enum/serverState";
 import { downloadableListIsAvailable } from "./common/util/downloadServerUtil";
 import { ServersTab } from "./server/ui/serversTab";
+import { notificationExistsWithObject, showErrorNotifications } from "./common/util/testUtils";
 
 
 const ERROR_CREATE_NEW_SERVER = 'Unable to create the server';
@@ -100,13 +101,7 @@ export function rspServerProviderActionsTest() {
             } catch (error) {
                 // no input box, not need to close it
             }
-            const errors = await getNotifications(NotificationType.Error);
-            if (errors && errors.length > 0) {
-                const report = errors.map(async error => {
-                    return `${await error.getSource()} ${await error.getMessage()} \r\n`;
-                });
-                console.log('Error appeared during creating local server adapter: ' + report);
-            }
+            await showErrorNotifications();
             // clean up notifications
             const nc = await new Workbench().openNotificationsCenter();
             const notifications = await nc.getNotifications(NotificationType.Any);
@@ -119,13 +114,7 @@ export function rspServerProviderActionsTest() {
         after(async function() {
             this.timeout(20000);
             // Check error messages if any
-            const errors = await getNotifications(NotificationType.Error);
-            if (errors && errors.length > 0) {
-                const report = errors.map(async error => {
-                    return `${await error.getSource()} ${await error.getMessage()} \r\n`;
-                });
-                console.log('Error appeared during creating local server adapter: ' + report);
-            }
+            await showErrorNotifications();
             const tab = new ServersTab();
             await tab.open();
             const provider = await tab.getServerProvider(AdaptersConstants.RSP_SERVER_PROVIDER_NAME);

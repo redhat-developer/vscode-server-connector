@@ -1,7 +1,7 @@
 import { ActivityBar, SideBarView, ViewControl, TitleActionButton, ViewSection, VSBrowser } from 'vscode-extension-tester';
 import { AdaptersConstants } from '../../common/adaptersContants';
 import { RSPServerProvider } from './rspServerProvider';
-import { sectionHasItem } from '../../common/util/serverUtils';
+import { sectionHasItem } from '../../common/util/testUtils';
 
 /**
  * Servers tab representation
@@ -38,7 +38,7 @@ export class ServersTab {
         await this.open();
         const sideBarView = await this.getSideBarView();
         await this.collapseAllSections('Servers');
-        await VSBrowser.instance.driver.wait( async () => { return await sectionHasItem(sideBarView, 'Servers');}, 3000 );
+        await VSBrowser.instance.driver.wait( async () => await sectionHasItem(sideBarView, 'Servers'), 3000 );
         const section = await sideBarView.getContent().getSection('Servers');
         await section.expand();
         return section;

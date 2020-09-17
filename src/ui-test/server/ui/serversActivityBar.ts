@@ -1,7 +1,7 @@
 import { ActivityBar, SideBarView, ViewControl, TitleActionButton, ViewSection, VSBrowser } from 'vscode-extension-tester';
 import { AdaptersConstants } from '../../common/adaptersContants';
+import { sectionHasItem } from '../../common/util/testUtils';
 import { RSPServerProvider } from './rspServerProvider';
-import { sectionHasItem } from '../../common/util/serverUtils';
 
 /**
  * Servers activity bar representation, can be used only after servers tab is drag-n-dropped into activity bar
@@ -23,7 +23,7 @@ export class ServersActivityBar {
         }
         return this.sideBarView;
     }
-    
+
     public getViewControl(): ViewControl {
         return this.viewControl;
     }
@@ -38,7 +38,7 @@ export class ServersActivityBar {
     async getServerProviderTreeSection(): Promise<ViewSection> {
         await this.open();
         const sideBarView = await this.getSideBarView();
-        await VSBrowser.instance.driver.wait( async () => { return await sectionHasItem(sideBarView, 'Servers');}, 3000 );
+        await VSBrowser.instance.driver.wait( async () => await sectionHasItem(sideBarView, 'Servers'), 3000 );
         return await sideBarView.getContent().getSection('Servers');
     }
 
