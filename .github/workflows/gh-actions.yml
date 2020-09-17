@@ -1,4 +1,4 @@
-name: Server Connector CI
+name: ServerConnectorCI
 
 on:
   push:
