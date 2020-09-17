@@ -22,52 +22,51 @@ export class RSPServerProvider extends AbstractServer {
         return this._serversProvider;
     }
 
-    async getTreeItem(): Promise<ViewItem> {
+    public async getTreeItem(): Promise<ViewItem> {
         const section = await this.serversProvider.getServerProviderTreeSection();
-        VSBrowser.instance.driver.wait( async () => { return (await section.getVisibleItems()).length > 0;}, 3000);
+        await VSBrowser.instance.driver.wait( async () => (await section.getVisibleItems()).length > 0, 3000);
         const rspServerItem = await section.findItem(this.serverName);
         if (!rspServerItem) {
-            const availableItems = await Promise.all((await section.getVisibleItems()).map(async (item) => await item.getText()));
-            throw Error('No item found for name ' + this.serverName + ', available items: ' + availableItems);
+            const availableItems = await Promise.all((await section.getVisibleItems()).map(async item => await item.getText()));
+            throw Error(`No item found for name ${this.serverName} available items: ${availableItems}`);
         }
         return rspServerItem;
     }
 
-    async getServers(): Promise<Server[]> {
-        let servers = [];
+    public async getServers(): Promise<Server[]> {
+        const servers = [];
         const items = await (await this.getTreeItem() as TreeItem).getChildren();
-        for (let item of items) {
+        for (const item of items) {
             const label = await item.getLabel();
             servers.push(new Server(label, this));
         }
         return servers;
     }
 
-    async getServer(name: string): Promise<Server> {
+    public async getServer(name: string): Promise<Server> {
         const items = await (await this.getTreeItem() as TreeItem).getChildren();
-        for (let item of items) {
+        for (const item of items) {
             const label = await item.getLabel();
             if (label === name) {
                 return new Server(label, this);
             }
         }
-        throw Error('Server "' + name + '" does not exist');
+        throw Error(`Server ${name} does not exist`);
     }
 
-    async getCreateNewServerBox(): Promise<InputBox> {
+    public async getCreateNewServerBox(): Promise<InputBox> {
         const item = await this.getTreeItem();
         const menu = await item.openContextMenu();
+        await VSBrowser.instance.driver.wait(async () => await menu.hasItem(AdaptersConstants.RSP_SERVER_PROVIDER_CREATE_NEW_SERVER), 2000);
         await menu.select(AdaptersConstants.RSP_SERVER_PROVIDER_CREATE_NEW_SERVER);
         return await InputBox.create();
     }
 
-    async createNewServerCommand(): Promise<void> {
-        const input = await new Workbench().openCommandPrompt() as InputBox;
-        await input.setText('>' + AdaptersConstants.RSP_COMMAND + ' ' + AdaptersConstants.RSP_SERVER_PROVIDER_CREATE_NEW_SERVER);
-        await input.confirm();
+    public async createNewServerCommand(): Promise<void> {
+        await new Workbench().executeCommand(`${AdaptersConstants.RSP_COMMAND} ${AdaptersConstants.RSP_SERVER_PROVIDER_CREATE_NEW_SERVER}`);
     }
 
-    delete(): Promise<void> {
+    public delete(): Promise<void> {
         throw Error('RSP Server does not support delete operation');
     }
 

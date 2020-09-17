@@ -1,6 +1,6 @@
 # Server Connector
 
-![.github/workflows/ci-prcheck.yml](https://img.shields.io/github/workflow/status/redhat-developer/vscode-server-connector/Server%20Connector%20CI)
+[![ServerConnectorCI](https://img.shields.io/github/workflow/status/redhat-developer/vscode-server-connector/ServerConnectorCI)](https://github.com/redhat-developer/vscode-server-connector/actions)
 [![License](https://img.shields.io/badge/license-EPLv2.0-brightgreen.png)](https://github.com/redhat-developer/vscode-server-connector/blob/master/README.md)
 [![Visual Studio Marketplace](https://vsmarketplacebadge.apphb.com/version/redhat.vscode-server-connector.png)](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-server-connector)
 [![Gitter](https://badges.gitter.im/redhat-developer/server-connector.png)](https://gitter.im/redhat-developer/server-connector?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)

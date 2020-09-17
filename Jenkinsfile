@@ -27,10 +27,13 @@ node('rhel8'){
 	withEnv(['JUNIT_REPORT_PATH=report.xml', 'CODE_TESTS_WORKSPACE=c:/unknown']) {
         stage('Test') {
     		wrap([$class: 'Xvnc']) {
-    			sh "npm test --silent"
-				sh "npm run ui-test"
-    			//cobertura coberturaReportFile: 'coverage/cobertura-coverage.xml'
-    			junit 'report.xml'
+				try {
+					sh "npm test --silent"
+					sh "npm run ui-test"
+				} finally {
+					junit 'report.xml'
+					archiveArtifacts artifacts: 'test-resources/**/*.png'
+				}
     		}
         }
 	}

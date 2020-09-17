@@ -5,7 +5,6 @@ import { WebDriver, VSBrowser } from "vscode-extension-tester";
 import { serverHasState } from "./common/util/serverUtils";
 import { ServersTab } from "./server/ui/serversTab";
 
-
 /**
  * @author Ondrej Dockal <odockal@redhat.com>
  */
@@ -26,9 +25,8 @@ export function rspServerProviderUITest() {
             expect(await serverProvider.getServerName()).to.include(AdaptersConstants.RSP_SERVER_PROVIDER_NAME);
         });
 
-
         it('Verify rsp server provider is started on startup', async function() {
-            this.timeout(15000);
+            this.timeout(20000);
             const servers = new ServersTab();
             await servers.open();
             const serverProvider = await servers.getServerProvider(AdaptersConstants.RSP_SERVER_PROVIDER_NAME);
@@ -38,9 +36,9 @@ export function rspServerProviderUITest() {
             expect([ServerState.Unknown, ServerState.Starting, ServerState.Started]).to.include(serverState);
             // wait for server to get started
             try {
-                await driver.wait(() => { return serverHasState(serverProvider, ServerState.Started);}, 10000 );
+                await driver.wait(async () => await serverHasState(serverProvider, ServerState.Started), 15000 );
             } catch (error) {
-                throw Error(error + ", Expected server provider to have state Started, but got " +  ServerState[await serverProvider.getServerState()]);
+                throw Error(`${error}, Expected server provider to have state Started, but got ${ServerState[await serverProvider.getServerState()]}`);
             }
         });
     });

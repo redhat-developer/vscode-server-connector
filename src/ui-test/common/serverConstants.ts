@@ -8,7 +8,7 @@ export class ServersConstants {
     */
     public static readonly WILDFLY_SERVERS = {
         //'wildfly-18.0.1.Final': "WildFly 18.0.1 Final",
-        'wildfly-19.1.0.Final': "WildFly 19.1.0 Final"
+        'wildfly-20.0.1.Final': "WildFly 20.0.1 Final"
     };
 
     public static readonly EAP_SERVERS = {

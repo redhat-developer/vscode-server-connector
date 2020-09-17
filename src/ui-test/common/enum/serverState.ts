@@ -3,5 +3,6 @@ export enum ServerState {
     Stopped,
     Stopping,
     Starting,
-    Started
+    Started,
+    Connected
 }

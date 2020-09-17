@@ -18,6 +18,7 @@ export class AdaptersConstants {
     public static readonly RSP_SERVER_PROVIDER_CREATE_NEW_SERVER = 'Create New Server...';
     public static readonly RSP_SERVER_PROVIDER_START = 'Start / Connect to RSP Provider';
     public static readonly RSP_SERVER_PROVIDER_STOP = 'Stop RSP Provider';
+    public static readonly RSP_SERVER_PROVIDER_DISCONNECT = 'Disconnect from RSP Provider';
     public static readonly RSP_SERVER_PROVIDER_TERMINATE = 'Terminate RSP Provider';
 
     // Server adapters constants

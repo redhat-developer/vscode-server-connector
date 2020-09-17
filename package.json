@@ -44,6 +44,7 @@
     "watch": "tsc -watch -p ./",
     "test": "npm run compile && node ./out/test/test-runner.js",
     "ui-test": "npm run compile && extest setup-and-run out/src/ui-test/allTestsSuite.js",
+    "public-ui-test": "npm run compile && extest setup-and-run out/src/ui-test/publicTestsSuite.js",
     "update-deps": "node_modules/.bin/ncu --upgrade --loglevel verbose --packageFile package.json && npm update",
     "coverage:upload": "codecov -f coverage/coverage-final.json",
     "build": "npm run compile && npm run package"
@@ -70,6 +71,7 @@
     "mocha": "^6.2.3",
     "mocha-jenkins-reporter": "^0.4.3",
     "remap-istanbul": "^0.13.0",
+    "request": "^2.88.2",
     "sinon": "^7.3.2",
     "sinon-chai": "^3.5.0",
     "tslint": "^5.18.0",
