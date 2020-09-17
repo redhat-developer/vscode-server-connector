@@ -63,9 +63,7 @@ export class RSPServerProvider extends AbstractServer {
     }
 
     public async createNewServerCommand(): Promise<void> {
-        const input = await new Workbench().openCommandPrompt() as InputBox;
-        await input.setText(`> ${AdaptersConstants.RSP_COMMAND} ${AdaptersConstants.RSP_SERVER_PROVIDER_CREATE_NEW_SERVER}`);
-        await input.confirm();
+        await new Workbench().executeCommand(`${AdaptersConstants.RSP_COMMAND} ${AdaptersConstants.RSP_SERVER_PROVIDER_CREATE_NEW_SERVER}`);
     }
 
     public delete(): Promise<void> {

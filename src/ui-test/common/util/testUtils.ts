@@ -22,7 +22,7 @@ export async function showErrorNotifications() {
         const report = errors.map(async error => {
             return `${await error.getSource()}: ${await error.getMessage()} \r\n`;
         });
-        console.log('Error appeared during creating local server adapter: ' + report);
+        console.log(`Error appeared during creating local server adapter: ${report}`);
     }
 }
 

@@ -65,7 +65,7 @@ export abstract class AbstractServer implements IServer {
         await VSBrowser.instance.driver.wait(
             async () => await serverHasState(this, expectedState),
             timeout,
-            'Failed to get expected server state ' + ServerState[expectedState] + ' for ' + await this.getServerName() + ', actual state was ' + ServerState[await this.getServerState()]);
+            `Failed to get expected server state ${ServerState[expectedState]} for ${await this.getServerName()} actual state was ${ServerState[await this.getServerState()]}`);
     }
 
     public async start(timeout: number = 10000): Promise<void> {
@@ -88,7 +88,7 @@ export abstract class AbstractServer implements IServer {
             const dialog = await DialogHandler.getOpenDialog();
             await dialog.confirm();
         } else {
-            throw Error('Given server ' + this.getServerName() + 'does not allow to remove the server in actual state, could be started');
+            throw Error(`Given server ${this.getServerName()} does not allow to remove the server in actual state, could be started`);
         }
     }
 
