@@ -71,6 +71,7 @@
     "mocha": "^6.2.3",
     "mocha-jenkins-reporter": "^0.4.3",
     "remap-istanbul": "^0.13.0",
+    "request": "^2.88.2",
     "sinon": "^7.3.2",
     "sinon-chai": "^3.5.0",
     "tslint": "^5.18.0",
@@ -86,8 +87,6 @@
     "fs-extra": "7.0.0",
     "path-exists": "^3.0.0",
     "portfinder": "^1.0.26",
-    "request": "^2.88.2",
-    "request-progress": "^3.0.0",
     "tcp-port-used": "^1.0.1",
     "vscode-server-connector-api": "0.1.7",
     "wait-on": "^5.0.3"

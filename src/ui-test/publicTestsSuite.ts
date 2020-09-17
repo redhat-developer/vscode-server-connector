@@ -11,5 +11,5 @@ describe('VSCode Server Connector - UI tests', () => {
     extensionUIAssetsTest();
     rspServerProviderUITest();
     rspServerProviderActionsTest();
-    basicE2ETest(ServersConstants.WILDFLY_SERVERS);
+    basicE2ETest(Object.keys(ServersConstants.WILDFLY_SERVERS));
 });

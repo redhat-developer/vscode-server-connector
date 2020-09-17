@@ -11,11 +11,12 @@ import { ServersTab } from "./server/ui/serversTab";
 import * as fs from 'fs';
 import path = require('path');
 import { getNotifications, showErrorNotifications } from "./common/util/testUtils";
+import { ServersConstants } from "./common/serverConstants";
 
 /**
  * @author Ondrej Dockal <odockal@redhat.com>
  */
-export function basicE2ETest(testServers: object) {
+export function basicE2ETest(testServers: string[]) {
     describe('Perform E2E test scenario for server adapters', () => {
 
         let driver: WebDriver;
@@ -30,8 +31,8 @@ export function basicE2ETest(testServers: object) {
             driver = VSBrowser.instance.driver;
         });
 
-        for (const serverName of Object.keys(testServers)) {
-            const serverDownloadName = testServers[serverName];
+        for (const serverName of testServers) {
+            const serverDownloadName = ServersConstants.TEST_SERVERS[serverName];
             describe(`Verify ${serverDownloadName} basic features - create server (download), start, restart, stop`, () => {
 
                 let serverProvider: RSPServerProvider;
