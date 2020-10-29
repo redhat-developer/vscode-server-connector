@@ -41,20 +41,21 @@ export async function downloadableListIsAvailable(input: InputBox) {
 export async function createLocalServer(rsp: RSPServerProvider, serverPath: string, serverName: string) {
     const quick = await rsp.getCreateNewServerBox();
     await quick.selectQuickPick('No, use server on disk');
-    // native dialog
-    const browseDialog = await DialogHandler.getOpenDialog();
-    await browseDialog.selectPath(serverPath);
-    await browseDialog.confirm();
-
-    // provide the server name
-    if (quick && quick.isDisplayed() && !quick.hasError()) {
-        await quick.setText(serverName);
-        await quick.confirm();
-    } else {
-        const nameInput = await InputBox.create();
-        await nameInput.setText(serverName);
-        await nameInput.confirm();
+    // it might happen, depending on vscode settings, that native file manager dialog wont appear
+    // instead we got input box where we can search for files
+    try {
+        const inputFile = await InputBox.create();
+        await inputFile.setText(serverPath);
+        await inputFile.confirm();
+    } catch (error) {
+        console.log(`InputBox bar did not appear, ${error}, \r\ntrying native file manager...`);
+        const browseDialog = await DialogHandler.getOpenDialog();
+        await browseDialog.selectPath(serverPath);
+        await browseDialog.confirm();
     }
+    const nameInput = await InputBox.create();
+    await nameInput.setText(serverName);
+    await nameInput.confirm();
     // do you wanna edit server parameters? No...
     const optionsInput = await InputBox.create();
     await optionsInput.selectQuickPick('No');

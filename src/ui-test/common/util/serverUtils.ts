@@ -25,7 +25,8 @@ export async function deleteAllServers(rsp: RSPServerProvider): Promise<void> {
 export async function stopAllServers(rsp: RSPServerProvider): Promise<void> {
     const servers = await rsp.getServers();
     for (const server of servers) {
-        await server.stop();
+        if (await server.getServerState() !== ServerState.Stopped) {
+            await server.stop();
+        }
     }
 }
-
