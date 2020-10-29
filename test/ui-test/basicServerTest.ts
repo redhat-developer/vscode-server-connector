@@ -1,18 +1,21 @@
-import { WebDriver, VSBrowser, NotificationType, Workbench, InputBox } from "vscode-extension-tester";
+import { WebDriver, VSBrowser, NotificationType, InputBox } from "vscode-extension-tester";
 import { RSPServerProvider } from "./server/ui/rspServerProvider";
 import { serverHasState, stopAllServers, deleteAllServers } from "./common/util/serverUtils";
 import { expect } from 'chai';
 import * as os from "os";
 import { ServerState } from "./common/enum/serverState";
-import { AdaptersConstants } from "./common/adaptersContants";
-import { downloadExtractFile, createDownloadServer, createLocalServer } from "./common/util/downloadServerUtil";
+import { AdaptersConstants } from "./common/constants/adaptersContants";
+import { downloadExtractFile } from "./common/util/downloadServerUtil";
 import { ServersTab } from "./server/ui/serversTab";
 
 import * as fs from 'fs';
 import path = require('path');
-import { getNotifications, showErrorNotifications } from "./common/util/testUtils";
-import { ServersConstants } from "./common/serverConstants";
 
+import { clearNotifications, getNotifications, showErrorNotifications } from "./common/util/testUtils";
+import { ServersConstants } from "./common/constants/serverConstants";
+import { Logger } from 'tslog';
+
+const log: Logger = new Logger({ name: 'basicE2ETest'});
 /**
  * @author Ondrej Dockal <odockal@redhat.com>
  */
@@ -56,7 +59,7 @@ export function basicE2ETest(testServers: string[]) {
                 if (serverDownloadName.indexOf('WildFly') >= 0) {
                     it(`Download and create the ${serverDownloadName} server`, async function() {
                         this.timeout(150000);
-                        await createDownloadServer(serverProvider, serverDownloadName);
+                        await serverProvider.createDownloadServer(serverDownloadName);
                         const servers = await serverProvider.getServers();
                         const serversNames = await Promise.all(servers.map(async item => await item.getServerName()));
                         expect(serversNames).to.include.members([serverName]);
@@ -64,12 +67,13 @@ export function basicE2ETest(testServers: string[]) {
                 } else {
                     it(`Create the ${serverDownloadName} server from the disk location`, async function() {
                         this.timeout(240000);
+                        log.info(`Downloading server at ${EAP_URL} to ${downloadLocation} and extracting to ${extractLocation}`);
                         await downloadExtractFile(EAP_URL, downloadLocation, extractLocation);
                         expect(fs.existsSync(extractLocation)).to.be.true;
                         try {
                             const realPath = path.join(extractLocation, 'jboss-eap-7.3');
-                            console.log(`Create server on location: ${realPath}, path exists: ${fs.existsSync(realPath)}`);
-                            await createLocalServer(serverProvider, realPath, serverName);
+                            log.info(`Adding new local server at ${realPath}`);
+                            await serverProvider.createLocalServer(realPath, serverName);
                         } catch (error) {
                             // verify no error notification appeared
                             const errors = await getNotifications(NotificationType.Error);
@@ -77,9 +81,9 @@ export function basicE2ETest(testServers: string[]) {
                                 const report = errors.map(async error => {
                                     return `${await error.getSource()} ${await error.getMessage()} \r\n`;
                                 });
-                                error.message = `${error.message} Error appeared during creating local server adapter: ${report}`;
-                                throw error;
+                                error.message += `${error.message} Error notification(s) also appeared during creating local server adapter: ${report}`;
                             }
+                            throw error;
                         }
                         const servers = await serverProvider.getServers();
                         const serversNames = await Promise.all(servers.map(async item =>  await item.getServerName()));
@@ -87,14 +91,14 @@ export function basicE2ETest(testServers: string[]) {
                     });
                 }
                 it('Start the server', async function() {
-                    this.timeout(20000);
+                    this.timeout(30000);
                     const server = await serverProvider.getServer(serverName);
                     await server.start();
                     await driver.wait( async () => await serverHasState(server, ServerState.Started), 3000 );
                 });
 
                 it('Restart the server', async function() {
-                    this.timeout(30000);
+                    this.timeout(40000);
                     const server = await serverProvider.getServer(serverName);
                     await server.restart();
                     await driver.wait( async () => await serverHasState(server, ServerState.Started), 3000 );
@@ -123,12 +127,9 @@ export function basicE2ETest(testServers: string[]) {
                     }
                     await showErrorNotifications();
                     // clean up notifications
-                    const nc = await new Workbench().openNotificationsCenter();
-                    const notifications = await nc.getNotifications(NotificationType.Any);
-                    if (notifications.length > 0) {
-                        await nc.clearAllNotifications();
-                    }
-                    await nc.close();
+                    // if (os.platform() !== 'win32') {
+                    await clearNotifications();
+                    // }
                     await stopAllServers(serverProvider);
                     await deleteAllServers(serverProvider);
                 });

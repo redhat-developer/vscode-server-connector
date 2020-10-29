@@ -42,9 +42,9 @@
             "program": "${workspaceFolder}/node_modules/.bin/extest",
             "args": [
                 "setup-and-run",
-                "${workspaceFolder}/out/src/ui-test/*.js",
+                "'${workspaceFolder}/out/test/ui-test/allTestsSuite.js'",
                 "--mocha_config",
-                "${workspaceFolder}/src/ui-test/.mocharc-debug.js"
+                "${workspaceFolder}/test/ui-test/.mocharc-debug.js"
             ],
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen"

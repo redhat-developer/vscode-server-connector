@@ -4,8 +4,8 @@ import { serverHasState } from "./common/util/serverUtils";
 import { expect } from 'chai'
 import { fail } from "assert";
 import * as os from "os";
-import { AdaptersConstants } from "./common/adaptersContants";
-import { ServersConstants } from "./common/serverConstants";
+import { AdaptersConstants } from "./common/constants/adaptersContants";
+import { ServersConstants } from "./common/constants/serverConstants";
 import { ServerState } from "./common/enum/serverState";
 import { downloadableListIsAvailable } from "./common/util/downloadServerUtil";
 import { ServersTab } from "./server/ui/serversTab";
