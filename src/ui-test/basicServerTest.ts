@@ -67,7 +67,9 @@ export function basicE2ETest(testServers: string[]) {
                         await downloadExtractFile(EAP_URL, downloadLocation, extractLocation);
                         expect(fs.existsSync(extractLocation)).to.be.true;
                         try {
-                            await createLocalServer(serverProvider, path.join(extractLocation, os.platform() === 'win32' ? 'jboss-eap-7.3' : ''), serverName);
+                            const realPath = path.join(extractLocation, 'jboss-eap-7.3');
+                            console.log(`Create server on location: ${realPath}, path exists: ${fs.existsSync(realPath)}`);
+                            await createLocalServer(serverProvider, realPath, serverName);
                         } catch (error) {
                             // verify no error notification appeared
                             const errors = await getNotifications(NotificationType.Error);
