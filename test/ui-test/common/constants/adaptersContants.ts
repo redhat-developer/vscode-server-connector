@@ -3,6 +3,11 @@
  */
 export class AdaptersConstants {
 
+    // General
+    public static readonly YES = 'Yes';
+    public static readonly NO = 'No';
+
+    // RSP extensions properties
     public static readonly RSP_UI_NAME = 'Remote Server Protocol UI';
     public static readonly RSP_CONNECTOR_NAME = 'Server Connector';
     public static readonly RSP_COMMAND = 'Servers:';
@@ -35,4 +40,11 @@ export class AdaptersConstants {
     public static readonly SERVER_OUTPUT_CHANNEL = 'Show Output Channel';
     public static readonly SERVER_ACTIONS = 'Server Actions...';
     public static readonly SERVER_EDIT = 'Edit Server';
+    public static readonly SERVER_DEPLOYMENT_FILE = 'File';
+    public static readonly SERVER_DEPLOYMENT_EXPLODED = 'Exploded';
+    public static readonly SERVER_ACTION_SHOW_IN_BROWSER = 'Show in browser...';
+    public static readonly SERVER_ACTION_EDIT_CONFIGURATION = 'Edit Configuration File...';
+
+    // Deployment specific
+    public static readonly DEPLOYMENT_REMOVE = 'Remove Deployment';
 }

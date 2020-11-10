@@ -16,6 +16,15 @@ export async function findNotification(text: string): Promise<Notification | und
     }
 }
 
+export async function clearNotifications() {
+    const nc = await (new Workbench()).openNotificationsCenter();
+    const notifications = await nc.getNotifications(NotificationType.Any);
+    if (notifications.length > 0) {
+        await nc.clearAllNotifications();
+    }
+    await nc.close();
+}
+
 export async function showErrorNotifications() {
     const errors = await getNotifications(NotificationType.Error);
     if (errors && errors.length > 0) {

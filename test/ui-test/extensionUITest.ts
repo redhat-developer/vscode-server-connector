@@ -1,4 +1,4 @@
-import { AdaptersConstants } from './common/adaptersContants';
+import { AdaptersConstants } from './common/constants/adaptersContants';
 import { expect } from 'chai';
 import { ActivityBar, ExtensionsViewItem, ExtensionsViewSection, SideBarView, ViewControl } from 'vscode-extension-tester';
 

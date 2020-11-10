@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { AdaptersConstants } from "./common/adaptersContants";
+import { AdaptersConstants } from "./common/constants/adaptersContants";
 import { ServerState } from "./common/enum/serverState";
 import { WebDriver, VSBrowser } from "vscode-extension-tester";
 import { serverHasState } from "./common/util/serverUtils";
