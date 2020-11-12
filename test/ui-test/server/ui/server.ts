@@ -76,7 +76,13 @@ export class Server extends AbstractServer {
         // instead we got input box where we can search for files
         try {
             const inputFile = await InputBox.create();
+            const actualText = await inputFile.getText();
+            if (actualText.length > 0) {
+                console.log("Text after opening input box: " + actualText);
+            }
+            // await inputFile.clear();
             await inputFile.setText(deploymentPath);
+            console.log("Text after setting text: " + await inputFile.getText());
             await inputFile.confirm();
         } catch (error) {
             log.warn(`InputBox bar did not appear, ${error}, \r\ntrying native file manager...`);

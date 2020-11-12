@@ -124,6 +124,7 @@ export function advancedE2ETest(testServers: string[]) {
                     let server = await serverProvider.getServer(wfServerName);
                     const deployment = await server.getDeployment(appName);
                     expect(deployment).to.be.an.instanceof(Deployment);
+                    console.log("remove deployment");
                     await deployment.removeDeployment();
                     // refresh server
                     server = await serverProvider.getServer(wfServerName);
