@@ -5,6 +5,7 @@ import { ServerState } from '../../common/enum/serverState';
 import { serverHasState, serverStateChanged } from '../../common/util/serverUtils';
 import { AdaptersConstants } from '../../common/constants/adaptersContants';
 import { Logger } from 'tslog';
+import { selectContextMenuItemOnTreeItem } from '../../common/util/testUtils';
 
 const log: Logger = new Logger({ name: 'AbstractServer'});
 
@@ -58,12 +59,7 @@ export abstract class AbstractServer implements IServer {
         if (!(await treeItem.isSelected())) {
             await treeItem.select();
         }
-        const menu = await treeItem.openContextMenu();
-        await VSBrowser.instance.driver.wait(async () =>
-            await menu.hasItem(item),
-            3000,
-            `Failed waiting for context menu item: ${item}`);
-        await menu.select(item);
+        await selectContextMenuItemOnTreeItem(treeItem, item);
     }
 
     protected async performServerOperation(contextMenuItem: string, expectedState: ServerState, timeout: number): Promise<void> {
@@ -97,13 +93,13 @@ export abstract class AbstractServer implements IServer {
         try {
             this.selectContextMenuItem(AdaptersConstants.SERVER_REMOVE);
             const dialog = await DialogHandler.getOpenDialog();
-            await dialog.confirm();
+            await dialog.confirm(); 
         } catch (error) {
             throw Error(`Given server ${this.getServerName()} does not allow to remove the server in actual state, could be starting: ${error}`);
         }
     }
 
-    public async abstract getTreeItemImpl(): Promise<ViewItem>;
+    public abstract getTreeItemImpl(): Promise<ViewItem>;
 
     public async getTreeItem(): Promise<ViewItem> {
         try {

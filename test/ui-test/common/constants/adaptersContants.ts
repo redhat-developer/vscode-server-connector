@@ -6,6 +6,7 @@ export class AdaptersConstants {
     // General
     public static readonly YES = 'Yes';
     public static readonly NO = 'No';
+    public static readonly LICENSE_EDITOR = 'workflow.license';
 
     // RSP extensions properties
     public static readonly RSP_UI_NAME = 'Remote Server Protocol UI';

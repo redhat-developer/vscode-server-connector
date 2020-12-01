@@ -1,4 +1,4 @@
-import { InputBox, ViewItem, Workbench, TreeItem, VSBrowser } from "vscode-extension-tester";
+import { InputBox, ViewItem, Workbench, TreeItem, VSBrowser, EditorView } from "vscode-extension-tester";
 import { AdaptersConstants } from "../../common/constants/adaptersContants";
 import { Server } from "./server";
 import { AbstractServer } from "./abstractServer";
@@ -7,6 +7,7 @@ import { DialogHandler } from "vscode-extension-tester-native";
 import { notificationExists, safeNotificationExists } from "../../common/util/testUtils";
 import { downloadableListIsAvailable } from "../../common/util/downloadServerUtil";
 import { Logger } from 'tslog';
+import { CloseEditorNativeDialog } from "../../common/dialog/closeEditorDialog";
 
 const log: Logger = new Logger({ name: 'rspServerProvider'});
 
@@ -93,7 +94,7 @@ export class RSPServerProvider extends AbstractServer {
         throw Error('RSP Server does not support delete operation');
     }
 
-    public async createDownloadServer(serverName: string) {
+    public async createDownloadServer(serverName: string, closeLicenseEditor: boolean = true) {
         const quick = await this.getCreateNewServerBox();
         await quick.selectQuickPick('Yes');
         await VSBrowser.instance.driver.wait( async () => await downloadableListIsAvailable(quick), 5000 );
@@ -106,6 +107,17 @@ export class RSPServerProvider extends AbstractServer {
         // confirmation leads to next input: do you agree to license? picks -> Yes (True) or No (False)
         await licenseInput.selectQuickPick('Yes (True)');
         // Clicking yes => Download notification - Job Download runtime: WildFly 19.1.0.Final started.. x
+
+        if (closeLicenseEditor) {
+            const editorView = new EditorView();
+            const editor = await editorView.openEditor(AdaptersConstants.LICENSE_EDITOR);
+            if (editor && editor.isDisplayed()) {
+                await editorView.closeEditor(AdaptersConstants.LICENSE_EDITOR);
+                // file in editor was edited
+                const dialog = new CloseEditorNativeDialog();
+                await dialog.closeWithoutSaving();
+            }
+        }
         await VSBrowser.instance.driver.wait( async () => {
             return await notificationExists(`${AdaptersConstants.RSP_DOWNLOADING_NOTIFICATION} ${serverName}`);
         }, 3000 );
@@ -113,6 +125,7 @@ export class RSPServerProvider extends AbstractServer {
         await VSBrowser.instance.driver.wait( async () => {
             return !(await safeNotificationExists(`${AdaptersConstants.RSP_DOWNLOADING_NOTIFICATION} ${serverName}`));
         }, 180000 );
+
     }
 
     public async createLocalServer(serverPath: string, serverName: string) {

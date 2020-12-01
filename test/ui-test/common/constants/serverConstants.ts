@@ -7,7 +7,7 @@ export class ServersConstants {
      * Object holding information about pair: server default output name and server download name
     */
     public static readonly WILDFLY_SERVERS = {
-        'wildfly-20.0.1.Final': 'WildFly 20.0.1 Final'
+        'wildfly-21.0.2.Final': 'WildFly 21.0.2 Final'
     };
 
     public static readonly EAP_SERVERS = {

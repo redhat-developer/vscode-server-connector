@@ -13,7 +13,7 @@ export function extensionUIAssetsTest() {
         let section: ExtensionsViewSection;
 
         beforeEach(async function() {
-            this.timeout(4000);
+            this.timeout(10000);
             view = new ActivityBar().getViewControl('Extensions');
             sideBar = await view.openView();
             const content = sideBar.getContent();

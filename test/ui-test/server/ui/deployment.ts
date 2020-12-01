@@ -1,7 +1,8 @@
-import { By, TreeItem, ViewItem, VSBrowser } from "vscode-extension-tester";
+import { By, TreeItem, ViewItem } from "vscode-extension-tester";
 import { AdaptersConstants } from "../../common/constants/adaptersContants";
 import { PublishState } from "../../common/enum/publishState";
 import { ServerState } from "../../common/enum/serverState";
+import { selectContextMenuItemOnTreeItem } from "../../common/util/testUtils";
 import { Server } from "./server";
 
 /**
@@ -70,17 +71,15 @@ export class Deployment {
     }
 
     public async removeDeployment(): Promise<void> {
-        const depl = await this.getTreeItem();
-        await depl.select();
         await this.selectContextMenuItem(AdaptersConstants.DEPLOYMENT_REMOVE);
     }
 
     public async selectContextMenuItem(item: string): Promise<void> {
-        const menu = await (await this.getTreeItem()).openContextMenu();
-        await VSBrowser.instance.driver.wait(async () =>
-            await menu.hasItem(item),
-            2000,
-            `Failed waiting for context menu item: ${item}`);
-        await menu.select(item);
+        const treeItem = await this.getTreeItem();
+        await treeItem.select();
+        if (!(await treeItem.isSelected())) {
+            await treeItem.select();
+        }
+        await selectContextMenuItemOnTreeItem(treeItem, item);
     }
 }
