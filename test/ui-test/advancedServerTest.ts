@@ -42,7 +42,7 @@ export function advancedE2ETest(testServers: string[]) {
                 const appName = 'test-app.war';
 
                 before(async function() {
-                    this.timeout(200000);
+                    this.timeout(240000);
                     await new EditorView().closeAllEditors();
                     serversTab = new ServersTab();
                     await serversTab.open();
@@ -140,12 +140,14 @@ export function advancedE2ETest(testServers: string[]) {
                         await input.cancel();
                     } catch (error) {
                         // no input box, no need to close it
-                        log.info(`AfterEach: ${error} during opening/closing input box, continue...`);
+                        // log.info(`AfterEach: ${error} during opening/closing input box, continue...`);
                     }
                 });
 
                 after(async function() {
                     this.timeout(30000);
+                    log.debug('Close all editors');
+                    await new EditorView().closeAllEditors();
                     log.info('Check existing error notifications');
                     await showErrorNotifications();
                     // clean up notifications

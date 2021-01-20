@@ -97,12 +97,13 @@ export async function sectionHasItem(sideBar: SideBarView, name: string): Promis
 }
 
 export async function selectContextMenuItemOnTreeItem(treeItem: any, itemName: string) {
-    const menu = await treeItem.openContextMenu();
+    let menu = await treeItem.openContextMenu();
     await VSBrowser.instance.driver.wait(async () => {
         if (await menu.hasItem(itemName)) {
             const menuItem = await menu.getItem(itemName);
             return await menuItem.isEnabled() && await menuItem.isDisplayed();
         }
+        menu = await treeItem.openContextMenu();
         return false; },
         3000,
         `Failed waiting for context menu item: ${itemName}`);

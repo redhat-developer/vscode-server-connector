@@ -21,7 +21,7 @@ export function extensionUIAssetsTest() {
         });
 
         it('Dependent Remote Server Protocol UI extension is installed', async function() {
-            this.timeout(15000);
+            this.timeout(20000);
             const item = await section.findItem(`@installed ${AdaptersConstants.RSP_UI_NAME}`) as ExtensionsViewItem;
             expect(item).not.undefined;
             expect(await item.getTitle()).to.equal(AdaptersConstants.RSP_UI_NAME);

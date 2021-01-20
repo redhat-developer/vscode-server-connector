@@ -1,4 +1,4 @@
-import { ViewItem, By, VSBrowser, TreeItem } from 'vscode-extension-tester';
+import { ViewItem, By, VSBrowser, TreeItem, ModalDialog } from 'vscode-extension-tester';
 import { DialogHandler } from 'vscode-extension-tester-native';
 import { IServer } from './IServer';
 import { ServerState } from '../../common/enum/serverState';
@@ -92,8 +92,16 @@ export abstract class AbstractServer implements IServer {
     public async delete(): Promise<void> {
         try {
             this.selectContextMenuItem(AdaptersConstants.SERVER_REMOVE);
-            const dialog = await DialogHandler.getOpenDialog();
-            await dialog.confirm(); 
+            // try custom native dialog path
+            try {
+                const dialog = new ModalDialog();
+                await dialog.pushButton('Yes');
+            } catch (error) {
+                log.debug(`Custom dialog was not opened, error: ${error}: ${error.message}`)
+                const dialog = await DialogHandler.getOpenDialog();
+                await dialog.confirm(); 
+            }
+            
         } catch (error) {
             throw Error(`Given server ${this.getServerName()} does not allow to remove the server in actual state, could be starting: ${error}`);
         }

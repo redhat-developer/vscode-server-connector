@@ -167,7 +167,16 @@ export class Server extends AbstractServer {
 
     public async getDeployment(deplName: string, contains: boolean = true): Promise<Deployment | undefined> {
         const treeItem = await this.getTreeItem();
-        const treeItems = await (treeItem as TreeItem).getChildren();
+        let treeItems = [];
+        try {
+            treeItems = await (treeItem as TreeItem).getChildren();
+        } catch (error) {
+            if (error.name === 'StaleElementReferenceError') {
+                log.warn(`${error.message} during getting treeItem getChildren`);
+                return undefined;
+            }
+            throw error;
+        }
         for (const item of treeItems) {
             let text;
             try {

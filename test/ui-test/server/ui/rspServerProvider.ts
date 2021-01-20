@@ -1,4 +1,4 @@
-import { InputBox, ViewItem, Workbench, TreeItem, VSBrowser, EditorView } from "vscode-extension-tester";
+import { InputBox, ModalDialog, ViewItem, Workbench, TreeItem, VSBrowser, EditorView } from "vscode-extension-tester";
 import { AdaptersConstants } from "../../common/constants/adaptersContants";
 import { Server } from "./server";
 import { AbstractServer } from "./abstractServer";
@@ -107,17 +107,6 @@ export class RSPServerProvider extends AbstractServer {
         // confirmation leads to next input: do you agree to license? picks -> Yes (True) or No (False)
         await licenseInput.selectQuickPick('Yes (True)');
         // Clicking yes => Download notification - Job Download runtime: WildFly 19.1.0.Final started.. x
-
-        if (closeLicenseEditor) {
-            const editorView = new EditorView();
-            const editor = await editorView.openEditor(AdaptersConstants.LICENSE_EDITOR);
-            if (editor && editor.isDisplayed()) {
-                await editorView.closeEditor(AdaptersConstants.LICENSE_EDITOR);
-                // file in editor was edited
-                const dialog = new CloseEditorNativeDialog();
-                await dialog.closeWithoutSaving();
-            }
-        }
         await VSBrowser.instance.driver.wait( async () => {
             return await notificationExists(`${AdaptersConstants.RSP_DOWNLOADING_NOTIFICATION} ${serverName}`);
         }, 3000 );
@@ -125,7 +114,22 @@ export class RSPServerProvider extends AbstractServer {
         await VSBrowser.instance.driver.wait( async () => {
             return !(await safeNotificationExists(`${AdaptersConstants.RSP_DOWNLOADING_NOTIFICATION} ${serverName}`));
         }, 180000 );
-
+        // close opened license file in editor
+        if (closeLicenseEditor) {
+            const editorView = new EditorView();
+            const editor = await editorView.openEditor(AdaptersConstants.LICENSE_EDITOR);
+            if (editor && await editor.isDisplayed()) {
+                await editorView.closeEditor(AdaptersConstants.LICENSE_EDITOR);
+                try {
+                    const dialog = new ModalDialog();
+                    await dialog.pushButton("Don't Save");
+                } catch (error) {
+                    log.debug(`Error encountered opening modal dialog: ${error}:${error.message}`);
+                    const dialog = new CloseEditorNativeDialog();
+                    await dialog.closeWithoutSaving();
+                }
+            }
+        }
     }
 
     public async createLocalServer(serverPath: string, serverName: string) {
@@ -149,6 +153,5 @@ export class RSPServerProvider extends AbstractServer {
         // do you wanna edit server parameters? No...
         const optionsInput = await InputBox.create();
         await optionsInput.selectQuickPick('No');
-        log.info('Finished');
     }
 }
