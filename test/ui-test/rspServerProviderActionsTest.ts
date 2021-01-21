@@ -56,7 +56,7 @@ export function rspServerProviderActionsTest() {
             await quick.selectQuickPick(YES);
             await driver.wait( async () =>  await downloadableListIsAvailable(quick), 10000 );
             const input = await InputBox.create();
-            await input.setText('WildFly 20');
+            await input.setText('WildFly 21');
             const optionsText = await Promise.all((await input.getQuickPicks()).map(async item => await item.getText()));
             await input.clear();
             await input.setText('Red Hat EAP');
@@ -94,7 +94,7 @@ export function rspServerProviderActionsTest() {
         });
 
         afterEach(async function() {
-            this.timeout(10000);
+            this.timeout(20000);
             // clean up quick box
             try {
                 await new InputBox().cancel();

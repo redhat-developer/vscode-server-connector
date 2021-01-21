@@ -1,4 +1,4 @@
-import { InputBox, ViewItem, Workbench, TreeItem, VSBrowser } from "vscode-extension-tester";
+import { InputBox, ModalDialog, ViewItem, Workbench, TreeItem, VSBrowser, EditorView } from "vscode-extension-tester";
 import { AdaptersConstants } from "../../common/constants/adaptersContants";
 import { Server } from "./server";
 import { AbstractServer } from "./abstractServer";
@@ -7,6 +7,7 @@ import { DialogHandler } from "vscode-extension-tester-native";
 import { notificationExists, safeNotificationExists } from "../../common/util/testUtils";
 import { downloadableListIsAvailable } from "../../common/util/downloadServerUtil";
 import { Logger } from 'tslog';
+import { CloseEditorNativeDialog } from "../../common/dialog/closeEditorDialog";
 
 const log: Logger = new Logger({ name: 'rspServerProvider'});
 
@@ -93,7 +94,7 @@ export class RSPServerProvider extends AbstractServer {
         throw Error('RSP Server does not support delete operation');
     }
 
-    public async createDownloadServer(serverName: string) {
+    public async createDownloadServer(serverName: string, closeLicenseEditor: boolean = true) {
         const quick = await this.getCreateNewServerBox();
         await quick.selectQuickPick('Yes');
         await VSBrowser.instance.driver.wait( async () => await downloadableListIsAvailable(quick), 5000 );
@@ -113,6 +114,22 @@ export class RSPServerProvider extends AbstractServer {
         await VSBrowser.instance.driver.wait( async () => {
             return !(await safeNotificationExists(`${AdaptersConstants.RSP_DOWNLOADING_NOTIFICATION} ${serverName}`));
         }, 180000 );
+        // close opened license file in editor
+        if (closeLicenseEditor) {
+            const editorView = new EditorView();
+            const editor = await editorView.openEditor(AdaptersConstants.LICENSE_EDITOR);
+            if (editor && await editor.isDisplayed()) {
+                await editorView.closeEditor(AdaptersConstants.LICENSE_EDITOR);
+                try {
+                    const dialog = new ModalDialog();
+                    await dialog.pushButton("Don't Save");
+                } catch (error) {
+                    log.debug(`Error encountered opening modal dialog: ${error}:${error.message}`);
+                    const dialog = new CloseEditorNativeDialog();
+                    await dialog.closeWithoutSaving();
+                }
+            }
+        }
     }
 
     public async createLocalServer(serverPath: string, serverName: string) {
@@ -136,6 +153,5 @@ export class RSPServerProvider extends AbstractServer {
         // do you wanna edit server parameters? No...
         const optionsInput = await InputBox.create();
         await optionsInput.selectQuickPick('No');
-        log.info('Finished');
     }
 }

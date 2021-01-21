@@ -32,7 +32,7 @@ node('rhel8'){
 					sh "npm run ui-test"
 				} finally {
 					junit 'report.xml'
-					archiveArtifacts artifacts: 'test-resources/**/*.png'
+					archiveArtifacts artifacts: 'test-resources/**/*.png, test-resources/*.log, **/*.log, **/*.png'
 				}
     		}
         }

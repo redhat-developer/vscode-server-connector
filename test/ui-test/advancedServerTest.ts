@@ -4,7 +4,7 @@ import { RSPServerProvider } from "./server/ui/rspServerProvider";
 import { ServersTab } from "./server/ui/serversTab";
 import { ServerState } from "./common/enum/serverState";
 import { deleteAllServers, deploymentHasState, serverHasDeployment, serverHasPublishState, serverHasState, stopAllServers } from "./common/util/serverUtils";
-import { InputBox, VSBrowser, WebDriver } from "vscode-extension-tester";
+import { EditorView, InputBox, VSBrowser, WebDriver } from "vscode-extension-tester";
 import { clearNotifications, showErrorNotifications } from "./common/util/testUtils";
 import { ServersConstants } from "./common/constants/serverConstants";
 import { AdaptersConstants } from './common/constants/adaptersContants';
@@ -42,7 +42,8 @@ export function advancedE2ETest(testServers: string[]) {
                 const appName = 'test-app.war';
 
                 before(async function() {
-                    this.timeout(200000);
+                    this.timeout(240000);
+                    await new EditorView().closeAllEditors();
                     serversTab = new ServersTab();
                     await serversTab.open();
                     serverProvider = await serversTab.getServerProvider(AdaptersConstants.RSP_SERVER_PROVIDER_NAME);
@@ -124,6 +125,7 @@ export function advancedE2ETest(testServers: string[]) {
                     let server = await serverProvider.getServer(wfServerName);
                     const deployment = await server.getDeployment(appName);
                     expect(deployment).to.be.an.instanceof(Deployment);
+                    console.log("remove deployment");
                     await deployment.removeDeployment();
                     // refresh server
                     server = await serverProvider.getServer(wfServerName);
@@ -138,12 +140,14 @@ export function advancedE2ETest(testServers: string[]) {
                         await input.cancel();
                     } catch (error) {
                         // no input box, no need to close it
-                        log.info(`AfterEach: ${error} during opening/closing input box, continue...`);
+                        // log.info(`AfterEach: ${error} during opening/closing input box, continue...`);
                     }
                 });
 
                 after(async function() {
                     this.timeout(30000);
+                    log.debug('Close all editors');
+                    await new EditorView().closeAllEditors();
                     log.info('Check existing error notifications');
                     await showErrorNotifications();
                     // clean up notifications
