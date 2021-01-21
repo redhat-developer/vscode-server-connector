@@ -34,7 +34,7 @@ jobs:
       with:
         run: npm run public-ui-test
     - name: Archiving test artifacts
-      uses: actions/archive-artifact@v2
+      uses: actions/upload-artifact@v2
       with: 
         name: my-artifact
         path: |
