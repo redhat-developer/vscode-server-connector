@@ -33,4 +33,12 @@ jobs:
       uses: GabrielBB/xvfb-action@v1.0
       with:
         run: npm run public-ui-test
+    - name: Archiving test artifacts
+      uses: actions/archive-artifact@v2
+      with: 
+        name: my-artifact
+        path: |
+          test-resources/screenshots/*.png
+          test-resources/*.log
+        retention-days: 5
             
