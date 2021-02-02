@@ -1,0 +1,39 @@
+#!/usr/bin/env groovy
+
+node('rhel8') {
+	stage('Checkout repo') {
+		deleteDir()
+		git url: "https://github.com/${params.FORK}/vscode-server-connector.git", branch: params.BRANCH
+	}
+
+	stage('Install requirements') {
+		def nodeHome = tool 'nodejs-12.13.1'
+		env.PATH="${env.PATH}:${nodeHome}/bin"
+		sh "npm install -g typescript vsce"
+	}
+
+	stage('Build') {
+		sh "npm install"
+		if(publishToMarketPlace.equals('false')) {
+			def baseUrl = "https://download.jboss.org/jbosstools/adapters/snapshots/vscode-middleware-tools"
+			sh "wget ${baseUrl}/vscode-server-connector-api/vscode-server-connector-api-latest.tgz"
+			sh "npm install vscode-server-connector-api-latest.tgz"
+		} else {
+			env.RSP_QUALIFIER="stable"
+		}
+		sh "npm run build"
+	}
+
+	withEnv(['JUNIT_REPORT_PATH=report.xml', 'CODE_TESTS_WORKSPACE=c:/unknown']) {
+        stage('Test') {
+    		wrap([$class: 'Xvnc']) {
+				try {
+					sh "npm test --silent"
+				} finally {
+					junit 'report.xml'
+					archiveArtifacts artifacts: 'test-resources/**/*.png, test-resources/*.log, **/*.log, **/*.png'
+				}
+    		}
+        }
+    }
+}
