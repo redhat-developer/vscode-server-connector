@@ -32,7 +32,7 @@ This extension depends on VSCode RSP UI Extension which is going to be installed
 ### Supported Servers
    * Wildfly [8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19]
    * Red Hat Enterprise Application Platform (EAP) [4.3 | 5.0 | 6.0 | 6.1 | 6.2 | 6.3 | 6.4 | 7.0 | 7.1 | 7.2 | 7.3] 
-   * Minishift / Red Hat Container Development Kit (CDK) / Red Hat Code-Ready Containers (CRC) binaries
+   * Minishift / Red Hat Container Development Kit (CDK) / Red Hat CodeReady Containers (CRC) binaries
 
 
 ## FAQ
