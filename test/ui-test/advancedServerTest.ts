@@ -4,7 +4,7 @@ import { RSPServerProvider } from "./server/ui/rspServerProvider";
 import { ServersTab } from "./server/ui/serversTab";
 import { ServerState } from "./common/enum/serverState";
 import { deleteAllServers, deploymentHasState, serverHasDeployment, serverHasPublishState, serverHasState, stopAllServers } from "./common/util/serverUtils";
-import { EditorView, InputBox, VSBrowser, WebDriver } from "vscode-extension-tester";
+import { ActivityBar, EditorView, InputBox, VSBrowser, WebDriver } from "vscode-extension-tester";
 import { clearNotifications, showErrorNotifications } from "./common/util/testUtils";
 import { ServersConstants } from "./common/constants/serverConstants";
 import { AdaptersConstants } from './common/constants/adaptersContants';
@@ -44,7 +44,7 @@ export function advancedE2ETest(testServers: string[]) {
                 before(async function() {
                     this.timeout(240000);
                     await new EditorView().closeAllEditors();
-                    serversTab = new ServersTab();
+                    serversTab = new ServersTab(await new ActivityBar().getViewControl('Explorer'));
                     await serversTab.open();
                     serverProvider = await serversTab.getServerProvider(AdaptersConstants.RSP_SERVER_PROVIDER_NAME);
                     const state = await serverProvider.getServerState();

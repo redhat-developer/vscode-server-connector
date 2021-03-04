@@ -1,4 +1,4 @@
-import { WebDriver, VSBrowser, NotificationType, Workbench, InputBox } from "vscode-extension-tester";
+import { WebDriver, VSBrowser, NotificationType, Workbench, InputBox, ActivityBar } from "vscode-extension-tester";
 import { RSPServerProvider } from "./server/ui/rspServerProvider";
 import { serverHasState } from "./common/util/serverUtils";
 import { expect } from 'chai'
@@ -27,12 +27,12 @@ export function rspServerProviderActionsTest() {
         let serverProvider: RSPServerProvider;
         let serversTab: ServersTab;
 
-        before(function() {
+        before(async function() {
             if (os.platform() === 'darwin') {
                 this.skip();
             }
             driver = VSBrowser.instance.driver;
-            serversTab = new ServersTab();
+            serversTab = new ServersTab(await new ActivityBar().getViewControl('Explorer'));
         });
 
         beforeEach(async function() {
@@ -84,7 +84,7 @@ export function rspServerProviderActionsTest() {
                 fail('Failed to obtain Create new server warning notification, available notifications are: '
                 + (await Promise.all((await nc.getNotifications(NotificationType.Any)).map(async item => await item.getText()))));
             }
-            expect(await notification.getType()).equals(NotificationType.Warning);
+            expect(await notification.getType()).equals(NotificationType.Error);
             expect(await notification.getMessage()).to.include(ERROR_NO_RSP_PROVIDER);
         });
 
@@ -115,7 +115,7 @@ export function rspServerProviderActionsTest() {
             this.timeout(20000);
             // Check error messages if any
             await showErrorNotifications();
-            const tab = new ServersTab();
+            const tab = new ServersTab(await new ActivityBar().getViewControl('Explorer'));
             await tab.open();
             const provider = await tab.getServerProvider(AdaptersConstants.RSP_SERVER_PROVIDER_NAME);
             const state = await provider.getServerState();

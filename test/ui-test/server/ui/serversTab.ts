@@ -1,4 +1,4 @@
-import { ActivityBar, SideBarView, ViewControl, TitleActionButton, ViewSection, VSBrowser } from 'vscode-extension-tester';
+import { SideBarView, ViewControl, TitleActionButton, ViewSection, VSBrowser } from 'vscode-extension-tester';
 import { AdaptersConstants } from '../../common/constants/adaptersContants';
 import { RSPServerProvider } from './rspServerProvider';
 import { sectionHasItem } from '../../common/util/testUtils';
@@ -12,8 +12,8 @@ export class ServersTab {
     private viewControl: ViewControl;
     private sideBarView: SideBarView;
 
-    constructor() {
-        this.viewControl = new ActivityBar().getViewControl('Explorer');
+    constructor(control: ViewControl) {
+        this.viewControl = control;
     }
 
     public async getSideBarView(): Promise<SideBarView> {

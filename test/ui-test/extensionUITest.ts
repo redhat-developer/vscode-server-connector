@@ -14,7 +14,7 @@ export function extensionUIAssetsTest() {
 
         beforeEach(async function() {
             this.timeout(10000);
-            view = new ActivityBar().getViewControl('Extensions');
+            view = await new ActivityBar().getViewControl('Extensions');
             sideBar = await view.openView();
             const content = sideBar.getContent();
             section = await content.getSection('Installed') as ExtensionsViewSection;
@@ -37,7 +37,7 @@ export function extensionUIAssetsTest() {
         afterEach(async function() {
             this.timeout(10000);
             if (sideBar && await sideBar.isDisplayed()) {
-                sideBar = await (new ActivityBar().getViewControl('Extensions')).openView();
+                sideBar = await (await new ActivityBar().getViewControl('Extensions')).openView();
                 const titlePart = sideBar.getTitlePart();
                 const actionButton = await titlePart.getAction('Clear Extensions Search Results');
                 if (actionButton.isEnabled()) {
