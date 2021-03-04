@@ -1,4 +1,4 @@
-import { WebDriver, VSBrowser, NotificationType, InputBox } from "vscode-extension-tester";
+import { WebDriver, VSBrowser, NotificationType, InputBox, ActivityBar } from "vscode-extension-tester";
 import { RSPServerProvider } from "./server/ui/rspServerProvider";
 import { serverHasState, stopAllServers, deleteAllServers } from "./common/util/serverUtils";
 import { expect } from 'chai';
@@ -43,7 +43,7 @@ export function basicE2ETest(testServers: string[]) {
 
                 before(async function() {
                     this.timeout(40000);
-                    serversTab = new ServersTab();
+                    serversTab = new ServersTab(await new ActivityBar().getViewControl('Explorer'));
                     await serversTab.open();
                     serverProvider = await serversTab.getServerProvider(AdaptersConstants.RSP_SERVER_PROVIDER_NAME);
                     const state = await serverProvider.getServerState();
