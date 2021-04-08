@@ -1,4 +1,4 @@
-import { Notification, NotificationsCenter, NotificationType, SideBarView, VSBrowser, Workbench } from "vscode-extension-tester";
+import { Notification, NotificationsCenter, NotificationType, SideBarView, TreeItem, ViewItem, VSBrowser, Workbench } from "vscode-extension-tester";
 
 /**
  * @author Ondrej Dockal <odockal@redhat.com>
@@ -96,7 +96,7 @@ export async function sectionHasItem(sideBar: SideBarView, name: string): Promis
     return section ? true : false;
 }
 
-export async function selectContextMenuItemOnTreeItem(treeItem: any, itemName: string) {
+export async function selectContextMenuItemOnTreeItem(treeItem: TreeItem | ViewItem, itemName: string) {
     let menu = await treeItem.openContextMenu();
     await VSBrowser.instance.driver.wait(async () => {
         if (await menu.hasItem(itemName)) {
@@ -104,8 +104,7 @@ export async function selectContextMenuItemOnTreeItem(treeItem: any, itemName: s
             return await menuItem.isEnabled() && await menuItem.isDisplayed();
         }
         menu = await treeItem.openContextMenu();
-        return false; },
-        3000,
-        `Failed waiting for context menu item: ${itemName}`);
+        return false; 
+    }, 3000, `Failed waiting for context menu item: ${itemName}`);
     await menu.select(itemName);
 }
