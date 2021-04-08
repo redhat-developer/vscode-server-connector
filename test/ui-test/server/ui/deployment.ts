@@ -75,7 +75,7 @@ export class Deployment {
     }
 
     public async selectContextMenuItem(item: string): Promise<void> {
-        const treeItem = await this.getTreeItem();
+        const treeItem = await this.getTreeItem() as TreeItem;
         await treeItem.select();
         if (!(await treeItem.isSelected())) {
             await treeItem.select();
