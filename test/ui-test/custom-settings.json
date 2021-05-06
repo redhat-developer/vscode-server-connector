@@ -1,4 +1,5 @@
 {
     "files.simpleDialog.enable": false,
-    "window.dialogStyle": "custom"
+    "window.dialogStyle": "custom",
+    "rsp-ui.newserverwebviewworkflow": false
 }
