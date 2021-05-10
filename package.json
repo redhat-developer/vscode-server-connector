@@ -64,7 +64,7 @@
     "chai": "^4.2.0",
     "decache": "^4.6.0",
     "decompress": "^4.2.1",
-    "download": "^7.1.0",
+    "download": "^8.0.0",
     "glob": "^7.1.4",
     "istanbul": "^0.4.5",
     "mocha": "^6.2.3",
