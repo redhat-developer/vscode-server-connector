@@ -13,7 +13,7 @@
   },
   "bugs": "https://github.com/redhat-developer/vscode-server-connector/issues/",
   "engines": {
-    "vscode": "^1.52.0"
+    "vscode": "^1.56.0"
   },
   "activationEvents": [
     "onView:servers"
@@ -60,7 +60,7 @@
     "@types/mocha": "^8.0.3",
     "@types/node": "^12.19.13",
     "@types/sinon": "^10.0.0",
-    "@types/vscode": "^1.52.0",
+    "@types/vscode": "^1.56.0",
     "chai": "^4.2.0",
     "codecov": "^3.8.0",
     "decache": "^4.6.0",
