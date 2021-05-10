@@ -62,7 +62,6 @@
     "@types/sinon": "^10.0.0",
     "@types/vscode": "^1.56.0",
     "chai": "^4.2.0",
-    "codecov": "^3.8.0",
     "decache": "^4.6.0",
     "decompress": "^4.2.1",
     "download": "^7.1.0",
