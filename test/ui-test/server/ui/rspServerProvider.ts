@@ -4,10 +4,11 @@ import { Server } from "./server";
 import { AbstractServer } from "./abstractServer";
 import { IServersProvider } from "./IServersProvider";
 import { DialogHandler } from "vscode-extension-tester-native";
-import { notificationExists, safeNotificationExists } from "../../common/util/testUtils";
+import { editorIsOpened, notificationExists, safeNotificationExists } from "../../common/util/testUtils";
 import { downloadableListIsAvailable } from "../../common/util/downloadServerUtil";
 import { Logger } from 'tslog';
 import { CloseEditorNativeDialog } from "../../common/dialog/closeEditorDialog";
+import { ServerCreationForm } from "./serverCreationForm";
 
 const log: Logger = new Logger({ name: 'rspServerProvider'});
 
@@ -132,7 +133,7 @@ export class RSPServerProvider extends AbstractServer {
         }
     }
 
-    public async createLocalServer(serverPath: string, serverName: string) {
+    public async createLocalServer(serverPath: string, serverName: string, webView: boolean = false) {
         const quick = await this.getCreateNewServerBox();
         await quick.selectQuickPick('No, use server on disk');
         // it might happen, depending on vscode settings, that native file manager dialog wont appear
@@ -147,11 +148,36 @@ export class RSPServerProvider extends AbstractServer {
             await browseDialog.selectPath(serverPath);
             await browseDialog.confirm();
         }
-        const nameInput = await InputBox.create();
-        await nameInput.setText(serverName);
-        await nameInput.confirm();
-        // do you wanna edit server parameters? No...
-        const optionsInput = await InputBox.create();
-        await optionsInput.selectQuickPick('No');
+        // might get secure storage input box
+        try {
+            const secureStorage = await InputBox.create();
+            const indexOf = (await secureStorage.getMessage()).indexOf("secure storage");
+            if (indexOf >= 0) {
+                await secureStorage.confirm();
+            }
+        } catch (error) {
+            log.warn(error);
+            // no input box, we can continue
+        }
+        // Since rsp-ui 0.23.9 there is by default new webView now
+        // can be turned off by setting property: rsp-ui.newserverwebviewworkflow = false
+        if (webView) {
+            await VSBrowser.instance.driver.wait(async () => editorIsOpened('New Server'), 3000);
+            const editorView = new EditorView();
+            const editors = await editorView.getOpenEditorTitles();
+            const newServerEditorName = editors.find(item => {
+                return item.indexOf("New Server") >= 0;
+            });
+            const serverView = new ServerCreationForm(newServerEditorName);
+            await serverView.initializeEditor();
+            await serverView.setServerId(serverName);
+            await serverView.finish();
+        } else {
+            const nameInput = await InputBox.create();
+            await nameInput.setText(serverName);
+            await nameInput.confirm();
+            const optionsInput = await InputBox.create();
+            await optionsInput.selectQuickPick('No');
+        }
     }
 }

@@ -48,7 +48,7 @@ export function basicE2ETest(testServers: string[]) {
                     serverProvider = await serversTab.getServerProvider(AdaptersConstants.RSP_SERVER_PROVIDER_NAME);
                     const state = await serverProvider.getServerState();
                     if (state === ServerState.Unknown || state === ServerState.Starting) {
-                        await driver.wait(async () => await serverHasState(serverProvider, ServerState.Started), 15000,
+                        await driver.wait(async () => await serverHasState(serverProvider, ServerState.Started, ServerState.Connected), 15000,
                         'Server was not started within 10 s on startup');
                     }
                     else if (state !== ServerState.Started) {
@@ -68,12 +68,14 @@ export function basicE2ETest(testServers: string[]) {
                     it(`Create the ${serverDownloadName} server from the disk location`, async function() {
                         this.timeout(240000);
                         log.info(`Downloading server at ${EAP_URL} to ${downloadLocation} and extracting to ${extractLocation}`);
-                        await downloadExtractFile(EAP_URL, downloadLocation, extractLocation);
+                        if (!fs.existsSync(extractLocation)) {
+                            await downloadExtractFile(EAP_URL, downloadLocation, extractLocation);
+                        }
                         expect(fs.existsSync(extractLocation)).to.be.true;
                         try {
                             const realPath = path.join(extractLocation, 'jboss-eap-7.3');
                             log.info(`Adding new local server at ${realPath}`);
-                            await serverProvider.createLocalServer(realPath, serverName);
+                            await serverProvider.createLocalServer(realPath, serverName, true);
                         } catch (error) {
                             // verify no error notification appeared
                             const errors = await getNotifications(NotificationType.Error);
@@ -132,6 +134,7 @@ export function basicE2ETest(testServers: string[]) {
                     // }
                     await stopAllServers(serverProvider);
                     await deleteAllServers(serverProvider);
+                    await serverProvider.stop();
                 });
             });
         }

@@ -1,4 +1,4 @@
-import { Notification, NotificationsCenter, NotificationType, SideBarView, TreeItem, ViewItem, VSBrowser, Workbench } from "vscode-extension-tester";
+import { EditorView, Notification, NotificationsCenter, NotificationType, SideBarView, TreeItem, ViewItem, VSBrowser, Workbench } from "vscode-extension-tester";
 
 /**
  * @author Ondrej Dockal <odockal@redhat.com>
@@ -107,4 +107,12 @@ export async function selectContextMenuItemOnTreeItem(treeItem: TreeItem | ViewI
         return false; 
     }, 3000, `Failed waiting for context menu item: ${itemName}`);
     await menu.select(itemName);
+}
+
+export async function editorIsOpened(editorName: string): Promise<boolean> {
+    let editor = new EditorView();
+    const editorTitles = await editor.getOpenEditorTitles();
+    return editorTitles.find(item => {
+        return item.indexOf(editorName) >= 0;
+    }) ? true : false;
 }
