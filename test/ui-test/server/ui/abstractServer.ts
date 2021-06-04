@@ -59,7 +59,16 @@ export abstract class AbstractServer implements IServer {
         if (!(await treeItem.isSelected())) {
             await treeItem.select();
         }
-        await selectContextMenuItemOnTreeItem(treeItem, item);
+        try {
+            await selectContextMenuItemOnTreeItem(treeItem, item);
+        } catch (error) {
+            if (error.name === 'StaleElementReferenceError') {
+                log.warn(`Retrying abstractSserver.selectContextMenuItem after StaleElemenetReferenceError`);
+                await selectContextMenuItemOnTreeItem(treeItem, item);
+            } else {
+                throw error;
+            }
+        }
     }
 
     protected async performServerOperation(contextMenuItem: string, expectedState: ServerState, timeout: number): Promise<void> {
@@ -97,7 +106,7 @@ export abstract class AbstractServer implements IServer {
                 const dialog = new ModalDialog();
                 await dialog.pushButton('Yes');
             } catch (error) {
-                log.debug(`Custom dialog was not opened, error: ${error}: ${error.message}`)
+                log.debug(`Custom dialog was not opened, error: ${error}: ${error.message}`);
                 const dialog = await DialogHandler.getOpenDialog();
                 await dialog.confirm(); 
             }

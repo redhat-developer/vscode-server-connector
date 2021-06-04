@@ -1,6 +1,7 @@
 import { InputBox } from 'vscode-extension-tester';
 
-import * as fs from 'fs-extra';
+import * as fs_extra from 'fs-extra';
+import * as fs from 'fs';
 import request = require('request');
 import { Unpack } from './unpack';
 
@@ -15,12 +16,14 @@ export async function downloadableListIsAvailable(input: InputBox) {
 export async function downloadFile(url: string, target: string): Promise<void> {
     return await new Promise<void>(resolve => {
         request.get(url)
-            .pipe(fs.createWriteStream(target))
+            .pipe(fs_extra.createWriteStream(target))
             .on('close', resolve);
     });
 }
 
-export async function downloadExtractFile(url: string, target: fs.PathLike, extractTarget: fs.PathLike): Promise<void> {
-    await downloadFile(url, target);
+export async function downloadExtractFile(url: string, target: fs_extra.PathLike, extractTarget: fs_extra.PathLike): Promise<void> {
+    if (!fs.existsSync(target)) {
+        await downloadFile(url, target);
+    }
     return await Unpack.unpack(target, extractTarget);
 }
