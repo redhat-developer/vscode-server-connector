@@ -49,7 +49,6 @@ export abstract class WebViewForm {
         let retValue = undefined;
         try {
             retValue = await callbackFunction(webView);
-            console.log(`retValue: ${retValue}`);
         } finally {
             await webView.switchBack();
         }

@@ -64,7 +64,7 @@
     "chai": "^4.3.4",
     "decache": "^4.6.0",
     "decompress": "^4.2.1",
-    "download": "^8.0.0",
+    "download": "^6.2.5",
     "glob": "^7.1.4",
     "istanbul": "^0.4.5",
     "mocha": "^8.4.0",
@@ -79,7 +79,7 @@
     "tslog": "^3.2.0",
     "typescript": "^4.0.3",
     "unzip-stream": "^0.3.1",
-    "vscode-extension-tester": "^4.0.2",
+    "vscode-extension-tester": "^4.1.0",
     "vscode-extension-tester-native": "^3.0.2",
     "vscode-test": "^1.4.0"
   },

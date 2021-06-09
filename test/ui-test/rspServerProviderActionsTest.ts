@@ -56,12 +56,14 @@ export function rspServerProviderActionsTest() {
             await quick.selectQuickPick(YES);
             await driver.wait( async () =>  await downloadableListIsAvailable(quick), 10000 );
             const input = await InputBox.create();
-            await input.setText('WildFly 21');
+            await input.setText('WildFly 2');
             const optionsText = await Promise.all((await input.getQuickPicks()).map(async item => await item.getText()));
             await input.clear();
             await input.setText('Red Hat EAP');
             optionsText.push(...(await Promise.all((await input.getQuickPicks()).map(async item => await item.getText()))));
-            expect(optionsText).to.include.members(Object.keys(ServersConstants.TEST_SERVERS).map(key => ServersConstants.TEST_SERVERS[key]));
+            let expectedArray = [];
+            ServersConstants.TEST_SERVERS.map(item => expectedArray.push(item.serverDownloadName));
+            expect(optionsText).to.include.members(expectedArray);
             await quick.cancel();
         });
 
@@ -79,7 +81,6 @@ export function rspServerProviderActionsTest() {
             try {
                 notification = await driver.wait(async () => await notificationExistsWithObject(ERROR_CREATE_NEW_SERVER), 3000 );
             } catch (error) {
-                console.log(error);
                 const nc = await new Workbench().openNotificationsCenter();
                 fail('Failed to obtain Create new server warning notification, available notifications are: '
                 + (await Promise.all((await nc.getNotifications(NotificationType.Any)).map(async item => await item.getText()))));

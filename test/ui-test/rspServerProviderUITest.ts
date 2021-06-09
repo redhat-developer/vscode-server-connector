@@ -36,7 +36,7 @@ export function rspServerProviderUITest() {
             expect([ServerState.Unknown, ServerState.Starting, ServerState.Started]).to.include(serverState);
             // wait for server to get started
             try {
-                await driver.wait(async () => await serverHasState(serverProvider, ServerState.Started), 25000 );
+                await driver.wait(async () => await serverHasState(serverProvider, ServerState.Started, ServerState.Connected), 25000 );
             } catch (error) {
                 throw Error(`${error}, Expected server provider to have state Started, but got ${ServerState[await serverProvider.getServerState()]}`);
             }

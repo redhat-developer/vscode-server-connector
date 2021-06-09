@@ -86,6 +86,16 @@ export abstract class AbstractServer implements IServer {
         );
     }
 
+    protected async performServerMenuAction<T>(serverAction: string, callback: () => T): Promise<T> {
+        try {
+            await this.selectContextMenuItem(serverAction);
+        } catch (error) {
+            log.warn(`Error was caught during server action call ${serverAction}: ${error.message}, retrying...`);
+            await this.selectContextMenuItem(serverAction);
+        }
+        return callback();
+    }
+
     public async start(timeout: number = 10000): Promise<void> {
         await this.performServerOperation(AdaptersConstants.RSP_SERVER_PROVIDER_START, ServerState.Started, timeout);
     }
@@ -106,7 +116,7 @@ export abstract class AbstractServer implements IServer {
                 const dialog = new ModalDialog();
                 await dialog.pushButton('Yes');
             } catch (error) {
-                log.debug(`Custom dialog was not opened, error: ${error}: ${error.message}`);
+                log.debug(`Custom dialog was not opened, error: ${error.name}`);
                 const dialog = await DialogHandler.getOpenDialog();
                 await dialog.confirm(); 
             }
@@ -125,7 +135,7 @@ export abstract class AbstractServer implements IServer {
             if (error.name === 'StaleElementReferenceError') {
                 throw error;
             } else {
-                log.warn('Retrying to get tree Item impl. after ' + error.message);
+                log.warn('Retrying to get tree Item impl. after ' + error.name);
                 return await this.getTreeItemImpl();
             }
         }
