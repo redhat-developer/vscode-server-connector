@@ -1,5 +1,7 @@
 import { EditorView, Notification, NotificationsCenter, NotificationType, SideBarView, TreeItem, ViewItem, VSBrowser, Workbench } from "vscode-extension-tester";
 
+import * as os from 'os';
+import * as fs from 'fs';
 /**
  * @author Ondrej Dockal <odockal@redhat.com>
  */
@@ -115,4 +117,22 @@ export async function editorIsOpened(editorName: string): Promise<boolean> {
     return editorTitles.find(item => {
         return item.indexOf(editorName) >= 0;
     }) ? true : false;
+}
+
+export async function findDownloadedRuntime(name: string): Promise<string> {
+    const homeDir = os.homedir();
+    const rspRuntimeInstallations = `${homeDir}/.rsp/redhat-server-connector/runtimes/installations/`;
+    let results;
+    if(fs.existsSync(rspRuntimeInstallations)) {
+        results = await asyncFilter(fs.readdirSync(rspRuntimeInstallations), item => {
+            return item.indexOf(name) >= 0;
+        });
+    }
+    if (results.length > 0) {
+        const downloadDir = `${rspRuntimeInstallations}/${results[0]}`;
+        const finalDir = fs.readdirSync(downloadDir);
+        return `${downloadDir}/${finalDir}`;
+    } else {
+        return undefined;
+    }
 }

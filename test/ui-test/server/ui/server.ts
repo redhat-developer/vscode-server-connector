@@ -1,5 +1,5 @@
 import { RSPServerProvider } from "./rspServerProvider";
-import { ViewItem, TreeItem, InputBox } from "vscode-extension-tester";
+import { ViewItem, TreeItem, InputBox, EditorView, VSBrowser, Editor } from "vscode-extension-tester";
 import { AbstractServer } from "./abstractServer";
 import { AdaptersConstants } from "../../common/constants/adaptersContants";
 import { ServerState } from "../../common/enum/serverState";
@@ -9,7 +9,7 @@ import { Deployment } from "./deployment";
 import { Logger } from "tslog";
 
 
-const log: Logger = new Logger({ name: 'AbstractServer'});
+const log: Logger = new Logger({ name: 'Server'});
 /**
  * Application Server item representation
  * @author Ondrej Dockal <odockal@redhat.com>
@@ -121,11 +121,25 @@ export class Server extends AbstractServer {
     }
 
     public async publishFull(): Promise<void> {
-        await this.selectContextMenuItem(AdaptersConstants.SERVER_PUBLISH_FULL);
+        await this.performServerMenuAction(AdaptersConstants.SERVER_PUBLISH_FULL, () => {});
     }
 
     public async publishIncremental(): Promise<void> {
-        await this.selectContextMenuItem(AdaptersConstants.SERVER_PUBLISH_INCREMENTAL);
+        await this.performServerMenuAction(AdaptersConstants.SERVER_PUBLISH_INCREMENTAL, () => {});
+    }
+
+    public async editServer(): Promise<Editor> {
+        return await this.performServerMenuAction(AdaptersConstants.SERVER_EDIT, async () => {
+            const editor = await VSBrowser.instance.driver.wait(async (item) => {
+                const editorView = new EditorView();
+                const editors = await editorView.getOpenEditorTitles();
+                const matches = editors.filter(editor => {
+                    return editor.match(new RegExp(`.*${this.serverName}.*\.json`));
+                });
+                return editorView.openEditor(matches[0]);
+            });
+            return editor;
+        });
     }
 
     public async serverActions(): Promise<InputBox> {

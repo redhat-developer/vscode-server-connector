@@ -4,11 +4,12 @@ import { Server } from "./server";
 import { AbstractServer } from "./abstractServer";
 import { IServersProvider } from "./IServersProvider";
 import { DialogHandler } from "vscode-extension-tester-native";
-import { editorIsOpened, notificationExists, safeNotificationExists } from "../../common/util/testUtils";
+import { editorIsOpened, findDownloadedRuntime, notificationExists, safeNotificationExists } from "../../common/util/testUtils";
 import { downloadableListIsAvailable } from "../../common/util/downloadServerUtil";
 import { Logger } from 'tslog';
 import { CloseEditorNativeDialog } from "../../common/dialog/closeEditorDialog";
 import { ServerCreationForm } from "./serverCreationForm";
+import { ServerTestType } from "../../common/constants/serverConstants";
 
 const log: Logger = new Logger({ name: 'rspServerProvider'});
 
@@ -143,7 +144,7 @@ export class RSPServerProvider extends AbstractServer {
             await inputFile.setText(serverPath);
             await inputFile.confirm();
         } catch (error) {
-            log.warn(`InputBox bar did not appear, ${error}, \r\ntrying native file manager...`);
+            log.warn(`InputBox bar did not appear, ${error.name}, trying native file manager...`);
             const browseDialog = await DialogHandler.getOpenDialog();
             await browseDialog.selectPath(serverPath);
             await browseDialog.confirm();
@@ -156,7 +157,6 @@ export class RSPServerProvider extends AbstractServer {
                 await secureStorage.confirm();
             }
         } catch (error) {
-            log.warn(error);
             // no input box, we can continue
         }
         // Since rsp-ui 0.23.9 there is by default new webView now
@@ -178,6 +178,20 @@ export class RSPServerProvider extends AbstractServer {
             await nameInput.confirm();
             const optionsInput = await InputBox.create();
             await optionsInput.selectQuickPick('No');
+        }
+    }
+
+    public async createServer(testServer: ServerTestType) {
+        let serverPath;
+        const downloadedServerPath = await findDownloadedRuntime(testServer.serverInstallationName);
+        if (downloadedServerPath) {
+            log.info(`Found already downloaded server: ${testServer.serverName}`);
+            serverPath = downloadedServerPath;
+        }
+        if (!serverPath) {
+            await this.createDownloadServer(testServer.serverDownloadName);
+        } else {
+            await this.createLocalServer(serverPath, testServer.serverName, true);
         }
     }
 }

@@ -1,12 +1,9 @@
 import { expect } from 'chai';
 import * as os from "os";
 import { RSPServerProvider } from "./server/ui/rspServerProvider";
-import { ServersTab } from "./server/ui/serversTab";
 import { ServerState } from "./common/enum/serverState";
-import { deleteAllServers, deploymentHasState, serverHasDeployment, serverHasPublishState, serverHasState, stopAllServers } from "./common/util/serverUtils";
-import { ActivityBar, EditorView, InputBox, VSBrowser, WebDriver } from "vscode-extension-tester";
-import { clearNotifications, showErrorNotifications } from "./common/util/testUtils";
-import { ServersConstants } from "./common/constants/serverConstants";
+import { deploymentHasState, serverHasDeployment, serverHasPublishState, serverHasState } from "./common/util/serverUtils";
+import { EditorView, InputBox, VSBrowser, WebDriver } from "vscode-extension-tester";
 import { AdaptersConstants } from './common/constants/adaptersContants';
 import { PublishState } from './common/enum/publishState';
 import { downloadFile } from './common/util/downloadServerUtil';
@@ -15,12 +12,14 @@ import { Logger } from 'tslog';
 
 import path = require('path');
 import fs = require('fs');
+import { ServerTestOperator } from './serverTestOperator';
+import { ServerTestType } from './common/constants/serverConstants';
 
 const log: Logger = new Logger({ name: 'advancedE2ETest'});
 /**
  * @author Ondrej Dockal <odockal@redhat.com>
  */
-export function advancedE2ETest(testServers: string[]) {
+export function deploymentE2ETest(testServers: ServerTestType[]) {
     describe('Perform advanced E2E test scenario for server adapters - deployments', () => {
 
         let driver: WebDriver;
@@ -32,41 +31,32 @@ export function advancedE2ETest(testServers: string[]) {
             driver = VSBrowser.instance.driver;
         });
 
-        for (const wfServerName of testServers) {
-            const wfServerDownloadName = ServersConstants.TEST_SERVERS[wfServerName];
-            describe(`Verify ${wfServerDownloadName} advanced features - deployments`, () => {
+        for (const testServer of testServers) {
+            describe(`Verify ${testServer.serverDownloadName} advanced features - deployments`, () => {
 
                 let serverProvider: RSPServerProvider;
-                let serversTab: ServersTab;
+                let serverOperator = new ServerTestOperator();
                 const appPath = path.join(__dirname, '../../../test/resources/test-app.war');
                 const appName = 'test-app.war';
 
                 before(async function() {
                     this.timeout(240000);
                     await new EditorView().closeAllEditors();
-                    serversTab = new ServersTab(await new ActivityBar().getViewControl('Explorer'));
-                    await serversTab.open();
-                    serverProvider = await serversTab.getServerProvider(AdaptersConstants.RSP_SERVER_PROVIDER_NAME);
-                    const state = await serverProvider.getServerState();
-                    if (state === ServerState.Unknown || state === ServerState.Starting) {
-                        await driver.wait(async () => await serverHasState(serverProvider, ServerState.Started), 15000,
-                        'Server was not started within 10 s on startup');
-                    }
-                    else if (state !== ServerState.Started) {
-                        await serverProvider.start(20000);
-                    }
-                    await serverProvider.createDownloadServer(wfServerDownloadName);
+                    // start RSP Server provider
+                    serverProvider = await serverOperator.startRSPServerProvider(driver);
+                    // create server
+                    await serverProvider.createServer(testServer);
                     const servers = await serverProvider.getServers();
                     const serversNames = await Promise.all(servers.map(async item => await item.getServerName()));
-                    expect(serversNames).to.include.members([wfServerName]);
-                    const server = await serverProvider.getServer(wfServerName);
+                    expect(serversNames).to.include.members([testServer.serverName]);
+                    const server = await serverProvider.getServer(testServer.serverName);
                     await server.start();
                     await driver.wait( async () => await serverHasState(server, ServerState.Started), 3000 );
                 });
 
-                it(`Add new deployment to the ${wfServerDownloadName} server`, async function() {
+                it(`Add new deployment to the ${testServer.serverDownloadName} server`, async function() {
                     this.timeout(30000);
-                    const server = await serverProvider.getServer(wfServerName);
+                    const server = await serverProvider.getServer(testServer.serverName);
                     await server.addFileDeployment(appPath);
                     await driver.wait(async () => await serverHasDeployment(server, appName), 8000,
                     'Deployment was not added to the server');
@@ -82,7 +72,7 @@ export function advancedE2ETest(testServers: string[]) {
 
                 it(`Perform full publish of the server`, async function() {
                     this.timeout(15000);
-                    const server = await serverProvider.getServer(wfServerName);
+                    const server = await serverProvider.getServer(testServer.serverName);
                     const deployment = await server.getDeployment(appName);
                     expect(deployment).to.be.an.instanceof(Deployment);
                     await server.publishFull();
@@ -93,7 +83,7 @@ export function advancedE2ETest(testServers: string[]) {
 
                 it(`Verify deployment shows up in server actions - Show in browser`, async function() {
                     this.timeout(20000);
-                    const server = await serverProvider.getServer(wfServerName);
+                    const server = await serverProvider.getServer(testServer.serverName);
                     const actions = await Promise.all((await server.getServerActions()));
                     expect(actions).to.include(AdaptersConstants.SERVER_ACTION_SHOW_IN_BROWSER);
                     let inputShow;
@@ -122,13 +112,12 @@ export function advancedE2ETest(testServers: string[]) {
 
                 it(`Remove deployment from the server`, async function() {
                     this.timeout(20000);
-                    let server = await serverProvider.getServer(wfServerName);
+                    let server = await serverProvider.getServer(testServer.serverName);
                     const deployment = await server.getDeployment(appName);
                     expect(deployment).to.be.an.instanceof(Deployment);
-                    console.log("Remove deployment");
                     await deployment.removeDeployment();
                     // refresh server
-                    server = await serverProvider.getServer(wfServerName);
+                    server = await serverProvider.getServer(testServer.serverName);
                     expect(await server.getServerPublishState()).to.eq(PublishState.FULL_PUBLISH_REQUIRED);
                     await driver.wait(async () => { return await serverHasDeployment(server, appName) === false; }, 12000);
                 });
@@ -140,23 +129,12 @@ export function advancedE2ETest(testServers: string[]) {
                         await input.cancel();
                     } catch (error) {
                         // no input box, no need to close it
-                        // log.info(`AfterEach: ${error} during opening/closing input box, continue...`);
                     }
                 });
 
                 after(async function() {
                     this.timeout(30000);
-                    log.debug('Close all editors');
-                    await new EditorView().closeAllEditors();
-                    log.info('Check existing error notifications');
-                    await showErrorNotifications();
-                    // clean up notifications
-                    log.info('Clear all notifications');
-                    await clearNotifications();
-                    log.info('Stopping all servers');
-                    await stopAllServers(serverProvider);
-                    log.info('Deleting all servers');
-                    await deleteAllServers(serverProvider);
+                    await serverOperator.cleanUpAll();
                 });
             });
         }
