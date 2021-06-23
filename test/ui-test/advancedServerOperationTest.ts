@@ -1,4 +1,4 @@
-import { TextEditor, VSBrowser, WebDriver } from "vscode-extension-tester";
+import { EditorView, TextEditor, VSBrowser, WebDriver } from "vscode-extension-tester";
 
 import { fail } from "assert";
 import { notificationExists, clearNotifications } from "./common/util/testUtils";
@@ -85,8 +85,54 @@ export function advancedServerOperationTest(testServers: ServerTestType[]) {
                     afterEach(async function() {
                         this.timeout(5000);
                         await clearNotifications();
-                    })
+                    });
 
+                });
+
+                describe(`Server actions`, () => {
+
+                    it('Offers Edit configuration file option', async function() {
+                        this.timeout(30000);
+                        const server = await serverProvider.getServer(testServer.serverName);
+                        const actions = await server.getServerActions();
+                        expect(actions.length).to.equal(1);
+                        expect(actions).to.include.members(['Edit Configuration File...']);
+                    });
+
+                    it('Edit configuration file action opens up editor', async function() {
+                        this.timeout(30000);
+                        const server = await serverProvider.getServer(testServer.serverName);
+                        await server.callServerAction('Edit Configuration File...');
+                        const editorView = new EditorView();
+                        const editor = await VSBrowser.instance.driver.wait(async (item) => {
+                            const editors = await editorView.getOpenEditorTitles();
+                            const matches = editors.filter(editor => {
+                                return editor.match(new RegExp(`standalone*.xml`));
+                            });
+                            return editorView.openEditor(matches[0]);
+                        });
+                        expect(await editor.getText()).to.include('jboss.https.port');
+                    });
+
+                    it('Show In Browser option is present after server is started up', async function() {
+                        this.timeout(30000);
+                        const server = await serverProvider.getServer(testServer.serverName);
+                        await server.start();
+                        const actions = await server.getServerActions();
+                        expect(actions.length).to.equal(2);
+                        expect(actions).to.include.members(['Edit Configuration File...', 'Show in browser...']);
+                    });
+                
+                    afterEach(async function() {
+                        this.timeout(5000);
+                        try {
+                            await new EditorView().closeAllEditors();
+                        } catch (error) {
+                            // no input box, not need to close it
+                            console.log(error);
+                        }
+                        await clearNotifications();
+                    });
                 });
 
                 after(async function() {
