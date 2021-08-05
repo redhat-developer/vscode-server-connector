@@ -58,36 +58,38 @@ function _readCoverOptions(testsRoot: string): ITestRunnerOptions | undefined {
     return undefined;
 }
 
-function run(testsRoot: string, clb: any): any {
-    // Read configuration for the coverage file
-    const coverOptions = _readCoverOptions(testsRoot);
-    if (coverOptions && coverOptions.enabled) {
-        // Setup coverage pre-test, including post-test hook to report
-        const coverageRunner = new CoverageRunner(coverOptions, testsRoot);
-        coverageRunner.setupCoverage();
-    }
-
-    // Glob test files
-    glob('**/**.test.js', { cwd: testsRoot }, (error, files): any => {
-        if (error) {
-            return clb(error);
+export function run(): any {
+    return new Promise<void>( (c, e) => {
+        const testsRoot = paths.resolve(__dirname);
+        const coverOptions = _readCoverOptions(testsRoot);
+        let coverageRunner;
+        if (coverOptions && coverOptions.enabled) {
+            console.log('coverage enabled!');
+            coverageRunner = new CoverageRunner(coverOptions, testsRoot);
+            coverageRunner.setupCoverage();
         }
-        try {
-            // Fill into Mocha
-            files.forEach((f): Mocha => mocha.addFile(paths.join(testsRoot, f)));
-            // Run the tests
-            let failureCount = 0;
+        glob('**/**.test.js', { cwd: testsRoot }, (error, files): any => {
+            if (error) {
+                return e(error);
+            }
+            try {
+                // Fill into Mocha
+                files.forEach((f): Mocha => mocha.addFile(paths.join(testsRoot, f)));
+                // Run the tests
+                let failureCount = 0;
 
-            mocha.run()
-                .on('fail', () => failureCount++)
-                .on('end', () => clb(undefined, failureCount)
-            );
-        } catch (error) {
-            return clb(error);
-        }
+                mocha.run()
+                    .on('fail', () => failureCount++)
+                    .on('end', () => {
+                        coverageRunner.reportCoverage();
+                        failureCount > 0 ? e(`${failureCount} tests failed.`) : c();
+                    });
+            } catch (error) {
+                return e(error);
+            }
+        });
     });
 }
-exports.run = run;
 
 interface ITestRunnerOptions {
     enabled?: boolean;
