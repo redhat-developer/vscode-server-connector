@@ -41,4 +41,8 @@ jobs:
           test-resources/screenshots/*.png
           test-resources/*.log
         retention-days: 5
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v2
+      with:
+        file: ./coverage/coverage-final.json
             
