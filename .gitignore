@@ -8,3 +8,4 @@ coverage/
 felix-cache/
 test-resources/
 *.tgz
+nyc_output/
