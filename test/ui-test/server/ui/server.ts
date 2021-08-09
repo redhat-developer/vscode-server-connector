@@ -3,7 +3,6 @@ import { ViewItem, TreeItem, InputBox, EditorView, VSBrowser, Editor } from "vsc
 import { AbstractServer } from "./abstractServer";
 import { AdaptersConstants } from "../../common/constants/adaptersContants";
 import { ServerState } from "../../common/enum/serverState";
-import { DialogHandler } from "vscode-extension-tester-native";
 import { PublishState } from "../../common/enum/publishState";
 import { Deployment } from "./deployment";
 import { Logger } from "tslog";
@@ -85,10 +84,8 @@ export class Server extends AbstractServer {
             console.log("Text after setting text: " + await inputFile.getText());
             await inputFile.confirm();
         } catch (error) {
-            log.warn(`InputBox bar did not appear, ${error}, \r\ntrying native file manager...`);
-            const browseDialog = await DialogHandler.getOpenDialog();
-            await browseDialog.selectPath(deploymentPath);
-            await browseDialog.confirm();
+            log.warn(`InputBox bar did not appear, ${error}`);
+            throw error;
         }
         // Edit optional parameters
         const optionsInput = await InputBox.create();
@@ -109,9 +106,9 @@ export class Server extends AbstractServer {
         const deploymentInput = await InputBox.create();
         // pass a path to the deployment
         await deploymentInput.selectQuickPick(AdaptersConstants.SERVER_DEPLOYMENT_EXPLODED);
-        const browseDialog = await DialogHandler.getOpenDialog();
-        await browseDialog.selectPath(deploymentPath);
-        await browseDialog.confirm();
+        const browseInput = await InputBox.create();
+        await browseInput.setText(deploymentPath);
+        await browseInput.confirm();
         // Edit optional parameters
         const optionsInput = await InputBox.create();
         await optionsInput.selectQuickPick(AdaptersConstants.YES);

@@ -3,11 +3,9 @@ import { AdaptersConstants } from "../../common/constants/adaptersContants";
 import { Server } from "./server";
 import { AbstractServer } from "./abstractServer";
 import { IServersProvider } from "./IServersProvider";
-import { DialogHandler } from "vscode-extension-tester-native";
 import { editorIsOpened, findDownloadedRuntime, notificationExists, safeNotificationExists } from "../../common/util/testUtils";
 import { downloadableListIsAvailable } from "../../common/util/downloadServerUtil";
 import { Logger } from 'tslog';
-import { CloseEditorNativeDialog } from "../../common/dialog/closeEditorDialog";
 import { ServerCreationForm } from "./serverCreationForm";
 import { ServerTestType } from "../../common/constants/serverConstants";
 
@@ -127,8 +125,7 @@ export class RSPServerProvider extends AbstractServer {
                     await dialog.pushButton("Don't Save");
                 } catch (error) {
                     log.debug(`Error encountered opening modal dialog: ${error}:${error.message}`);
-                    const dialog = new CloseEditorNativeDialog();
-                    await dialog.closeWithoutSaving();
+                    throw error;
                 }
             }
         }
@@ -144,10 +141,8 @@ export class RSPServerProvider extends AbstractServer {
             await inputFile.setText(serverPath);
             await inputFile.confirm();
         } catch (error) {
-            log.warn(`InputBox bar did not appear, ${error.name}, trying native file manager...`);
-            const browseDialog = await DialogHandler.getOpenDialog();
-            await browseDialog.selectPath(serverPath);
-            await browseDialog.confirm();
+            log.warn(`InputBox bar did not appear, ${error.name}`);
+            throw error;
         }
         // might get secure storage input box
         try {
