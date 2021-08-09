@@ -63,6 +63,11 @@ export abstract class AbstractServer implements IServer {
         } catch (error) {
             if (error.name === 'StaleElementReferenceError') {
                 log.warn(`Retrying abstractSserver.selectContextMenuItem after StaleElemenetReferenceError`);
+                const treeItem = await this.getTreeItem();
+                await treeItem.select();
+                if (!(await treeItem.isSelected())) {
+                    await treeItem.select();
+                }
                 await selectContextMenuItemOnTreeItem(treeItem, item);
             } else {
                 throw error;
@@ -109,18 +114,19 @@ export abstract class AbstractServer implements IServer {
 
     public async delete(): Promise<void> {
         try {
-            this.selectContextMenuItem(AdaptersConstants.SERVER_REMOVE);
+            await this.selectContextMenuItem(AdaptersConstants.SERVER_REMOVE);
             // try custom native dialog path
             try {
                 const dialog = new ModalDialog();
                 await dialog.pushButton('Yes');
             } catch (error) {
-                log.debug(`Custom dialog was not opened, error: ${error.name}`);
-                throw error;
+                log.debug(`Custom dialog was not opened, error: ${error.name}, retrying...`);
+                const dialog = new ModalDialog();
+                await dialog.pushButton('Yes');
             }
             
         } catch (error) {
-            throw Error(`Given server ${this.getServerName()} does not allow to remove the server in actual state, could be starting: ${error}`);
+            throw Error(`Given server ${await this.getServerName()} in state: ${await this.getServerStateLabel()}, does not allow to remove the server in actual state, could be starting: ${error}`);
         }
     }
 

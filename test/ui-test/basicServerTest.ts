@@ -9,7 +9,7 @@ import { downloadExtractFile } from "./common/util/downloadServerUtil";
 import * as fs from 'fs';
 import path = require('path');
 
-import { getNotifications } from "./common/util/testUtils";
+import { clearNotifications, getNotifications } from "./common/util/testUtils";
 import { Logger } from 'tslog';
 import { ServerTestOperator } from "./serverTestOperator";
 import { ServerTestType } from "./common/constants/serverConstants";
@@ -41,6 +41,7 @@ export function basicServerOperationTest(testServers: ServerTestType[]) {
 
                 before(async function() {
                     this.timeout(40000);
+                    await clearNotifications();
                     await serverOperator.openServersSection();
                     serverProvider = await serverOperator.startRSPServerProvider(driver);
                 });
