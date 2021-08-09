@@ -24,17 +24,15 @@ node('rhel8'){
 		sh "npm run build"
 	}
 
-	withEnv(['JUNIT_REPORT_PATH=report.xml', 'CODE_TESTS_WORKSPACE=c:/unknown']) {
-        stage('Test') {
-    		wrap([$class: 'Xvnc']) {
-				try {
-					sh "npm test --silent"
-					sh "npm run ui-test"
-				} finally {
-					junit 'report.xml'
-					archiveArtifacts artifacts: 'test-resources/**/*.png, test-resources/*.log, **/*.log, **/*.png'
-				}
-    		}
+    stage('Run Unit Test & UI Tests & Codecov') {
+        wrap([$class: 'Xvnc']) {
+            try {
+                sh "npm test --silent"
+                sh "npm run ui-test"
+            } finally {
+                junit 'test-resources/test-report.xml'
+                archiveArtifacts artifacts: 'test-resources/**/*.xml, test-resources/**/*.png, test-resources/*.log, **/*.log, **/*.png'
+            }
         }
 	}
 
