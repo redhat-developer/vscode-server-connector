@@ -1,5 +1,4 @@
 import { ViewItem, By, VSBrowser, TreeItem, ModalDialog } from 'vscode-extension-tester';
-import { DialogHandler } from 'vscode-extension-tester-native';
 import { IServer } from './IServer';
 import { ServerState } from '../../common/enum/serverState';
 import { serverHasState, serverStateChanged } from '../../common/util/serverUtils';
@@ -117,8 +116,7 @@ export abstract class AbstractServer implements IServer {
                 await dialog.pushButton('Yes');
             } catch (error) {
                 log.debug(`Custom dialog was not opened, error: ${error.name}`);
-                const dialog = await DialogHandler.getOpenDialog();
-                await dialog.confirm(); 
+                throw error;
             }
             
         } catch (error) {
