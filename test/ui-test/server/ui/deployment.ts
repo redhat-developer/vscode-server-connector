@@ -1,9 +1,9 @@
-import { By, TreeItem, ViewItem } from "vscode-extension-tester";
-import { AdaptersConstants } from "../../common/constants/adaptersContants";
-import { PublishState } from "../../common/enum/publishState";
-import { ServerState } from "../../common/enum/serverState";
-import { selectContextMenuItemOnTreeItem } from "../../common/util/testUtils";
-import { Server } from "./server";
+import { By, TreeItem, ViewItem } from 'vscode-extension-tester';
+import { AdaptersConstants } from '../../common/constants/adaptersContants';
+import { PublishState } from '../../common/enum/publishState';
+import { ServerState } from '../../common/enum/serverState';
+import { selectContextMenuItemOnTreeItem } from '../../common/util/testUtils';
+import { Server } from './server';
 
 /**
  * Deployment item representation

@@ -29,7 +29,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<RSPCon
 }
 
 // this method is called when your extension is deactivated
-export async function deactivate() {
+export async function deactivate(): Promise<void> {
     const serverConnector = await retrieveUIExtension();
 
     if (serverConnector.available) {

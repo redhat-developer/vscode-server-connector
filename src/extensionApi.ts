@@ -22,7 +22,7 @@ export class ExtensionAPI implements RSPController {
         this.emitter = new EventEmitter();
     }
 
-    public async startRSP(stdoutCallback: (data: string) => void, stderrCallback: (data: string) => void ): Promise<ServerInfo>  {
+    public async startRSP(stdoutCallback: (data: string) => void, stderrCallback: (data: string) => void): Promise<ServerInfo>  {
         this.updateRSPStateChanged(ServerState.STARTING);
         return await server.start(stdoutCallback, stderrCallback, this).then(serverInfo => {
             this.host = serverInfo.host;

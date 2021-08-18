@@ -62,7 +62,7 @@ export abstract class AbstractServer implements IServer {
             await selectContextMenuItemOnTreeItem(treeItem, item);
         } catch (error) {
             if (error.name === 'StaleElementReferenceError') {
-                log.warn(`Retrying abstractSserver.selectContextMenuItem after StaleElemenetReferenceError`);
+                log.warn('Retrying abstractSserver.selectContextMenuItem after StaleElemenetReferenceError');
                 const treeItem = await this.getTreeItem();
                 await treeItem.select();
                 if (!(await treeItem.isSelected())) {
@@ -100,15 +100,15 @@ export abstract class AbstractServer implements IServer {
         return callback();
     }
 
-    public async start(timeout: number = 10000): Promise<void> {
+    public async start(timeout = 10000): Promise<void> {
         await this.performServerOperation(AdaptersConstants.RSP_SERVER_PROVIDER_START, ServerState.Started, timeout);
     }
 
-    public async stop(timeout: number = 10000): Promise<void> {
+    public async stop(timeout = 10000): Promise<void> {
         await this.performServerOperation(AdaptersConstants.RSP_SERVER_PROVIDER_STOP, ServerState.Stopped, timeout);
     }
 
-    public async terminate(timeout: number = 10000): Promise<void> {
+    public async terminate(timeout = 10000): Promise<void> {
         await this.performServerOperation(AdaptersConstants.RSP_SERVER_PROVIDER_TERMINATE, ServerState.Stopped, timeout);
     }
 

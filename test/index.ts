@@ -3,6 +3,6 @@
  *  Licensed under the EPL v2.0 License. See LICENSE file in the project root for license information.
  *-----------------------------------------------------------------------------------------------*/
 
-let mode: string = process.env.VSCA_TEST_MODE || 'coverage';
+const mode: string = process.env.VSCA_TEST_MODE || 'coverage';
 
 module.exports = require(`./index.${mode}`);

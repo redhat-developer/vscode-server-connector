@@ -1,11 +1,11 @@
-import { RSPServerProvider } from "./rspServerProvider";
-import { ViewItem, TreeItem, InputBox, EditorView, VSBrowser, Editor } from "vscode-extension-tester";
-import { AbstractServer } from "./abstractServer";
-import { AdaptersConstants } from "../../common/constants/adaptersContants";
-import { ServerState } from "../../common/enum/serverState";
-import { PublishState } from "../../common/enum/publishState";
-import { Deployment } from "./deployment";
-import { Logger } from "tslog";
+import { RSPServerProvider } from './rspServerProvider';
+import { ViewItem, TreeItem, InputBox, EditorView, VSBrowser, Editor } from 'vscode-extension-tester';
+import { AbstractServer } from './abstractServer';
+import { AdaptersConstants } from '../../common/constants/adaptersContants';
+import { ServerState } from '../../common/enum/serverState';
+import { PublishState } from '../../common/enum/publishState';
+import { Deployment } from './deployment';
+import { Logger } from 'tslog';
 
 
 const log: Logger = new Logger({ name: 'Server'});
@@ -35,19 +35,19 @@ export class Server extends AbstractServer {
         return treeItem;
     }
 
-    public async start(timeout: number = 20000): Promise<void> {
+    public async start(timeout = 20000): Promise<void> {
         await this.performServerOperation(AdaptersConstants.SERVER_START, ServerState.Started, timeout);
     }
 
-    public async stop(timeout: number = 20000): Promise<void> {
+    public async stop(timeout = 20000): Promise<void> {
         await this.performServerOperation(AdaptersConstants.SERVER_STOP, ServerState.Stopped, timeout);
     }
 
-    public async terminate(timeout: number = 10000): Promise<void> {
+    public async terminate(timeout = 10000): Promise<void> {
         await this.performServerOperation(AdaptersConstants.SERVER_TERMINATE, ServerState.Stopped, timeout);
     }
 
-    public async restart(timeout: number = 30000): Promise<void> {
+    public async restart(timeout = 30000): Promise<void> {
         await super.performServerOperation(AdaptersConstants.SERVER_RESTART_RUN, ServerState.Started, timeout);
     }
 
@@ -77,11 +77,11 @@ export class Server extends AbstractServer {
             const inputFile = await InputBox.create();
             const actualText = await inputFile.getText();
             if (actualText.length > 0) {
-                console.log("Text after opening input box: " + actualText);
+                console.log('Text after opening input box: ' + actualText);
             }
             // await inputFile.clear();
             await inputFile.setText(deploymentPath);
-            console.log("Text after setting text: " + await inputFile.getText());
+            console.log('Text after setting text: ' + await inputFile.getText());
             await inputFile.confirm();
         } catch (error) {
             log.warn(`InputBox bar did not appear, ${error}`);
@@ -118,19 +118,20 @@ export class Server extends AbstractServer {
     }
 
     public async publishFull(): Promise<void> {
-        await this.performServerMenuAction(AdaptersConstants.SERVER_PUBLISH_FULL, () => {});
+        await this.performServerMenuAction(AdaptersConstants.SERVER_PUBLISH_FULL, () => { return; });
     }
 
     public async publishIncremental(): Promise<void> {
-        await this.performServerMenuAction(AdaptersConstants.SERVER_PUBLISH_INCREMENTAL, () => {});
+        await this.performServerMenuAction(AdaptersConstants.SERVER_PUBLISH_INCREMENTAL, () => { return; });
     }
 
     public async editServer(): Promise<Editor> {
         return await this.performServerMenuAction(AdaptersConstants.SERVER_EDIT, async () => {
-            const editor = await VSBrowser.instance.driver.wait(async (item) => {
+            const editor = await VSBrowser.instance.driver.wait(async () => {
                 const editorView = new EditorView();
                 const editors = await editorView.getOpenEditorTitles();
                 const matches = editors.filter(editor => {
+                    /*eslint no-useless-escape: "off"*/
                     return editor.match(new RegExp(`.*${this.serverName}.*\.json`));
                 });
                 return editorView.openEditor(matches[0]);
@@ -176,7 +177,7 @@ export class Server extends AbstractServer {
         return deployments;
     }
 
-    public async getDeployment(deplName: string, contains: boolean = true): Promise<Deployment | undefined> {
+    public async getDeployment(deplName: string, contains = true): Promise<Deployment | undefined> {
         const treeItem = await this.getTreeItem();
         let treeItems = [];
         try {

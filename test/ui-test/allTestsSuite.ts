@@ -1,11 +1,11 @@
 import { extensionUIAssetsTest } from './extensionUITest';
 import { rspServerProviderUITest } from './rspServerProviderUITest';
-import { rspServerProviderActionsTest } from "./rspServerProviderActionsTest";
-import { basicServerOperationTest } from "./basicServerTest";
+import { rspServerProviderActionsTest } from './rspServerProviderActionsTest';
+import { basicServerOperationTest } from './basicServerTest';
 import { deploymentE2ETest } from './advancedServerTest';
 import { ServersConstants } from './common/constants/serverConstants';
 
-import { advancedServerOperationTest } from "./advancedServerOperationTest";
+import { advancedServerOperationTest } from './advancedServerOperationTest';
 
 /**
  * @author Ondrej Dockal <odockal@redhat.com>

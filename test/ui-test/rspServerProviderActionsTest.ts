@@ -1,15 +1,15 @@
-import { WebDriver, VSBrowser, NotificationType, Workbench, InputBox, ActivityBar } from "vscode-extension-tester";
-import { RSPServerProvider } from "./server/ui/rspServerProvider";
-import { serverHasState } from "./common/util/serverUtils";
-import { expect } from 'chai'
-import { fail } from "assert";
-import * as os from "os";
-import { AdaptersConstants } from "./common/constants/adaptersContants";
-import { ServersConstants } from "./common/constants/serverConstants";
-import { ServerState } from "./common/enum/serverState";
-import { downloadableListIsAvailable } from "./common/util/downloadServerUtil";
-import { ServersTab } from "./server/ui/serversTab";
-import { notificationExistsWithObject, showErrorNotifications } from "./common/util/testUtils";
+import { WebDriver, VSBrowser, NotificationType, Workbench, InputBox, ActivityBar } from 'vscode-extension-tester';
+import { RSPServerProvider } from './server/ui/rspServerProvider';
+import { serverHasState } from './common/util/serverUtils';
+import { expect } from 'chai';
+import { fail } from 'assert';
+import * as os from 'os';
+import { AdaptersConstants } from './common/constants/adaptersContants';
+import { ServersConstants } from './common/constants/serverConstants';
+import { ServerState } from './common/enum/serverState';
+import { downloadableListIsAvailable } from './common/util/downloadServerUtil';
+import { ServersTab } from './server/ui/serversTab';
+import { notificationExistsWithObject, showErrorNotifications } from './common/util/testUtils';
 
 
 const ERROR_CREATE_NEW_SERVER = 'Unable to create the server';
@@ -20,7 +20,7 @@ const USE_FROM_DISK = 'No, use server on disk';
 /**
  * @author Ondrej Dockal <odockal@redhat.com>
  */
-export function rspServerProviderActionsTest() {
+export function rspServerProviderActionsTest(): void {
     describe('Verify RSP Server provider actions', () => {
 
         let driver: WebDriver;
@@ -54,14 +54,14 @@ export function rspServerProviderActionsTest() {
             const options = await quick.getQuickPicks();
             expect(await Promise.all(options.map(async item => await item.getText()))).to.have.members([YES, USE_FROM_DISK]);
             await quick.selectQuickPick(YES);
-            await driver.wait( async () =>  await downloadableListIsAvailable(quick), 10000 );
+            await driver.wait(async () =>  await downloadableListIsAvailable(quick), 10000);
             const input = await InputBox.create();
             await input.setText('WildFly 2');
             const optionsText = await Promise.all((await input.getQuickPicks()).map(async item => await item.getText()));
             await input.clear();
             await input.setText('Red Hat EAP');
             optionsText.push(...(await Promise.all((await input.getQuickPicks()).map(async item => await item.getText()))));
-            let expectedArray = [];
+            const expectedArray = [];
             ServersConstants.TEST_SERVERS.map(item => expectedArray.push(item.serverDownloadName));
             expect(optionsText).to.include.members(expectedArray);
             await quick.cancel();
@@ -79,7 +79,7 @@ export function rspServerProviderActionsTest() {
             await serverProvider.createNewServerCommand();
             let notification;
             try {
-                notification = await driver.wait(async () => await notificationExistsWithObject(ERROR_CREATE_NEW_SERVER), 3000 );
+                notification = await driver.wait(async () => await notificationExistsWithObject(ERROR_CREATE_NEW_SERVER), 3000);
             } catch (error) {
                 const nc = await new Workbench().openNotificationsCenter();
                 fail('Failed to obtain Create new server warning notification, available notifications are: '

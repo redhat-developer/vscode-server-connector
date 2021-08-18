@@ -1,30 +1,30 @@
-import { ActivityBar, EditorView, InputBox, WebDriver } from "vscode-extension-tester";
-import { AdaptersConstants } from "./common/constants/adaptersContants";
-import { ServerState } from "./common/enum/serverState";
-import { deleteAllServers, serverHasState, stopAllServers } from "./common/util/serverUtils";
-import { clearNotifications, showErrorNotifications } from "./common/util/testUtils";
-import { RSPServerProvider } from "./server/ui/rspServerProvider";
-import { ServersTab } from "./server/ui/serversTab";
+import { ActivityBar, EditorView, InputBox, WebDriver } from 'vscode-extension-tester';
+import { AdaptersConstants } from './common/constants/adaptersContants';
+import { ServerState } from './common/enum/serverState';
+import { deleteAllServers, serverHasState, stopAllServers } from './common/util/serverUtils';
+import { clearNotifications, showErrorNotifications } from './common/util/testUtils';
+import { RSPServerProvider } from './server/ui/rspServerProvider';
+import { ServersTab } from './server/ui/serversTab';
 
 
 export class ServerTestOperator {
     private _serversTab: ServersTab;
     private _rspServerProvider: RSPServerProvider;
 
-    public get serversTab() {
+    public get serversTab(): ServersTab {
         return this._serversTab;
     }
 
-    public get rspServerProvider() {
+    public get rspServerProvider(): RSPServerProvider {
         return this._rspServerProvider;
     }
 
-    public async openServersSection() {
+    public async openServersSection(): Promise<void> {
         this._serversTab = new ServersTab(await new ActivityBar().getViewControl('Explorer'));
         await this.serversTab.open();
     }
 
-    public async startRSPServerProvider(driver: WebDriver) {
+    public async startRSPServerProvider(driver: WebDriver): Promise<RSPServerProvider> {
         if (!this._serversTab) {
             await this.openServersSection();
         }
@@ -32,7 +32,7 @@ export class ServerTestOperator {
         const state = await this.rspServerProvider.getServerState();
         if (state === ServerState.Unknown || state === ServerState.Starting) {
             await driver.wait(async () => await serverHasState(this.rspServerProvider, ServerState.Started, ServerState.Connected), 15000,
-            'Server was not started within 10 s on startup');
+                'Server was not started within 10 s on startup');
         }
         else if (state !== ServerState.Started) {
             await this.rspServerProvider.start(20000);
@@ -40,7 +40,7 @@ export class ServerTestOperator {
         return this.rspServerProvider;
     }
 
-    public async cleanUpAll() {
+    public async cleanUpAll(): Promise<void> {
         // clean up quick box
         try {
             await new InputBox().cancel();

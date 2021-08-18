@@ -1,24 +1,24 @@
-import { WebDriver, VSBrowser, NotificationType } from "vscode-extension-tester";
-import { RSPServerProvider } from "./server/ui/rspServerProvider";
-import { serverHasState } from "./common/util/serverUtils";
+import { WebDriver, VSBrowser, NotificationType } from 'vscode-extension-tester';
+import { RSPServerProvider } from './server/ui/rspServerProvider';
+import { serverHasState } from './common/util/serverUtils';
 import { expect } from 'chai';
-import * as os from "os";
-import { ServerState } from "./common/enum/serverState";
-import { downloadExtractFile } from "./common/util/downloadServerUtil";
+import * as os from 'os';
+import { ServerState } from './common/enum/serverState';
+import { downloadExtractFile } from './common/util/downloadServerUtil';
 
 import * as fs from 'fs';
 import path = require('path');
 
-import { clearNotifications, getNotifications } from "./common/util/testUtils";
+import { clearNotifications, getNotifications } from './common/util/testUtils';
 import { Logger } from 'tslog';
-import { ServerTestOperator } from "./serverTestOperator";
-import { ServerTestType } from "./common/constants/serverConstants";
+import { ServerTestOperator } from './serverTestOperator';
+import { ServerTestType } from './common/constants/serverConstants';
 
 const log: Logger = new Logger({ name: 'basicE2ETest'});
 /**
  * @author Ondrej Dockal <odockal@redhat.com>
  */
-export function basicServerOperationTest(testServers: ServerTestType[]) {
+export function basicServerOperationTest(testServers: ServerTestType[]): void {
     describe('Perform E2E test scenario for server adapters', () => {
 
         let driver: WebDriver;
@@ -36,7 +36,7 @@ export function basicServerOperationTest(testServers: ServerTestType[]) {
         for (const testServer of testServers) {
             describe(`Verify ${testServer.serverDownloadName} basic features - create server (download), start, restart, stop`, () => {
 
-                let serverOperator = new ServerTestOperator();
+                const serverOperator = new ServerTestOperator();
                 let serverProvider: RSPServerProvider;
 
                 before(async function() {
@@ -86,20 +86,20 @@ export function basicServerOperationTest(testServers: ServerTestType[]) {
                     this.timeout(30000);
                     const server = await serverProvider.getServer(testServer.serverName);
                     await server.start();
-                    await driver.wait( async () => await serverHasState(server, ServerState.Started), 3000 );
+                    await driver.wait(async () => await serverHasState(server, ServerState.Started), 3000);
                 });
 
                 it('Restart the server', async function() {
                     this.timeout(40000);
                     const server = await serverProvider.getServer(testServer.serverName);
                     await server.restart();
-                    await driver.wait( async () => await serverHasState(server, ServerState.Started), 3000 );
+                    await driver.wait(async () => await serverHasState(server, ServerState.Started), 3000);
                 });
                 it('Stop the server', async function() {
                     this.timeout(20000);
                     const server = await serverProvider.getServer(testServer.serverName);
                     await server.stop();
-                    await driver.wait( async () => await serverHasState(server, ServerState.Stopped), 3000 );
+                    await driver.wait(async () => await serverHasState(server, ServerState.Stopped), 3000);
                 });
                 it('Delete the server', async function() {
                     this.timeout(20000);
