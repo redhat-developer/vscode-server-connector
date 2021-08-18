@@ -1,9 +1,9 @@
 import { expect } from 'chai';
-import * as os from "os";
-import { RSPServerProvider } from "./server/ui/rspServerProvider";
-import { ServerState } from "./common/enum/serverState";
-import { deploymentHasState, serverHasDeployment, serverHasPublishState, serverHasState } from "./common/util/serverUtils";
-import { EditorView, InputBox, VSBrowser, WebDriver } from "vscode-extension-tester";
+import * as os from 'os';
+import { RSPServerProvider } from './server/ui/rspServerProvider';
+import { ServerState } from './common/enum/serverState';
+import { deploymentHasState, serverHasDeployment, serverHasPublishState, serverHasState } from './common/util/serverUtils';
+import { EditorView, InputBox, VSBrowser, WebDriver } from 'vscode-extension-tester';
 import { AdaptersConstants } from './common/constants/adaptersContants';
 import { PublishState } from './common/enum/publishState';
 import { downloadFile } from './common/util/downloadServerUtil';
@@ -19,7 +19,7 @@ const log: Logger = new Logger({ name: 'advancedE2ETest'});
 /**
  * @author Ondrej Dockal <odockal@redhat.com>
  */
-export function deploymentE2ETest(testServers: ServerTestType[]) {
+export function deploymentE2ETest(testServers: ServerTestType[]): void {
     describe('Perform advanced E2E test scenario for server adapters - deployments', () => {
 
         let driver: WebDriver;
@@ -35,7 +35,7 @@ export function deploymentE2ETest(testServers: ServerTestType[]) {
             describe(`Verify ${testServer.serverDownloadName} advanced features - deployments`, () => {
 
                 let serverProvider: RSPServerProvider;
-                let serverOperator = new ServerTestOperator();
+                const serverOperator = new ServerTestOperator();
                 const appPath = path.join(__dirname, '../../../test/resources/test-app.war');
                 const appName = 'test-app.war';
 
@@ -51,7 +51,7 @@ export function deploymentE2ETest(testServers: ServerTestType[]) {
                     expect(serversNames).to.include.members([testServer.serverName]);
                     const server = await serverProvider.getServer(testServer.serverName);
                     await server.start();
-                    await driver.wait( async () => await serverHasState(server, ServerState.Started), 3000 );
+                    await driver.wait(async () => await serverHasState(server, ServerState.Started), 3000);
                 });
 
                 it(`Add new deployment to the ${testServer.serverDownloadName} server`, async function() {
@@ -59,29 +59,29 @@ export function deploymentE2ETest(testServers: ServerTestType[]) {
                     const server = await serverProvider.getServer(testServer.serverName);
                     await server.addFileDeployment(appPath);
                     await driver.wait(async () => await serverHasDeployment(server, appName), 8000,
-                    'Deployment was not added to the server');
+                        'Deployment was not added to the server');
                     const deployment = await server.getDeployment(appName);
                     expect(deployment).to.be.an.instanceof(Deployment);
                     expect(await deployment.getDeploymentPublishState()).to.be.oneOf([PublishState.PUBLISH_REQUIRED, PublishState.SYNCHRONIZED]);
                     await driver.wait(async () =>
                         await deploymentHasState(deployment, ServerState.Unknown, ServerState.Started),
-                        3000,
-                        'Deployment was not in unknown or started state');
+                    3000,
+                    'Deployment was not in unknown or started state');
                     expect(await server.getServerPublishState()).to.be.oneOf([PublishState.FULL_PUBLISH_REQUIRED, PublishState.SYNCHRONIZED]);
                 });
 
-                it(`Perform full publish of the server`, async function() {
+                it('Perform full publish of the server', async function() {
                     this.timeout(15000);
                     const server = await serverProvider.getServer(testServer.serverName);
                     const deployment = await server.getDeployment(appName);
                     expect(deployment).to.be.an.instanceof(Deployment);
                     await server.publishFull();
-                    await driver.wait( async () => await serverHasPublishState(server, PublishState.SYNCHRONIZED), 3000 );
+                    await driver.wait(async () => await serverHasPublishState(server, PublishState.SYNCHRONIZED), 3000);
                     expect(await deployment.getDeploymentState()).to.equal(ServerState.Started);
                     expect(await deployment.getDeploymentPublishState()).to.equal(PublishState.SYNCHRONIZED);
                 });
 
-                it(`Verify deployment shows up in server actions - Show in browser`, async function() {
+                it('Verify deployment shows up in server actions - Show in browser', async function() {
                     this.timeout(20000);
                     const server = await serverProvider.getServer(testServer.serverName);
                     const actions = await Promise.all((await server.getServerActions()));
@@ -102,7 +102,7 @@ export function deploymentE2ETest(testServers: ServerTestType[]) {
                     expect(urls).to.include('http://localhost:8080/test-app');
                 });
 
-                it(`Verify deployed application`, async function() {
+                it('Verify deployed application', async function() {
                     this.timeout(30000);
                     const testFile = path.join(__dirname, 'my.out');
                     await downloadFile('http://localhost:8080/test-app', testFile);
@@ -110,7 +110,7 @@ export function deploymentE2ETest(testServers: ServerTestType[]) {
                     expect(content).to.include('Test Deployment App');
                 });
 
-                it(`Remove deployment from the server`, async function() {
+                it('Remove deployment from the server', async function() {
                     this.timeout(20000);
                     let server = await serverProvider.getServer(testServer.serverName);
                     const deployment = await server.getDeployment(appName);

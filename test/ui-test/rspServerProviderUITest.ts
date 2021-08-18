@@ -1,14 +1,14 @@
-import { expect } from 'chai'
-import { AdaptersConstants } from "./common/constants/adaptersContants";
-import { ServerState } from "./common/enum/serverState";
-import { WebDriver, VSBrowser, ActivityBar } from "vscode-extension-tester";
-import { serverHasState } from "./common/util/serverUtils";
-import { ServersTab } from "./server/ui/serversTab";
+import { expect } from 'chai';
+import { AdaptersConstants } from './common/constants/adaptersContants';
+import { ServerState } from './common/enum/serverState';
+import { WebDriver, VSBrowser, ActivityBar } from 'vscode-extension-tester';
+import { serverHasState } from './common/util/serverUtils';
+import { ServersTab } from './server/ui/serversTab';
 
 /**
  * @author Ondrej Dockal <odockal@redhat.com>
  */
-export function rspServerProviderUITest() {
+export function rspServerProviderUITest(): void {
     describe('Verify RSP Server provider default behavior', () => {
 
         let driver: WebDriver;
@@ -36,7 +36,7 @@ export function rspServerProviderUITest() {
             expect([ServerState.Unknown, ServerState.Starting, ServerState.Started]).to.include(serverState);
             // wait for server to get started
             try {
-                await driver.wait(async () => await serverHasState(serverProvider, ServerState.Started, ServerState.Connected), 25000 );
+                await driver.wait(async () => await serverHasState(serverProvider, ServerState.Started, ServerState.Connected), 25000);
             } catch (error) {
                 throw Error(`${error}, Expected server provider to have state Started, but got ${ServerState[await serverProvider.getServerState()]}`);
             }

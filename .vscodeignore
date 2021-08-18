@@ -21,3 +21,4 @@ CONTRIBUTING.md
 screencast/
 *.tgz
 .nyc_output/**
+.eslintrc.json

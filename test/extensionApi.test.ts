@@ -22,11 +22,10 @@ suite('Extension API', () => {
         port: 8080
     };
 
-    const stdCallback: (data: string) => void = data => {};
+    const stdCallback: (data: string) => void = data => { /* do nothing */ };
 
     setup(() => {
         sandbox = sinon.createSandbox();
-
         extensionApi = new ExtensionAPI();
     });
 
@@ -37,7 +36,7 @@ suite('Extension API', () => {
     suite('startRSP', () => {
 
         test('check that updateRSPStateChanged is being called twice', async () => {
-            const updateRSPStateStub = sandbox.stub(extensionApi, 'updateRSPStateChanged' as any);
+            const updateRSPStateStub = sandbox.stub(extensionApi, 'updateRSPStateChanged');
             sandbox.stub(server, 'start').resolves(serverInfo);
             await extensionApi.startRSP(stdCallback, stdCallback);
             expect(updateRSPStateStub).calledTwice;
@@ -50,7 +49,7 @@ suite('Extension API', () => {
         });
 
         test('check that updateRSPStateChanged is being called twice if starting server fail', async () => {
-            const updateRSPStateStub = sandbox.stub(extensionApi, 'updateRSPStateChanged' as any);
+            const updateRSPStateStub = sandbox.stub(extensionApi, 'updateRSPStateChanged');
             sandbox.stub(server, 'start').rejects();
             try {
                 await extensionApi.startRSP(stdCallback, stdCallback);

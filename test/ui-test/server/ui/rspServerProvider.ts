@@ -1,13 +1,13 @@
-import { InputBox, ModalDialog, ViewItem, Workbench, TreeItem, VSBrowser, EditorView } from "vscode-extension-tester";
-import { AdaptersConstants } from "../../common/constants/adaptersContants";
-import { Server } from "./server";
-import { AbstractServer } from "./abstractServer";
-import { IServersProvider } from "./IServersProvider";
-import { editorIsOpened, findDownloadedRuntime, notificationExists, safeNotificationExists } from "../../common/util/testUtils";
-import { downloadableListIsAvailable } from "../../common/util/downloadServerUtil";
+import { InputBox, ModalDialog, ViewItem, Workbench, TreeItem, VSBrowser, EditorView } from 'vscode-extension-tester';
+import { AdaptersConstants } from '../../common/constants/adaptersContants';
+import { Server } from './server';
+import { AbstractServer } from './abstractServer';
+import { IServersProvider } from './IServersProvider';
+import { editorIsOpened, findDownloadedRuntime, notificationExists, safeNotificationExists } from '../../common/util/testUtils';
+import { downloadableListIsAvailable } from '../../common/util/downloadServerUtil';
 import { Logger } from 'tslog';
-import { ServerCreationForm } from "./serverCreationForm";
-import { ServerTestType } from "../../common/constants/serverConstants";
+import { ServerCreationForm } from './serverCreationForm';
+import { ServerTestType } from '../../common/constants/serverConstants';
 
 const log: Logger = new Logger({ name: 'rspServerProvider'});
 
@@ -30,24 +30,24 @@ export class RSPServerProvider extends AbstractServer {
 
     public async getTreeItemImpl(): Promise<ViewItem> {
         const section = await this.serversProvider.getServerProviderTreeSection();
-        await VSBrowser.instance.driver.wait( async () => {
+        await VSBrowser.instance.driver.wait(async () => {
             try {
                 return (await section.getVisibleItems()).length > 0;
             }  catch (error) {
                 if (error.name === 'StaleElementReferenceError') {
-                    log.warn(`Retrying section.getVisibleItems after StaleElemenetReferenceError`);
+                    log.warn('Retrying section.getVisibleItems after StaleElemenetReferenceError');
                     return (await section.getVisibleItems()).length > 0;
                 } else {
                     throw error;
                 }
             }
         }, 3000);
-        let rspServerItem;
+        let rspServerItem: ViewItem;
         try {
             rspServerItem = await section.findItem(this.serverName);
         } catch (error) {
             if (error.name === 'StaleElementReferenceError') {
-                log.warn(`Retrying section.findItem after StaleElemenetReferenceError`);
+                log.warn('Retrying section.findItem after StaleElemenetReferenceError');
                 rspServerItem = await section.findItem(this.serverName);
             } else {
                 throw error;
@@ -94,10 +94,10 @@ export class RSPServerProvider extends AbstractServer {
         throw Error('RSP Server does not support delete operation');
     }
 
-    public async createDownloadServer(serverName: string, closeLicenseEditor: boolean = true) {
+    public async createDownloadServer(serverName: string, closeLicenseEditor = true): Promise<void> {
         const quick = await this.getCreateNewServerBox();
         await quick.selectQuickPick('Yes');
-        await VSBrowser.instance.driver.wait( async () => await downloadableListIsAvailable(quick), 5000 );
+        await VSBrowser.instance.driver.wait(async () => await downloadableListIsAvailable(quick), 5000);
         await quick.setText(serverName);
         await quick.selectQuickPick(serverName);
         // new editor is opened with license text
@@ -107,13 +107,13 @@ export class RSPServerProvider extends AbstractServer {
         // confirmation leads to next input: do you agree to license? picks -> Yes (True) or No (False)
         await licenseInput.selectQuickPick('Yes (True)');
         // Clicking yes => Download notification - Job Download runtime: WildFly 19.1.0.Final started.. x
-        await VSBrowser.instance.driver.wait( async () => {
+        await VSBrowser.instance.driver.wait(async () => {
             return await notificationExists(`${AdaptersConstants.RSP_DOWNLOADING_NOTIFICATION} ${serverName}`);
-        }, 3000 );
+        }, 3000);
         // wait for server to get downloaded
-        await VSBrowser.instance.driver.wait( async () => {
+        await VSBrowser.instance.driver.wait(async () => {
             return !(await safeNotificationExists(`${AdaptersConstants.RSP_DOWNLOADING_NOTIFICATION} ${serverName}`));
-        }, 180000 );
+        }, 180000);
         // close opened license file in editor
         if (closeLicenseEditor) {
             const editorView = new EditorView();
@@ -122,7 +122,7 @@ export class RSPServerProvider extends AbstractServer {
                 await editorView.closeEditor(AdaptersConstants.LICENSE_EDITOR);
                 try {
                     const dialog = new ModalDialog();
-                    await dialog.pushButton("Don't Save");
+                    await dialog.pushButton('Don\'t Save');
                 } catch (error) {
                     log.debug(`Error encountered opening modal dialog: ${error}:${error.message}`);
                     throw error;
@@ -131,7 +131,7 @@ export class RSPServerProvider extends AbstractServer {
         }
     }
 
-    public async createLocalServer(serverPath: string, serverName: string, webView: boolean = false) {
+    public async createLocalServer(serverPath: string, serverName: string, webView = false): Promise<void> {
         const quick = await this.getCreateNewServerBox();
         await quick.selectQuickPick('No, use server on disk');
         // it might happen, depending on vscode settings, that native file manager dialog wont appear
@@ -147,7 +147,7 @@ export class RSPServerProvider extends AbstractServer {
         // might get secure storage input box
         try {
             const secureStorage = await InputBox.create();
-            const indexOf = (await secureStorage.getMessage()).indexOf("secure storage");
+            const indexOf = (await secureStorage.getMessage()).indexOf('secure storage');
             if (indexOf >= 0) {
                 await secureStorage.confirm();
             }
@@ -161,7 +161,7 @@ export class RSPServerProvider extends AbstractServer {
             const editorView = new EditorView();
             const editors = await editorView.getOpenEditorTitles();
             const newServerEditorName = editors.find(item => {
-                return item.indexOf("New Server") >= 0;
+                return item.indexOf('New Server') >= 0;
             });
             const serverView = new ServerCreationForm(newServerEditorName);
             await serverView.initializeEditor();
@@ -176,8 +176,8 @@ export class RSPServerProvider extends AbstractServer {
         }
     }
 
-    public async createServer(testServer: ServerTestType) {
-        let serverPath;
+    public async createServer(testServer: ServerTestType): Promise<void> {
+        let serverPath: string;
         const downloadedServerPath = await findDownloadedRuntime(testServer.serverInstallationName);
         if (downloadedServerPath) {
             log.info(`Found already downloaded server: ${testServer.serverName}`);

@@ -8,7 +8,7 @@ import { Unpack } from './unpack';
 /**
  * @author Ondrej Dockal <odockal@redhat.com>
  */
-export async function downloadableListIsAvailable(input: InputBox) {
+export async function downloadableListIsAvailable(input: InputBox): Promise<boolean> {
     const picks = await input.getQuickPicks();
     return picks.length > 0;
 }
@@ -23,7 +23,7 @@ export async function downloadFile(url: string, target: string): Promise<void> {
 
 export async function downloadExtractFile(url: string, target: fs_extra.PathLike, extractTarget: fs_extra.PathLike): Promise<void> {
     if (!fs.existsSync(target)) {
-        await downloadFile(url, target);
+        await downloadFile(url, target.toString());
     }
     return await Unpack.unpack(target, extractTarget);
 }

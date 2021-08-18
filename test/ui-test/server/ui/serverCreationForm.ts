@@ -1,4 +1,4 @@
-import { WebViewForm } from "../../common/ui/webViewForm";
+import { WebViewForm } from '../../common/ui/webViewForm';
 
 /**
  * Web View form for defining local server during its creation
@@ -16,14 +16,14 @@ export class ServerCreationForm extends WebViewForm {
     readonly servefConfigFileId = 'wildfly.server.config.file';
     readonly serverDeployDirId = 'wildfly.server.deploy.directory';
 
-    public async setServerId(value: string) {
+    public async setServerId(value: string): Promise<void> {
         await this.setElementValueById(this.serverId, value);
     }
 
     public async getServerIdValue(): Promise<string> {
         return await this.getElementValueById(this.serverId);
     }
-    public async setServerHomeDirId(value: string) {
+    public async setServerHomeDirId(value: string): Promise<void> {
         await this.setElementValueById(this.serverHomeDirId, value);
     }
 

@@ -1,4 +1,4 @@
-import { By, Editor, EditorView, WebView } from "vscode-extension-tester";
+import { By, Editor, EditorView, WebView } from 'vscode-extension-tester';
 
 const BUTTON_FINISH = 'buttonFinish';
 const BUTTON_NEXT = 'buttonNext';
@@ -35,18 +35,18 @@ export abstract class WebViewForm {
         return this._editorName;
     }
 
-    public async initializeEditor() {
+    public async initializeEditor(): Promise<void> {
         this._editor = await this._editorView.openEditor(this.editorName);
     }
 
-    public async enterWebView<T>(callbackFunction: (webView: WebView) => T) {
+    public async enterWebView<T>(callbackFunction: (webView: WebView) => Promise<T>): Promise<T> {
         if (!this.editor) {
             await this.initializeEditor();
         }  
 
         const webView = new WebView();
         await webView.switchToFrame();
-        let retValue = undefined;
+        let retValue: T;
         try {
             retValue = await callbackFunction(webView);
         } finally {
@@ -66,24 +66,24 @@ export abstract class WebViewForm {
         return await this.enterWebView(async (webView) => {
             const element = await webView.findWebElement(By.id(id));
             await element.clear().catch(function(ex) {
-                ex.message = `Trying to manupulate field with id: '${id}': ${ex.message}`;;
+                ex.message = `Trying to manupulate field with id: '${id}': ${ex.message}`;
                 throw ex;
             });
             await element.sendKeys(value);
         });
     }
 
-    public async finish() {
+    public async finish(): Promise<void> {
         await this.collapseAllSections();
         await this.clickButton(BUTTON_FINISH);
     }
 
-    public async next() {
+    public async next(): Promise<void> {
         await this.collapseAllSections();
         await this.clickButton(BUTTON_NEXT);
     }
 
-    public async back() {
+    public async back(): Promise<void> {
         await this.collapseAllSections();
         await this.clickButton(BUTTON_BACK);
     }

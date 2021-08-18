@@ -1,4 +1,4 @@
-import { ViewSection, SideBarView } from "vscode-extension-tester";
+import { ViewSection, SideBarView } from 'vscode-extension-tester';
 
 /**
  * Servers provider interface, could be servers activity bar or servers tab

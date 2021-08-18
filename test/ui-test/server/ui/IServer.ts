@@ -1,4 +1,4 @@
-import { ServerState } from "../../common/enum/serverState";
+import { ServerState } from '../../common/enum/serverState';
 
 /**
  * @author Ondrej Dockal <odockal@redhat.com>

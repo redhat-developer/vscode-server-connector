@@ -2,7 +2,7 @@ export interface ServerTestType {
     serverName: string,
     serverDownloadName: string,
     serverInstallationName: string
-};
+}
 
 /**
  * @author Ondrej Dockal <odockal@redhat.com>

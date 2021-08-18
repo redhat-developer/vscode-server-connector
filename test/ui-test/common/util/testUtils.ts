@@ -1,4 +1,4 @@
-import { EditorView, Notification, NotificationsCenter, NotificationType, SideBarView, TreeItem, ViewItem, VSBrowser, Workbench } from "vscode-extension-tester";
+import { EditorView, Notification, NotificationsCenter, NotificationType, SideBarView, TreeItem, ViewItem, VSBrowser, Workbench } from 'vscode-extension-tester';
 
 import * as os from 'os';
 import * as fs from 'fs';
@@ -18,7 +18,7 @@ export async function findNotification(text: string): Promise<Notification | und
     }
 }
 
-export async function clearNotifications() {
+export async function clearNotifications(): Promise<void> {
     const nc = await (new Workbench()).openNotificationsCenter();
     const notifications = await nc.getNotifications(NotificationType.Any);
     if (notifications.length > 0) {
@@ -27,7 +27,7 @@ export async function clearNotifications() {
     await nc.close();
 }
 
-export async function showErrorNotifications() {
+export async function showErrorNotifications(): Promise<void> {
     const errors = await getNotifications(NotificationType.Error);
     if (errors && errors.length > 0) {
         const report = await Promise.all(errors.map(async error => {
@@ -79,14 +79,14 @@ export async function getNotifications(type: NotificationType = NotificationType
     return await center.getNotifications(type);
 }
 
-export async function waitForEvent(func: () => void, timeout: number): Promise<any | undefined> {
+export async function waitForEvent<T>(func: () => T, timeout: number): Promise<T> {
     return await VSBrowser.instance.driver.wait(func, timeout);
 }
 
-export const asyncFilter = async (arr, predicate) => {
+export async function asyncFilter<T>(arr: T[], predicate: (item: T) => boolean): Promise<T[]> {
     const results = await Promise.all(arr.map(predicate));
     return arr.filter((_v, index) => results[index]);
-};
+}
 
 export async function sectionHasItems(sideBar: SideBarView): Promise<boolean> {
     const sections = await sideBar.getContent().getSections();
@@ -98,7 +98,7 @@ export async function sectionHasItem(sideBar: SideBarView, name: string): Promis
     return section ? true : false;
 }
 
-export async function selectContextMenuItemOnTreeItem(treeItem: TreeItem | ViewItem, itemName: string) {
+export async function selectContextMenuItemOnTreeItem(treeItem: TreeItem | ViewItem, itemName: string): Promise<void> {
     let menu = await treeItem.openContextMenu();
     await VSBrowser.instance.driver.wait(async () => {
         if (await menu.hasItem(itemName)) {
@@ -112,7 +112,7 @@ export async function selectContextMenuItemOnTreeItem(treeItem: TreeItem | ViewI
 }
 
 export async function editorIsOpened(editorName: string): Promise<boolean> {
-    let editor = new EditorView();
+    const editor = new EditorView();
     const editorTitles = await editor.getOpenEditorTitles();
     return editorTitles.find(item => {
         return item.indexOf(editorName) >= 0;
@@ -122,7 +122,7 @@ export async function editorIsOpened(editorName: string): Promise<boolean> {
 export async function findDownloadedRuntime(name: string): Promise<string> {
     const homeDir = os.homedir();
     const rspRuntimeInstallations = `${homeDir}/.rsp/redhat-server-connector/runtimes/installations/`;
-    let results;
+    let results: string[] = [];
     if(fs.existsSync(rspRuntimeInstallations)) {
         results = await asyncFilter(fs.readdirSync(rspRuntimeInstallations), item => {
             return item.indexOf(name) >= 0;

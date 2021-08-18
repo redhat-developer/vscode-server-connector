@@ -1,8 +1,8 @@
 import * as fs from 'fs-extra';
 import { exec } from 'child_process';
 import * as path from 'path';
-const targz = require('targz');
-const unzip = require('unzip-stream');
+import targz = require('targz');
+import unzip = require('unzip-stream');
 
 export class Unpack {
     static unpack(input: fs.PathLike, target: fs.PathLike): Promise<void> {

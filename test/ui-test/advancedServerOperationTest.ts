@@ -1,18 +1,18 @@
-import { EditorView, TextEditor, VSBrowser, WebDriver } from "vscode-extension-tester";
+import { EditorView, TextEditor, VSBrowser, WebDriver } from 'vscode-extension-tester';
 
-import { fail } from "assert";
-import { notificationExists, clearNotifications } from "./common/util/testUtils";
-import { RSPServerProvider } from "./server/ui/rspServerProvider";
-import { ServerTestOperator } from "./serverTestOperator";
+import { fail } from 'assert';
+import { notificationExists, clearNotifications } from './common/util/testUtils';
+import { RSPServerProvider } from './server/ui/rspServerProvider';
+import { ServerTestOperator } from './serverTestOperator';
 import { expect } from 'chai';
 
 import * as os from 'os';
-import { ServerTestType } from "./common/constants/serverConstants";
+import { ServerTestType } from './common/constants/serverConstants';
 
 /**
  * @author Ondrej Dockal <odockal@redhat.com>
  */
-export function advancedServerOperationTest(testServers: ServerTestType[]) {
+export function advancedServerOperationTest(testServers: ServerTestType[]): void {
 
     describe('Perform basic test scenario for server adapters', () => {
 
@@ -20,7 +20,7 @@ export function advancedServerOperationTest(testServers: ServerTestType[]) {
 
             describe(`Verify ${testServer.serverDownloadName} features`, () => {
                 let driver: WebDriver;
-                let serverOperator = new ServerTestOperator();
+                const serverOperator = new ServerTestOperator();
                 let serverProvider: RSPServerProvider;
 
                 before(async function() {
@@ -37,7 +37,7 @@ export function advancedServerOperationTest(testServers: ServerTestType[]) {
                     expect(serversNames).to.include.members([testServer.serverName]);
                 });
 
-                describe(`Edit server`, () => {
+                describe('Edit server', () => {
 
                     let editor: TextEditor;
 
@@ -48,7 +48,7 @@ export function advancedServerOperationTest(testServers: ServerTestType[]) {
                         expect(textEditor).to.be.instanceOf(TextEditor);
                         expect(await textEditor.getTitle()).to.include(testServer.serverName);
                         try {
-                            JSON.parse(await textEditor.getText())
+                            JSON.parse(await textEditor.getText());
                         } catch (error) {
                             fail(`Edit server json is not valid ${error}`);
                         }
@@ -57,29 +57,29 @@ export function advancedServerOperationTest(testServers: ServerTestType[]) {
 
                     it('Server editor allowed changes can be saved', async function() {
                         this.timeout(30000);
-                        let index = await editor.getLineOfText("args.override.boolean");
-                        let line = await editor.getTextAtLine(index);
-                        expect(line).to.include("\"args.override.boolean\": \"false\"");
-                        await editor.setTextAtLine(index, line.replace("false", "true"));
+                        const index = await editor.getLineOfText('args.override.boolean');
+                        const line = await editor.getTextAtLine(index);
+                        expect(line).to.include('"args.override.boolean": "false"');
+                        await editor.setTextAtLine(index, line.replace('false', 'true'));
                         if (await editor.isDirty()) {
                             await editor.save();
                         }
-                        await driver.wait(async () => await notificationExists("correctly saved"), 3000);
-                        expect(await editor.getTextAtLine(index)).to.include("\"args.override.boolean\": \"true\"");
+                        await driver.wait(async () => await notificationExists('correctly saved'), 3000);
+                        expect(await editor.getTextAtLine(index)).to.include('"args.override.boolean": "true"');
                     });
 
                     it('Server editor forbidden changes cannot be saved', async function() {
                         this.timeout(30000);
-                        let index = await editor.getLineOfText("id-set");
-                        let line = await editor.getTextAtLine(index);
-                        expect(line).to.include("\"id-set\": \"true\"");
-                        await editor.setTextAtLine(index, line.replace("true", "false"));
+                        const index = await editor.getLineOfText('id-set');
+                        const line = await editor.getTextAtLine(index);
+                        expect(line).to.include('"id-set": "true"');
+                        await editor.setTextAtLine(index, line.replace('true', 'false'));
                         if (await editor.isDirty()) {
                             await editor.save();
-                            await driver.wait(async () => (await editor.getTextAtLine(index)).indexOf("true"), 3000);
+                            await driver.wait(async () => (await editor.getTextAtLine(index)).indexOf('true'), 3000);
                         }
-                        await driver.wait(async () => await notificationExists("may not be changed"), 3000);
-                        expect(await editor.getTextAtLine(index)).to.include("\"id-set\": \"true\"");
+                        await driver.wait(async () => await notificationExists('may not be changed'), 3000);
+                        expect(await editor.getTextAtLine(index)).to.include('"id-set": "true"');
                     });
                 
                     afterEach(async function() {
@@ -89,7 +89,7 @@ export function advancedServerOperationTest(testServers: ServerTestType[]) {
 
                 });
 
-                describe(`Server actions`, () => {
+                describe('Server actions', () => {
 
                     it('Offers Edit configuration file option', async function() {
                         this.timeout(30000);
@@ -104,10 +104,10 @@ export function advancedServerOperationTest(testServers: ServerTestType[]) {
                         const server = await serverProvider.getServer(testServer.serverName);
                         await server.callServerAction('Edit Configuration File...');
                         const editorView = new EditorView();
-                        const editor = await VSBrowser.instance.driver.wait(async (item) => {
+                        const editor = await VSBrowser.instance.driver.wait(async () => {
                             const editors = await editorView.getOpenEditorTitles();
                             const matches = editors.filter(editor => {
-                                return editor.match(new RegExp(`standalone*.xml`));
+                                return editor.match(new RegExp('standalone*.xml'));
                             });
                             return editorView.openEditor(matches[0]);
                         });

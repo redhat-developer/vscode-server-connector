@@ -5,7 +5,7 @@ import { ActivityBar, ExtensionsViewItem, ExtensionsViewSection, SideBarView, Vi
 /**
  * @author Ondrej Dockal <odockal@redhat.com>
  */
-export function extensionUIAssetsTest() {
+export function extensionUIAssetsTest(): void {
     describe('Verify extension\'s base assets available after install', () => {
 
         let view: ViewControl;
