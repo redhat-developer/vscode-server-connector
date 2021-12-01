@@ -13,6 +13,7 @@ node('rhel8'){
 	}
 
 	stage('Build') {
+        sh "npm config set strict-ssl=false"
 		sh "npm install"
 		if(publishToMarketPlace.equals('false')) {
 			def baseUrl = "https://download.jboss.org/jbosstools/adapters/snapshots/vscode-middleware-tools"
