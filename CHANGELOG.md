@@ -1,5 +1,46 @@
 # Change Log
 
+## 0.25.2
+Upversion to use latest rsp-server
+## 0.23.14
+Upversion to use latest rsp-server
+## 0.23.11
+Upversion to use latest rsp-server
+## 0.23.10
+Upversion to use latest rsp-server
+## 0.23.6
+Upversion to use latest rsp-server
+## 0.23.5
+Upversion to use latest rsp-server
+## 0.23.3
+Upversion to use latest rsp-server
+## 0.23.2
+Upversion to use latest rsp-server
+## 0.23.1
+Upversion to use latest rsp-server
+## 0.22.11
+Upversion to use latest rsp-server
+## 0.22.8
+Upversion to use latest rsp-server
+## 0.22.7
+Upversion to use latest rsp-server
+## 0.22.6
+Upversion to use latest rsp-server
+## 0.22.5
+Upversion to use latest rsp-server
+## 0.22.2
+Upversion to use latest rsp-server
+## 0.21.2
+Upversion to use latest rsp-server
+## 0.21.1
+Upversion to use latest rsp-server
+## 0.21.0
+Upversion to use latest rsp-server
+## 0.20.2
+Upversion to use latest rsp-server
+## 0.20.1
+Upversion to use latest rsp-server
+
 ## 0.20.0
 - Broke up UI into an RSP provider and a main UI for others to contribute to
 - Consume rsp-client 0.20.0
