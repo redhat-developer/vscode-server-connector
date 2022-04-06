@@ -50,7 +50,7 @@ node('rhel8'){
 	if(params.UPLOAD_LOCATION) {
 		stage('Snapshot') {
 			def filesToPush = findFiles(glob: '**.vsix')
-			sh "rsync -Pzrlt --rsh=ssh --protocol=28 ${filesToPush[0].path} ${UPLOAD_LOCATION}/snapshots/vscode-middleware-tools/"
+			sh "sftp -C ${UPLOAD_LOCATION}/snapshots/vscode-middleware-tools/ <<< \$'put -p ${filesToPush[0].path}'"
 		}
 	}
 
@@ -68,7 +68,7 @@ node('rhel8'){
 
             stage "Promote the build to stable"
             def vsix = findFiles(glob: '**.vsix')
-            sh "rsync -Pzrlt --rsh=ssh --protocol=28 ${vsix[0].path} ${UPLOAD_LOCATION}/stable/vscode-middleware-tools/"
+            sh "sftp -C ${UPLOAD_LOCATION}/stable/vscode-middleware-tools/ <<< \$'put -p ${vsix[0].path}'"
         }
 	}
 }
