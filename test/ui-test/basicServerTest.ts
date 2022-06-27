@@ -22,7 +22,7 @@ export function basicServerOperationTest(testServers: ServerTestType[]): void {
     describe('Perform E2E test scenario for server adapters', () => {
 
         let driver: WebDriver;
-        const EAP_URL = 'http://download-node-02.eng.bos.redhat.com/released/jboss/eap7/7.3.0/jboss-eap-7.3.0.zip';
+        const EAP_URL = 'https://download-node-02.eng.bos.redhat.com/released/jboss/eap7/7.4.5/jboss-eap-7.4.5.zip';
         const downloadLocation = path.join(__dirname, 'eap-server.zip');
         const extractLocation = path.join(__dirname, 'eap-server');
 
@@ -63,7 +63,7 @@ export function basicServerOperationTest(testServers: ServerTestType[]): void {
                         }
                         expect(fs.existsSync(extractLocation)).to.be.true;
                         try {
-                            const realPath = path.join(extractLocation, 'jboss-eap-7.3');
+                            const realPath = path.join(extractLocation, 'jboss-eap-7.4');
                             log.info(`Adding new local server at ${realPath}`);
                             await serverProvider.createLocalServer(realPath, testServer.serverName, true);
                         } catch (error) {
