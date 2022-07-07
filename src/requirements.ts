@@ -74,13 +74,13 @@ function checkJavaRuntime(): Promise<string> {
     });
 }
 
-function readJavaConfig(): string {
+function readJavaConfig(): string | undefined {
     const config = workspace.getConfiguration();
-    const ret = config.get<string>('rsp-ui.rsp.java.home', '');
-    if(ret === '') {
-        // Backwards compatibility
-        return config.get<string>('java.home', '');
-    }
+    const ret = config.get<string | undefined>('rsp-ui.rsp.java.home', undefined);
+    if(ret)
+        return ret;
+    // Backwards compatibility
+    return config.get<string | undefined>('java.home', undefined);
 }
 
 function checkJavaVersion(javaHome: string): Promise<number> {
