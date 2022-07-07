@@ -43,7 +43,7 @@ function checkJavaRuntime(): Promise<string> {
         let source: string;
         let javaHome: string | undefined = readJavaConfig();
         if (javaHome) {
-            source = 'The java.home variable defined in VS Code settings';
+            source = 'The rsp-ui.rsp.java.home variable defined in VS Code settings';
         } else {
             javaHome = process.env.JDK_HOME;
             if (javaHome) {
@@ -76,7 +76,11 @@ function checkJavaRuntime(): Promise<string> {
 
 function readJavaConfig(): string {
     const config = workspace.getConfiguration();
-    return config.get<string>('java.home', '');
+    const ret = config.get<string>('rsp-ui.rsp.java.home', '');
+    if(ret === '') {
+        // Backwards compatibility
+        return config.get<string>('java.home', '');
+    }
 }
 
 function checkJavaVersion(javaHome: string): Promise<number> {
@@ -85,7 +89,7 @@ function checkJavaVersion(javaHome: string): Promise<number> {
         cp.execFile(javaExecutable, ['-version'], {}, (error, stdout, stderr) => {
             const javaVersion = parseMajorVersion(stderr);
             if (!javaVersion) {
-                rejectWithDownloadUrl(reject, `Java 8 or newer is required. No Java was found on your system..
+                rejectWithDownloadUrl(reject, `Java 8 or newer is required. No Java was found on your system.
                 Please get a recent JDK or configure it for "Servers View" if it already exists`);
             } else if (javaVersion < 8) {
                 rejectWithDownloadUrl(reject, `Java 8 or newer is required. Java ${javaVersion} was found at ${javaHome}.

@@ -37,8 +37,8 @@ export function start(stdoutCallback: (data: string) => void,
                             vscode.commands.executeCommand('vscode.open', btnSelected.openUrl);
                         } else {
                             vscode.window.showInformationMessage(
-                                `To configure Java for Server Connector Extension add "java.home" property to your settings file
-                        (ex. "java.home": "/usr/local/java/jdk1.8.0_45").`);
+                                `To configure Java for Server Connector Extension addthe "rsp-ui.rsp.java.home" property to your settings file
+                        (ex. "rsp-ui.rsp.java.home": "/usr/local/java/jdk1.8.0_45").`);
                             vscode.commands.executeCommand(
                                 'workbench.action.openSettingsJson'
                             );
