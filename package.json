@@ -16,6 +16,25 @@
     "vscode": "^1.56.0"
   },
   "activationEvents": [
+    "onCommand:server.createServer",
+    "onCommand:server.addLocation",
+    "onCommand:server.downloadRuntime",
+    "onCommand:server.startRSP",
+    "onCommand:server.disconnectRSP",
+    "onCommand:server.stopRSP",
+    "onCommand:server.terminateRSP",
+    "onCommand:server.start",
+    "onCommand:server.debug",
+    "onCommand:server.stop",
+    "onCommand:server.terminate",
+    "onCommand:server.restart",
+    "onCommand:server.restartDebug",
+    "onCommand:server.remove",
+    "onCommand:server.output",
+    "onCommand:server.add",
+    "onCommand:server.publishFull",
+    "onCommand:server.publishIncremental",
+    "onCommand:server.actions",
     "onView:servers"
   ],
   "categories": [
