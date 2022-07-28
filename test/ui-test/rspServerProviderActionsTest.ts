@@ -48,7 +48,7 @@ export function rspServerProviderActionsTest(): void {
             }
         });
 
-        it('Verify rsp server provider operation - Create New Server', async function() {
+        it('Verify rsp server provider operation - Create New Server - download WildFly', async function() {
             this.timeout(20000);
             const quick = await serverProvider.getCreateNewServerBox();
             const options = await quick.getQuickPicks();
@@ -56,15 +56,38 @@ export function rspServerProviderActionsTest(): void {
             await quick.selectQuickPick(YES);
             await driver.wait(async () =>  await downloadableListIsAvailable(quick), 10000);
             const input = await InputBox.create();
-            await input.setText('WildFly 2');
-            const optionsText = await Promise.all((await input.getQuickPicks()).map(async item => await item.getText()));
-            await input.clear();
-            await input.setText('Red Hat EAP');
-            optionsText.push(...(await Promise.all((await input.getQuickPicks()).map(async item => await item.getText()))));
+
             const expectedArray = [];
-            ServersConstants.TEST_SERVERS.map(item => expectedArray.push(item.serverDownloadName));
-            expect(optionsText).to.include.members(expectedArray);
-            await quick.cancel();
+            ServersConstants.WILDFLY_SERVERS.map(item => {
+                expectedArray.push(item.serverDownloadName);
+            });
+            for (const item of expectedArray) {
+                await input.setText(item);
+                const optionsText = await Promise.all((await input.getQuickPicks()).map(async item => await item.getText()));
+                expect(optionsText).to.include.members([item]);
+                await input.clear();
+            }
+            await input.cancel();
+        });
+
+        it('Verify rsp server provider operation - Create New Server - download EAP', async function() {
+            this.timeout(20000);
+            const quick = await serverProvider.getCreateNewServerBox();
+            const options = await quick.getQuickPicks();
+            expect(await Promise.all(options.map(async item => await item.getText()))).to.have.members([YES, USE_FROM_DISK]);
+            await quick.selectQuickPick(YES);
+            await driver.wait(async () =>  await downloadableListIsAvailable(quick), 10000);
+            const input = await InputBox.create();
+
+            const expectedArray = [];
+            ServersConstants.EAP_SERVERS.map(item => expectedArray.push(item.serverDownloadName));
+            for (const item of expectedArray) {
+                await input.setText(item);
+                const optionsText = await Promise.all((await input.getQuickPicks()).map(async item => await item.getText()));
+                expect(optionsText).to.include.members([item]);
+                await input.clear();
+            }
+            await input.cancel();
         });
 
         it('Verify rsp server provider operation - stop', async function() {

@@ -9,32 +9,32 @@ export interface ServerTestType {
  */
 export class ServersConstants {
     
-    public static wf22: ServerTestType = {
-        serverName: 'wildfly-22.0.1.Final',
-        serverDownloadName: 'WildFly 22.0.1 Final',
-        serverInstallationName: 'wildfly-2201final'
+    public static wf25: ServerTestType = {
+        serverName: 'wildfly-25.0.1.Final',
+        serverDownloadName: 'WildFly 25.0.1 Final',
+        serverInstallationName: 'wildfly-2501final'
     }
 
-    public static wf23: ServerTestType = {
-        serverName: 'wildfly-23.0.2.Final',
-        serverDownloadName: 'WildFly 23.0.2 Final',
-        serverInstallationName: 'wildfly-2302final'
+    public static wf26: ServerTestType = {
+        serverName: 'wildfly-26.1.0.Final',
+        serverDownloadName: 'WildFly 26.1.0 Final',
+        serverInstallationName: 'wildfly-2610final'
     }
 
-    public static eap73: ServerTestType = {
-        serverName: 'jboss-eap-7.3.0',
-        serverDownloadName: 'Red Hat JBoss EAP 7.3.0',
-        serverInstallationName: 'jbosseap-730'
+    public static eap74: ServerTestType = {
+        serverName: 'jboss-eap-7.4.0',
+        serverDownloadName: 'Red Hat JBoss EAP 7.4.0',
+        serverInstallationName: 'jbosseap-740'
     }
     /* 
      * Object holding information about pair: server default output name and server download name
     */
     public static readonly WILDFLY_SERVERS = [
-        ServersConstants.wf23
+        ServersConstants.wf26
     ];
 
     public static readonly EAP_SERVERS = [
-        ServersConstants.eap73
+        ServersConstants.eap74
     ];
 
     public static readonly TEST_SERVERS = [...ServersConstants.WILDFLY_SERVERS, ...ServersConstants.EAP_SERVERS];

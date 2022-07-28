@@ -13,35 +13,48 @@ jobs:
     strategy:
       matrix:
         os: [macOS-latest, windows-latest, ubuntu-latest]
-        node: [15]
+        node: [16]
       fail-fast: false
 
     steps:
+    # Checkout
     - uses: actions/checkout@v2
+
+    # Setup node
     - name: Setup node
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node }}
+
+    # Install from npm
     - run: npm install
+
+    # Build the component
     - run: npm run build
+    # Run Unit tests
     - name: Run Unit tests
       uses: GabrielBB/xvfb-action@v1.0
       with:
         run: npm test
+
+    # Run UI tests
     - name: Run UI tests
       if: runner.os == 'Linux'
       uses: GabrielBB/xvfb-action@v1.0
       with:
         run: npm run public-ui-test
+
+    # Archive test artifacts
     - name: Archiving test artifacts
       uses: actions/upload-artifact@v2
+      if: failure()
       with: 
-        name: my-artifact
+        name: artifacts-${{ matrix.os }}
         path: |
           test-resources/screenshots/*.png
-          test-resources/*.log
-          test-resources/test-report.xml
-        retention-days: 5
+        retention-days: 2
+
+    # Upload code coverage
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v2
       with:
