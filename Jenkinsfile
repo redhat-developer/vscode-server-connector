@@ -7,13 +7,12 @@ node('rhel8'){
 	}
 
 	stage('Install requirements') {
-		def nodeHome = tool 'nodejs-15.14.0'
+		def nodeHome = tool 'nodejs-lts'
 		env.PATH="${env.PATH}:${nodeHome}/bin"
 		sh "npm install -g typescript vsce"
 	}
 
 	stage('Build') {
-        sh "npm config set strict-ssl=false"
 		sh "npm install"
 		if(publishToMarketPlace.equals('false')) {
 			def baseUrl = "https://download.jboss.org/jbosstools/adapters/snapshots/vscode-middleware-tools"

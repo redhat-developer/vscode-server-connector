@@ -22,7 +22,7 @@ export function basicServerOperationTest(testServers: ServerTestType[]): void {
     describe('Perform E2E test scenario for server adapters', () => {
 
         let driver: WebDriver;
-        const EAP_URL = 'https://download-node-02.eng.bos.redhat.com/released/jboss/eap7/7.4.5/jboss-eap-7.4.5.zip';
+        const EAP_URL = 'https://download-node-02.eng.bos.redhat.com/released/jboss/eap7/7.4.0/jboss-eap-7.4.0.zip';
         const downloadLocation = path.join(__dirname, 'eap-server.zip');
         const extractLocation = path.join(__dirname, 'eap-server');
 
