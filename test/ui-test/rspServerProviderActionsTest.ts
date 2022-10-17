@@ -13,7 +13,7 @@ import { notificationExistsWithObject, showErrorNotifications } from './common/u
 
 
 const ERROR_CREATE_NEW_SERVER = 'Unable to create the server';
-const ERROR_NO_RSP_PROVIDER = 'there are no rsp providers to choose from';
+const ERROR_NO_RSP_PROVIDER = 'there are no rsp providers';
 const YES = 'Yes';
 const USE_FROM_DISK = 'No, use server on disk';
 

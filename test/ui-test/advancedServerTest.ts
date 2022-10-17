@@ -36,8 +36,8 @@ export function deploymentE2ETest(testServers: ServerTestType[]): void {
 
                 let serverProvider: RSPServerProvider;
                 const serverOperator = new ServerTestOperator();
-                const appPath = path.join(__dirname, '../../../test/resources/test-app.war');
-                const appName = 'test-app.war';
+                const appPath = path.join(__dirname, '../../../test/resources/java-webapp.war');
+                const appName = 'java-webapp.war';
 
                 before(async function() {
                     this.timeout(240000);
@@ -99,13 +99,14 @@ export function deploymentE2ETest(testServers: ServerTestType[]): void {
                     }
                     const urls = await Promise.all((await inputShow.getQuickPicks()).map(async item => await item.getText()));
                     await inputShow.cancel();
-                    expect(urls).to.include('http://localhost:8080/test-app');
+                    expect(urls).to.include('http://localhost:8080/java-webapp');
                 });
 
                 it('Verify deployed application', async function() {
                     this.timeout(30000);
                     const testFile = path.join(__dirname, 'my.out');
-                    await downloadFile('http://localhost:8080/test-app', testFile);
+                    await new Promise((resolve) => setTimeout(resolve, 30000));
+                    await downloadFile('http://localhost:8080/java-webapp', testFile);
                     const content = fs.readFileSync(testFile, 'utf-8');
                     expect(content).to.include('Test Deployment App');
                 });
