@@ -1,9 +1,10 @@
 # Server Connector
 
-[![ServerConnectorCI](https://img.shields.io/github/workflow/status/redhat-developer/vscode-server-connector/ServerConnectorCI)](https://github.com/redhat-developer/vscode-server-connector/actions)
-[![License](https://img.shields.io/badge/license-EPLv2.0-brightgreen.png)](https://github.com/redhat-developer/vscode-server-connector/blob/master/README.md)
-[![Visual Studio Marketplace](https://vsmarketplacebadge.apphb.com/version/redhat.vscode-server-connector.png)](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-server-connector)
-[![Gitter](https://badges.gitter.im/redhat-developer/server-connector.png)](https://gitter.im/redhat-developer/server-connector?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Visual Studio Marketplace](https://img.shields.io/visual-studio-marketplace/v/redhat.vscode-server-connector?style=for-the-badge&label=VS%20Marketplace&logo=visual-studio-code&color=blue)](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-server-connector)
+[![Downloads](https://img.shields.io/visual-studio-marketplace/d/redhat.vscode-server-connector?style=for-the-badge&color=purple)](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-server-connector)
+[![Gitter](https://img.shields.io/gitter/room/redhat-developer/server-connector?style=for-the-badge&logo=gitter)](https://gitter.im/redhat-developer/server-connector)
+[![Build Status](https://img.shields.io/github/workflow/status/redhat-developer/vscode-server-connector/ServerConnectorCI?style=for-the-badge&logo=github)](https://github.com/redhat-developer/vscode-server-connector/actions)
+[![License](https://img.shields.io/badge/license-EPLv2.0-brightgreen.png?style=for-the-badge)](https://github.com/redhat-developer/vscode-server-connector/blob/master/LICENSE)
 
 A Visual Studio Code extension for interacting with Red Hat Servers and Runtimes.
 
@@ -20,7 +21,7 @@ This extension depends on VSCode RSP UI Extension which is going to be installed
    This extension provides no additional settings other than those available in [rsp-ui](https://github.com/redhat-developer/vscode-rsp-ui#extension-settings)
 
 ## Server Parameters
-   This extension provides some ADDITIONAL server parameters in addition to those available in rsp-ui. To see a list of global server parameters, please go [here](https://github.com/redhat-developer/vscode-rsp-ui#server-parameters). Below are JBoss / WildFly specific parameters. 
+   This extension provides some ADDITIONAL server parameters in addition to those available in rsp-ui. To see a list of global server parameters, please go [here](https://github.com/redhat-developer/vscode-rsp-ui#server-parameters). Below are JBoss / WildFly specific parameters.
 
    * `"args.vm.override.string"` - allow to override vm arguments. Once you edited this flag, *make sure "args.override.boolean" is set to true before launching your server. Otherwise the server will attempt to auto-generate the launch arguments as it normally does.*
    * `"args.program.override.string"` - allow to override program arguments. Once you edited this flag, *make sure "args.override.boolean" is set to true before launching your server. Otherwise the server will attempt to auto-generate the launch arguments as it normally does.*
@@ -31,7 +32,7 @@ This extension depends on VSCode RSP UI Extension which is going to be installed
 
 ### Supported Servers
    * Wildfly [8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23 | 24]
-   * Red Hat Enterprise Application Platform (EAP) [4.3 | 5.0 | 6.0 | 6.1 | 6.2 | 6.3 | 6.4 | 7.0 | 7.1 | 7.2 | 7.3| 7.4] 
+   * Red Hat Enterprise Application Platform (EAP) [4.3 | 5.0 | 6.0 | 6.1 | 6.2 | 6.3 | 6.4 | 7.0 | 7.1 | 7.2 | 7.3| 7.4]
    * Minishift / Red Hat Container Development Kit (CDK) / Red Hat CodeReady Containers (CRC) binaries
 
 
@@ -39,7 +40,7 @@ This extension depends on VSCode RSP UI Extension which is going to be installed
 ---
 
 ### 1. How can i override Program and VM arguments?
-Due to some issues and requests we received from users we added an additional flag "args.override.boolean" to allow to override program and vm arguments. 
+Due to some issues and requests we received from users we added an additional flag "args.override.boolean" to allow to override program and vm arguments.
 
 When a user attempts to launch his server, we will first check the override boolean value to see if we are overriding. If the user is overriding (right-click your server -> Edit Server -> set "args.override.boolean": "true" ), we will generate the vm args and program args at that time and set them in the server object.
 
@@ -48,9 +49,9 @@ At this point the user will be able to see two other properties in the server ed
 Now, if the user wishes to change these flags, he can simply change the override.boolean value to true, and make whatever changes he requires to the program or vm arguments.
 
 If "args.override.boolean" is set to false, the server will attempt to auto-generate the launch arguments as it normally does when launched.
-   
+
 ### 2. Can I run my Wildfly Server on a different port than the default one?
-Yes. To run a Wildfly Server on a different port you first have to edit the port in the standalone.xml file. 
+Yes. To run a Wildfly Server on a different port you first have to edit the port in the standalone.xml file.
 
 The next step is to add the following setting through the Server Editor in VScode.
 
@@ -65,7 +66,7 @@ Yes. This is the video you can watch to learn more about this extension https://
 ## Install extension locally
 This is an open source project open to anyone. This project welcomes contributions and suggestions!!
 
-Download the most recent `adapters-<version>.vsix` file and install it by following the instructions [here](https://code.visualstudio.com/docs/editor/extension-gallery#_install-from-a-vsix). 
+Download the most recent `adapters-<version>.vsix` file and install it by following the instructions [here](https://code.visualstudio.com/docs/editor/extension-gallery#_install-from-a-vsix).
 
 Stable releases are archived under http://download.jboss.org/jbosstools/adapters/snapshots/vscode-middleware-tools
 
