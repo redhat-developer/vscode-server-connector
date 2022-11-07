@@ -28,8 +28,9 @@ export function start(stdoutCallback: (data: string) => void,
     api: ExtensionAPI): Promise<ServerInfo> {
     return requirements.resolveRequirements()
         .catch(error => {
+            const btnStrings: string[] = error && error.btns ? error.btns.map(x => x.label) : [];
             // show error
-            vscode.window.showErrorMessage(error.message, ...error.btns.map(btn => btn.label))
+            vscode.window.showErrorMessage(error.message, ...btnStrings)
                 .then(selection => {
                     const btnSelected = error.btns.find(btn => btn.label === selection);
                     if (btnSelected) {
@@ -62,7 +63,10 @@ export function start(stdoutCallback: (data: string) => void,
             const portInUse = await lockFilePortInUse(lockFile);
 
             if(lockFileExist && portInUse) {
-                port = +await getLockFilePort(lockFile);
+                const p = await getLockFilePort(lockFile);
+                if (p) {
+                    port = +p;
+                }
                 spawned = false;
             } else {
                 if(lockFileExist && !portInUse) {
@@ -110,7 +114,7 @@ async function lockFileExists(lockFile: string) {
     return false;
 }
 
-async function getLockFilePort(lockFile: string) {
+async function getLockFilePort(lockFile: string): Promise<string | null> {
     if (fs.existsSync(lockFile)) {
         const port = await fs.readFile(lockFile, 'utf8');
         return port;
@@ -143,18 +147,22 @@ function startServer(
     // Production version
     cpProcess = cp.spawn(java, [`-Drsp.server.port=${port}`, `-Dorg.jboss.tools.rsp.id=${rspid}`, '-Dlogback.configurationFile=./conf/logback.xml', '-jar', felix], 
         { cwd: location, env: process.env });
-    cpProcess.stdout.on('data', stdoutCallback);
-    cpProcess.stderr.on('data', stderrCallback);
-    cpProcess.on('close', () => {
-        if (api != null) {
-            api.updateRSPStateChanged(ServerState.STOPPED);
-        }
-    });
-    cpProcess.on('exit', () => {
-        if (api != null) {
-            api.updateRSPStateChanged(ServerState.STOPPED);
-        }
-    });
+    if(cpProcess) {
+        if (cpProcess.stdout)
+            cpProcess.stdout.on('data', stdoutCallback);
+        if (cpProcess.stderr)
+            cpProcess.stderr.on('data', stderrCallback);
+        cpProcess.on('close', () => {
+            if (api != null) {
+                api.updateRSPStateChanged(ServerState.STOPPED);
+            }
+        });
+        cpProcess.on('exit', () => {
+            if (api != null) {
+                api.updateRSPStateChanged(ServerState.STOPPED);
+            }
+        });
+    }
 }
 
 export async function terminate(): Promise<void> {
