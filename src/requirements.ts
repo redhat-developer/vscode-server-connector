@@ -137,10 +137,13 @@ function rejectWithDownloadUrl(reject: {
     }
     reject({
         message: message,
+        label: 'Get the Java Development Kit',
+        openUrl: Uri.parse(jdkUrl),
+        replaceClose: false,
         btns: [
             {
                 label: 'Get the Java Development Kit',
-                openUrl: Uri.parse(jdkUrl)
+                openUrl: Uri.parse(jdkUrl),
             },
             {
                 label: 'Configure Java'
