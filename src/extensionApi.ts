@@ -31,13 +31,15 @@ export class ExtensionAPI implements RSPController {
             return serverInfo;
         }).catch(error => {
             this.updateRSPStateChanged(ServerState.STOPPED);
-            return Promise.reject(`RSP Error - ${RSP_PROVIDER_NAME} failed to start - ${error ? error : ''}`);
+            const innerMsg: string = error ? (error.message ? error.message : JSON.stringify(error)) : '';
+            return Promise.reject(`RSP Error - ${RSP_PROVIDER_NAME} failed to start - ${innerMsg}`);
         });
     }
 
     public async stopRSP(): Promise<void> {
         server.terminate().catch(error => {
-            return Promise.reject(`RSP Error - ${error ? error : ''}`);
+            const innerMsg: string = error ? (error.message ? error.message : JSON.stringify(error)) : '';
+            return Promise.reject(`RSP Error - ${RSP_PROVIDER_NAME} failed to stop - ${innerMsg}`);
         });
     }
 
