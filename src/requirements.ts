@@ -59,7 +59,7 @@ function checkJavaRuntime(): Promise<string> {
                 rejectWithDownloadUrl(reject, `${source} points to a missing folder`);
             }
             if (!pathExists.sync(path.resolve(javaHome, 'bin', JAVAC_FILENAME))) {
-                rejectWithDownloadUrl(reject, `${source} does not point to a JDK.`);
+                rejectWithDownloadUrl(reject, `${source} does not point to a JDK. The '${JAVAC_FILENAME}' command is missing.`);
             }
             return resolve(javaHome);
         }
