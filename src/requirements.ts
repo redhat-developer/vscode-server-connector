@@ -89,10 +89,10 @@ function checkJavaVersion(javaHome: string): Promise<number> {
         cp.execFile(javaExecutable, ['-version'], {}, (error, stdout, stderr) => {
             const javaVersion = parseMajorVersion(stderr);
             if (!javaVersion) {
-                rejectWithDownloadUrl(reject, `Java 8 or newer is required. No Java was found on your system.
+                rejectWithDownloadUrl(reject, `Java 11 or newer is required. No Java was found on your system.
                 Please get a recent JDK or configure it for "Servers View" if it already exists`);
-            } else if (javaVersion < 8) {
-                rejectWithDownloadUrl(reject, `Java 8 or newer is required. Java ${javaVersion} was found at ${javaHome}.
+            } else if (javaVersion < 11) {
+                rejectWithDownloadUrl(reject, `Java 11 or newer is required. Java ${javaVersion} was found at ${javaHome}.
                 Please get a recent JDK or configure it for "Servers View" if it already exists`);
             } else {
                 resolve(javaVersion);
