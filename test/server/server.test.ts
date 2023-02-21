@@ -4,8 +4,8 @@
  *-----------------------------------------------------------------------------------------------*/
 
 import * as chai from 'chai';
-import * as requirements from '../../src/requirements';
-import * as server from '../../src/server';
+import * as requirements from '../../src/impl/requirements';
+import * as server from '../../src/impl/server';
 import * as sinon from 'sinon';
 import * as sinonChai from 'sinon-chai';
 import { OPTIONS } from '../../src/constants';

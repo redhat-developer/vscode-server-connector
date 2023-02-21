@@ -4,7 +4,7 @@
  *-----------------------------------------------------------------------------------------------*/
 
 import * as chai from 'chai';
-import { FelixRspController } from '../src/controller';
+import { FelixRspController } from '../src/impl/controller';
 import * as sinon from 'sinon';
 import * as sinonChai from 'sinon-chai';
 import { ServerInfo } from 'vscode-server-connector-api';
