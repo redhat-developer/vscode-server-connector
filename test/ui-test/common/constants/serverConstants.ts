@@ -8,33 +8,30 @@ export interface ServerTestType {
  * @author Ondrej Dockal <odockal@redhat.com>
  */
 export class ServersConstants {
-    
-    public static wf25: ServerTestType = {
-        serverName: 'wildfly-25.0.1.Final',
-        serverDownloadName: 'WildFly 25.0.1 Final',
-        serverInstallationName: 'wildfly-2501final'
+    // NEW_SERVER_ADAPTER
+    // serverInstallationName is the name of the folder (or a prefix thereof) 
+    // that the server will be extracted into.
+    public static wf27: ServerTestType = {
+        serverName: 'wildfly-27.0.1.Final',
+        serverDownloadName: 'WildFly 27.0.1 Final',
+        serverInstallationName: 'wildfly-2701final'
     }
 
-    public static wf26: ServerTestType = {
-        serverName: 'wildfly-26.1.0.Final',
-        serverDownloadName: 'WildFly 26.1.0 Final',
-        serverInstallationName: 'wildfly-2610final'
-    }
-
-    public static eap74: ServerTestType = {
-        serverName: 'jboss-eap-7.4.0',
-        serverDownloadName: 'Red Hat JBoss EAP 7.4.0',
-        serverInstallationName: 'jbosseap-740'
+    public static eap80: ServerTestType = {
+        serverName: 'jboss-eap-8.0',
+        serverDownloadName: 'Red Hat JBoss EAP 8.0.0 Beta',
+        serverInstallationName: 'jbosseap800'
     }
     /* 
      * Object holding information about pair: server default output name and server download name
     */
+   // NEW_SERVER_ADAPTER
     public static readonly WILDFLY_SERVERS = [
-        ServersConstants.wf26
+        ServersConstants.wf27
     ];
 
     public static readonly EAP_SERVERS = [
-        ServersConstants.eap74
+        ServersConstants.eap80
     ];
 
     public static readonly TEST_SERVERS = [...ServersConstants.WILDFLY_SERVERS, ...ServersConstants.EAP_SERVERS];
