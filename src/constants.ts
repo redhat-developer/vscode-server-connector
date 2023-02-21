@@ -5,7 +5,7 @@
 
 import * as path from 'path';
 import { Uri } from "vscode";
-import { FelixRspLauncherOptions } from "./server";
+import { FelixRspLauncherOptions } from "./impl/server";
 
 /**
  * RSP Provider ID

@@ -6,8 +6,9 @@
 import * as vscode from 'vscode';
 import { RSPController } from 'vscode-server-connector-api';
 import { OPTIONS } from './constants';
-import { activateImpl, deactivateImpl } from './extensionImpl';
+import { activateImpl, deactivateImpl } from './impl/extensionImpl';
 
+// this method is called when your extension is activated
 export async function activate(context: vscode.ExtensionContext): Promise<RSPController> {
     return activateImpl(context, OPTIONS);
 }
