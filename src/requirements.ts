@@ -6,6 +6,7 @@
 'use strict';
 
 import * as cp from 'child_process';
+import { ChildProcess } from 'child_process';
 import * as expandHomeDir from 'expand-home-dir';
 import * as findJavaHome from 'find-java-home';
 import * as path from 'path';
@@ -16,14 +17,29 @@ const isWindows = process.platform.indexOf('win') === 0;
 const JAVAC_FILENAME = 'javac' + (isWindows ? '.exe' : '');
 const JAVA_FILENAME = 'java' + (isWindows ? '.exe' : '');
 
+export interface RequirementsResult {
+    data?: RequirementsData;
+    rejection?: RspRequirementsRejection;
+    unexpectedError?: any;
+}
+
 export interface RequirementsData {
     java_home: string;
     java_version: number;
 }
 
-interface ErrorMsgBtn {
+export interface ErrorMsgBtn {
     label: string;
-    openUrl: Uri | undefined;
+    openUrl?: Uri | undefined;
+}
+
+export interface RspRequirementsRejection {
+    rspReqReject: boolean,
+    message: string,
+    label: string,
+    openUrl: Uri,
+    replaceClose: boolean,
+    btns: ErrorMsgBtn[]
 }
 
 /**
@@ -32,48 +48,66 @@ interface ErrorMsgBtn {
  * all requirements are resolved, it will reject with ErrorData if
  * if any of the requirements fails to resolve.
  */
-export async function resolveRequirements(): Promise<RequirementsData> {
-    const javaHome = await checkJavaRuntime();
-    const javaVersion = await checkJavaVersion(javaHome);
-    return Promise.resolve({ java_home: javaHome, java_version: javaVersion});
+export async function resolveRequirements(minJavaVersion: number): Promise<RequirementsResult> {
+    try {
+        const ret: RequirementsResult = await resolveRequirementsImpl(minJavaVersion);
+        return Promise.resolve(ret);
+    } catch( err ) {
+        const ret: RequirementsResult = {
+            unexpectedError: err
+        };
+        return Promise.resolve(ret);
+    }
 }
 
-function checkJavaRuntime(): Promise<string> {
-    return new Promise((resolve, reject) => {
-        let source: string;
-        let javaHome: string | undefined = readJavaConfig();
+export async function resolveRequirementsImpl(minJavaVersion: number): Promise<RequirementsResult> {
+    const javaHome: string | RspRequirementsRejection = checkJavaRuntime();
+    if( (javaHome as any).rspReqReject) {
+        return {rejection: javaHome as RspRequirementsRejection};
+    }
+    const javaHome2: string = javaHome as string;
+    const javaVersion: number | RspRequirementsRejection = await checkJavaVersion(javaHome2, minJavaVersion);
+    if( (javaVersion as any).rspReqReject) {
+        return {rejection: javaVersion as RspRequirementsRejection};
+    }
+    const javaVersion2: number = javaVersion as number;
+    const data: RequirementsData = { java_home: javaHome2, java_version: javaVersion2}
+    return {data: data};
+}
+
+function checkJavaRuntime(): string | RspRequirementsRejection {
+    let source: string;
+    let javaHome: string | undefined = readJavaConfig();
+    if (javaHome) {
+        source = 'The rsp-ui.rsp.java.home variable defined in VS Code settings';
+    } else {
+        javaHome = process.env.JDK_HOME;
         if (javaHome) {
-            source = 'The rsp-ui.rsp.java.home variable defined in VS Code settings';
+            source = 'The JDK_HOME environment variable';
         } else {
-            javaHome = process.env.JDK_HOME;
-            if (javaHome) {
-                source = 'The JDK_HOME environment variable';
-            } else {
-                javaHome = process.env.JAVA_HOME;
-                source = 'The JAVA_HOME environment variable';
-            }
+            javaHome = process.env.JAVA_HOME;
+            source = 'The JAVA_HOME environment variable';
         }
-        if (javaHome) {
-            javaHome = expandHomeDir(javaHome) as string;
-            if (!pathExists.sync(javaHome)) {
-                rejectWithDownloadUrl(reject, `${source} points to a missing folder`);
-            }
-            if (!pathExists.sync(path.resolve(javaHome, 'bin', JAVAC_FILENAME))) {
-                rejectWithDownloadUrl(reject, `${source} does not point to a JDK. The '${JAVAC_FILENAME}' command is missing.`);
-            }
-            return resolve(javaHome);
+    }
+    if (javaHome) {
+        javaHome = expandHomeDir(javaHome) as string;
+        if (!pathExists.sync(javaHome)) {
+            return getRejectionWithDownloadUrl(`${source} points to a missing folder`);
         }
-        // No settings, let's try to detect as last resort.
-        findJavaHome((err: Error, home: string | PromiseLike<string>) => {
-            if (err) {
-                rejectWithDownloadUrl(reject, 'Java runtime could not be located');
-            } else {
-                resolve(home);
-            }
-        });
+        if (!pathExists.sync(path.resolve(javaHome, 'bin', JAVAC_FILENAME))) {
+            return getRejectionWithDownloadUrl(`${source} does not point to a JDK. The '${JAVAC_FILENAME}' command is missing.`);
+        }
+        return javaHome;
+    }
+    // No settings, let's try to detect as last resort.
+    findJavaHome((err: Error, home: string | PromiseLike<string>) => {
+        if (err) {
+            return getRejectionWithDownloadUrl('Java runtime could not be located');
+        } else {
+            return home;
+        }
     });
 }
-
 function readJavaConfig(): string | undefined {
     const config = workspace.getConfiguration();
     const ret = config.get<string | undefined>('rsp-ui.rsp.java.home', undefined);
@@ -83,22 +117,48 @@ function readJavaConfig(): string | undefined {
     return config.get<string | undefined>('java.home', undefined);
 }
 
-function checkJavaVersion(javaHome: string): Promise<number> {
-    return new Promise((resolve, reject) => {
-        const javaExecutable = path.resolve(javaHome, 'bin', JAVA_FILENAME);
-        cp.execFile(javaExecutable, ['-version'], {}, (error, stdout, stderr) => {
-            const javaVersion = parseMajorVersion(stderr);
-            if (!javaVersion) {
-                rejectWithDownloadUrl(reject, `Java 11 or newer is required. No Java was found on your system.
-                Please get a recent JDK or configure it for "Servers View" if it already exists`);
-            } else if (javaVersion < 11) {
-                rejectWithDownloadUrl(reject, `Java 11 or newer is required. Java ${javaVersion} was found at ${javaHome}.
-                Please get a recent JDK or configure it for "Servers View" if it already exists`);
-            } else {
-                resolve(javaVersion);
-            }
-        });
+async function checkJavaVersion(javaHome: string, minJavaVersion: number): 
+    Promise<number | RspRequirementsRejection> {
+
+    const javaExecutable = path.resolve(javaHome, 'bin', JAVA_FILENAME);
+    let ret: undefined | number | RspRequirementsRejection;
+    const process: ChildProcess = cp.execFile(javaExecutable, ['-version'], {}, (error, stdout, stderr) => {
+        const javaVersion = parseMajorVersion(stderr);
+        if (!javaVersion) {
+            ret = getRejectionWithDownloadUrl(`Java ${minJavaVersion} or newer is required. No Java was found on your system.
+            Please get a recent JDK or configure it for "Servers View" if it already exists`);
+        } else if (javaVersion < minJavaVersion) {
+            ret = getRejectionWithDownloadUrl(`Java ${minJavaVersion} or newer is required. Java ${javaVersion} was found at ${javaHome}.
+            Please get a recent JDK or configure it for "Servers View" if it already exists`);
+        } else {
+            ret = javaVersion;
+        }
     });
+    
+    let allDone = false;
+    process.on('exit', function() {
+        allDone = true;
+      });
+    const start = Date.now();
+    const max = 10000;
+    const end = start + max;
+    let expired = false;
+    while( !allDone && !expired) {
+        await new Promise(resolve => setTimeout(resolve, 250));
+        expired = Date.now() > end;
+    }
+    if( !ret && expired) {
+        try {
+            if( process )
+                process.kill();
+        } catch( e ) {
+        }
+        throw "Error getting java version for " + javaExecutable + ": 'java -version' did not return within " + (max/1000) + " seconds."
+    }
+    if( !ret ) {
+        throw "Error getting java version for " + javaExecutable + ": 'java -version' output was unable to be parsed.";
+    }
+    return ret;
 }
 
 export function parseMajorVersion(content: string): number {
@@ -124,18 +184,13 @@ export function parseMajorVersion(content: string): number {
 }
 
 const newLocal = 'https://developers.redhat.com/products/openjdk/download/?sc_cid=701f2000000RWTnAAO';
-function rejectWithDownloadUrl(reject: {
-    (reason?: unknown): void;
-    (arg0: {
-        message: string;
-        btns: ErrorMsgBtn[];
-    }): void;
-}, message: string): void {
+function getRejectionWithDownloadUrl(message: string): RspRequirementsRejection {
     let jdkUrl = newLocal;
     if (process.platform === 'darwin') {
         jdkUrl = 'http://www.oracle.com/technetwork/java/javase/downloads/index.html';
     }
-    reject({
+    const rejectVal: RspRequirementsRejection = {
+        rspReqReject: true,
         message: message,
         label: 'Get the Java Development Kit',
         openUrl: Uri.parse(jdkUrl),
@@ -149,5 +204,6 @@ function rejectWithDownloadUrl(reject: {
                 label: 'Configure Java'
             }
         ]
-    });
+    }
+    return rejectVal;
 }
