@@ -123,7 +123,7 @@ export class FelixRspLauncher {
 
     private getServerLocation(process: NodeJS.Process): string {
         return process.env.RSP_SERVER_LOCATION ?
-            process.env.RSP_SERVER_LOCATION : path.resolve(__dirname, '..', '..', 'server');
+            process.env.RSP_SERVER_LOCATION : path.resolve(__dirname, '..', '..', '..', 'server');
     }
 
     private startServer(
