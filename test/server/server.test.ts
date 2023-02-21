@@ -8,7 +8,7 @@ import * as requirements from '../../src/requirements';
 import * as server from '../../src/server';
 import * as sinon from 'sinon';
 import * as sinonChai from 'sinon-chai';
-import * as vscode from 'vscode';
+import { OPTIONS } from '../../src/constants';
 
 const expect = chai.expect;
 chai.use(sinonChai);
@@ -30,12 +30,14 @@ suite('Server Tests', () => {
 
         test('error if resolveRequirement fails', async () => {
             sandbox.stub(requirements, 'resolveRequirements').rejects({ message: 'error', btns: [{ label: 'label'}]});
-            const errorStub = sandbox.stub(vscode.window, 'showErrorMessage').resolves(undefined);
             try {
-                await server.start(stdCallback, stdCallback, null);
+                const launcher = new server.FelixRspLauncher(OPTIONS);
+                await launcher.start(stdCallback, stdCallback, null);
                 expect.fail('No error was thrown');
             } catch (err) {
-                expect(errorStub).calledOnceWith('error', 'label');
+                expect(err.message).equals('error');
+                expect(err.btns.length).equals(1);
+                expect(err.btns[0].label).equals('label');
             }
         });
 
