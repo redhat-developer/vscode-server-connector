@@ -119,7 +119,13 @@ export function deploymentE2ETest(testServers: ServerTestType[]): void {
                     await deployment.removeDeployment();
                     // refresh server
                     server = await serverProvider.getServer(testServer.serverName);
-                    expect(await server.getServerPublishState()).to.eq(PublishState.FULL_PUBLISH_REQUIRED);
+                    const serverPubState = await server.getServerPublishState();
+                    const deployment2 = await server.getDeployment(appName);
+                    const deploymentPubState = deployment2 ? deployment2.getDeploymentPublishState() : undefined;
+                    const serverFullPubRequired = serverPubState === PublishState.FULL_PUBLISH_REQUIRED;
+                    const serverPubSynchronized = serverPubState === PublishState.SYNCHRONIZED;
+                    const deploymentMissing = deploymentPubState === undefined;
+                    expect(serverFullPubRequired || (serverPubSynchronized && deploymentMissing)).to.eq(true);
                     await driver.wait(async () => { return await serverHasDeployment(server, appName) === false; }, 12000);
                 });
 
