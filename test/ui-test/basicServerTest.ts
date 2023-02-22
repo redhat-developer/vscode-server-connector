@@ -64,7 +64,7 @@ export function basicServerOperationTest(testServers: ServerTestType[]): void {
                         }
                         expect(fs.existsSync(extractLocation)).to.be.true;
                         try {
-                            const realPath = path.join(extractLocation, 'jboss-eap-7.4');
+                            const realPath = path.join(extractLocation, testServer.serverName);
                             log.info(`Adding new local server at ${realPath}`);
                             await serverProvider.createLocalServer(realPath, testServer.serverName, true);
                         } catch (error) {
