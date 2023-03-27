@@ -61,7 +61,7 @@ export async function resolveRequirements(minJavaVersion: number): Promise<Requi
 }
 
 export async function resolveRequirementsImpl(minJavaVersion: number): Promise<RequirementsResult> {
-    const javaHome: string | RspRequirementsRejection = checkJavaRuntime();
+    const javaHome: string | RspRequirementsRejection = await checkJavaRuntime();
     if( (javaHome as any).rspReqReject) {
         return {rejection: javaHome as RspRequirementsRejection};
     }
@@ -75,7 +75,7 @@ export async function resolveRequirementsImpl(minJavaVersion: number): Promise<R
     return {data: data};
 }
 
-function checkJavaRuntime(): string | RspRequirementsRejection {
+async function checkJavaRuntime(): Promise<string | RspRequirementsRejection> {
     let source: string;
     let javaHome: string | undefined = readJavaConfig();
     if (javaHome) {
@@ -100,13 +100,16 @@ function checkJavaRuntime(): string | RspRequirementsRejection {
         return javaHome;
     }
     // No settings, let's try to detect as last resort.
-    findJavaHome((err: Error, home: string | PromiseLike<string>) => {
-        if (err) {
-            return getRejectionWithDownloadUrl('Java runtime could not be located');
-        } else {
-            return home;
-        }
+    const ret1 = await new Promise<string | RspRequirementsRejection>((resolve, reject) => {
+        findJavaHome((err: Error, home: string | PromiseLike<string>) => {
+            if (err) {
+                resolve(getRejectionWithDownloadUrl('Java runtime could not be located'));
+            } else {
+                resolve(home);
+            }
+        });    
     });
+    return ret1;
 }
 function readJavaConfig(): string | undefined {
     const config = workspace.getConfiguration();
@@ -153,10 +156,12 @@ async function checkJavaVersion(javaHome: string, minJavaVersion: number):
                 process.kill();
         } catch( e ) {
         }
-        throw "Error getting java version for " + javaExecutable + ": 'java -version' did not return within " + (max/1000) + " seconds."
+        const msg = "Error getting java version for " + javaExecutable + ": 'java -version' did not return within " + (max/1000) + " seconds."
+        return getRejectionWithDownloadUrl(msg);
     }
     if( !ret ) {
-        throw "Error getting java version for " + javaExecutable + ": 'java -version' output was unable to be parsed.";
+        const msg = "Error getting java version for " + javaExecutable + ": 'java -version' output was unable to be parsed.";
+        return getRejectionWithDownloadUrl(msg);
     }
     return ret;
 }
