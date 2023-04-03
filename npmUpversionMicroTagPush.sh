@@ -1,7 +1,7 @@
 #!/bin/sh
 
 repoOwnerAndName=redhat-developer/vscode-server-connector
-primaryBranch=master
+curBranch=`git rev-parse --abbrev-ref HEAD`
 ghtoken=`cat ~/.keys/gh_access_token`
 argsPassed=$#
 echo "args: " $argsPassed
@@ -71,7 +71,7 @@ echo "Now we should actually create some releases"
 oldVerFinal=$oldver.Final
 echo "Making a release on github for $oldVerFinal"
 commitMsgsClean=`git log --color --pretty=format:'%s' --abbrev-commit | head -n $commits | awk '{ print " * " $0;}' | awk '{printf "%s\\\\n", $0}' | sed 's/"/\\"/g'`
-createReleasePayload="{\"tag_name\":\"$vOldVerUnderscoreFinal\",\"target_commitish\":\"$primaryBranch\",\"name\":\"$oldVerFinal\",\"body\":\"Release of $oldVerFinal:\n\n"$commitMsgsClean"\",\"draft\":false,\"prerelease\":false,\"generate_release_notes\":false}"
+createReleasePayload="{\"tag_name\":\"$vOldVerUnderscoreFinal\",\"target_commitish\":\"$curBranch\",\"name\":\"$oldVerFinal\",\"body\":\"Release of $oldVerFinal:\n\n"$commitMsgsClean"\",\"draft\":false,\"prerelease\":false,\"generate_release_notes\":false}"
 
 if [ "$debug" -eq 0 ]; then
 	curl -L \
@@ -135,7 +135,6 @@ npm install
 echo "Committing and pushing to main"
 git commit -a -m "Upversion to $newver - Development Begins" --signoff
 
-curBranch=`git rev-parse --abbrev-ref HEAD`
 if [ "$debug" -eq 0 ]; then
 	git push origin $curBranch
 else 
