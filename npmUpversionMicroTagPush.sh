@@ -42,7 +42,7 @@ vsce package
 echo "Did the package work?"
 read -p "Press enter to continue"
 
-echo "Go to Jenkins and do a proper release there first."
+echo "Go to Jenkins and do a proper build there first."
 echo "Come back when that's green."
 read -p "Press enter to continue"
 
