@@ -1,7 +1,8 @@
 #!/bin/sh
 
-ghtoken=`cat ~/.keys/gh_access_token`
 repoOwnerAndName=redhat-developer/vscode-server-connector
+primaryBranch=master
+ghtoken=`cat ~/.keys/gh_access_token`
 argsPassed=$#
 echo "args: " $argsPassed
 if [ "$argsPassed" -eq 1 ]; then
@@ -41,6 +42,15 @@ vsce package
 echo "Did the package work?"
 read -p "Press enter to continue"
 
+echo "Go to Jenkins and do a proper release there first."
+echo "Come back when that's green."
+read -p "Press enter to continue"
+
+echo "It's green? Run it again with a release flag"
+echo "Did it succeed? Great. Let's continue with tagging and more"
+read -p "Press enter to continue"
+
+
 
 echo "Old version is $oldver"
 echo "Let's tag the release"
@@ -48,7 +58,7 @@ echo "Let's tag the release"
 oldver=`cat package.json  | grep "\"version\":" | cut -f 2 -d ":" | sed 's/"//g' | sed 's/,//g' | awk '{$1=$1};1'`
 oldVerUnderscore=`echo $oldver | sed 's/\./_/g'`
 vOldVerUnderscoreFinal=v$oldVerUnderscore.Final
-git tag v$oldVerUnderscore.Final
+git tag $vOldVerUnderscoreFinal
 if [ "$debug" -eq 0 ]; then
 	git push origin $vOldVerUnderscoreFinal
 else 
@@ -61,7 +71,7 @@ echo "Now we should actually create some releases"
 oldVerFinal=$oldver.Final
 echo "Making a release on github for $oldVerFinal"
 commitMsgsClean=`git log --color --pretty=format:'%s' --abbrev-commit | head -n $commits | awk '{ print " * " $0;}' | awk '{printf "%s\\\\n", $0}' | sed 's/"/\\"/g'`
-createReleasePayload="{\"tag_name\":\"$oldVerFinal\",\"target_commitish\":\"master\",\"name\":\"$oldVerFinal\",\"body\":\"Release of $oldVerFinal:\n\n"$commitMsgsClean"\",\"draft\":false,\"prerelease\":false,\"generate_release_notes\":false}"
+createReleasePayload="{\"tag_name\":\"$vOldVerUnderscoreFinal\",\"target_commitish\":\"$primaryBranch\",\"name\":\"$oldVerFinal\",\"body\":\"Release of $oldVerFinal:\n\n"$commitMsgsClean"\",\"draft\":false,\"prerelease\":false,\"generate_release_notes\":false}"
 
 if [ "$debug" -eq 0 ]; then
 	curl -L \
