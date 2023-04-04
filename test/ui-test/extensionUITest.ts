@@ -20,7 +20,7 @@ export function extensionUIAssetsTest(): void {
             section = await content.getSection('Installed') as ExtensionsViewSection;
         });
 
-        it('Dependent Remote Server Protocol UI extension is installed', async function() {
+        it('Dependent Runtime Server Protocol UI extension is installed', async function() {
             this.timeout(10000);
             const items = await section.getVisibleItems();
             expect(await Promise.all(items.map(item => item.getTitle()))).to.include(AdaptersConstants.RSP_UI_NAME);
