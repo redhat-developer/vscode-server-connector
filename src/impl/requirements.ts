@@ -125,6 +125,7 @@ async function checkJavaVersion(javaHome: string, minJavaVersion: number):
 
     const javaExecutable = path.resolve(javaHome, 'bin', JAVA_FILENAME);
     let ret: undefined | number | RspRequirementsRejection;
+    let cpDone = false;
     const process: ChildProcess = cp.execFile(javaExecutable, ['-version'], {}, (error, stdout, stderr) => {
         const javaVersion = parseMajorVersion(stderr);
         if (!javaVersion) {
@@ -136,17 +137,18 @@ async function checkJavaVersion(javaHome: string, minJavaVersion: number):
         } else {
             ret = javaVersion;
         }
+        cpDone = true;
     });
     
-    let allDone = false;
+    let processDone = false;
     process.on('exit', function() {
-        allDone = true;
+        processDone = true;
       });
     const start = Date.now();
     const max = 10000;
     const end = start + max;
     let expired = false;
-    while( !allDone && !expired) {
+    while( !(cpDone && processDone) && !expired) {
         await new Promise(resolve => setTimeout(resolve, 250));
         expired = Date.now() > end;
     }
