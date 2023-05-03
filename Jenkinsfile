@@ -54,6 +54,18 @@ node('rhel8'){
 		}
 	}
 
+        // Open-VSX Marketplace
+        if (publishToOVSX.equals('true')) {
+                timeout(time:5, unit:'DAYS') {
+                        input message:'Approve deployment to OVSX?', submitter: 'rstryker'
+                }
+
+                withCredentials([[$class: 'StringBinding', credentialsId: 'open-vsx-access-token', variable: 'OVSX_TOKEN']]) {
+                        def vsix = findFiles(glob: '**.vsix')
+                        sh 'ovsx publish -p ${OVSX_TOKEN} --packagePath ' + " ${vsix[0].path}"
+                }
+        }
+
 	if(publishToMarketPlace.equals('true')){
 		timeout(time:5, unit:'DAYS') {
 			input message:'Approve deployment?', submitter: 'rstryker,odockal,lstocchi'
