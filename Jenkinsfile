@@ -11,6 +11,7 @@ node('rhel8'){
 		env.PATH="${env.PATH}:${nodeHome}/bin"
 		sh "npm install -g typescript || true"
 		sh "npm install -g vsce || true"
+		sh "npm install -g ovsx || true"
 	}
 
 	stage('Build') {
