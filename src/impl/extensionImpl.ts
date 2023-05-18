@@ -47,9 +47,9 @@ async function registerRecommendations(context: vscode.ExtensionContext) {
     const recommendService: IRecommendationService | undefined = RecommendationCore.getService(context, telem);
     if( recommendService ) {
         const r1 = recommendService.create(JAVA_EXTENSION, "Language Support for Java", 
-            "This extension is recommended for a better development environment experience when developing applications targeted to Java-based application servers .", true);
+            "'Language Support for Java' is recommended for a better development environment experience when developing applications targeted to Java-based application servers .", true);
         const r2 = recommendService.create(JAVA_DEBUG_EXTENSION, "Debugger for Java", 
-            "This extension is required to launch a server in debug mode and connect to it with a debugger.", true);
+            "'Debugger for Java' is required to launch a server in debug mode and connect to it with a debugger.", true);
         recommendService.register([r1, r2]);
     }
 }
