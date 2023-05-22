@@ -62,11 +62,18 @@ export async function resolveRequirements(minJavaVersion: number): Promise<Requi
 
 export async function resolveRequirementsImpl(minJavaVersion: number): Promise<RequirementsResult> {
     const javaHome: string | RspRequirementsRejection = await checkJavaRuntime();
+    if( !javaHome ) {
+        return {rejection: getRejectionWithDownloadUrl('Unexpected Error: Java Home could not be located')};
+    }
     if( (javaHome as any).rspReqReject) {
         return {rejection: javaHome as RspRequirementsRejection};
     }
     const javaHome2: string = javaHome as string;
     const javaVersion: number | RspRequirementsRejection = await checkJavaVersion(javaHome2, minJavaVersion);
+    if( !javaVersion ) {
+        return {rejection: getRejectionWithDownloadUrl('Unexpected Error: Java Version could not be discovered for java home ' + javaHome2)};
+    }
+
     if( (javaVersion as any).rspReqReject) {
         return {rejection: javaVersion as RspRequirementsRejection};
     }
