@@ -2,8 +2,8 @@ const fs = require('fs-extra');
 const download = require('download');
 const decompress = require('decompress');
 
-const qualifier = process.env.RSP_QUALIFIER === 'stable' ? 'stable' : 'snapshots';
-
+const qualifier = process.env.RSP_QUALIFIER === 'snapshots' ? 'snapshots' : 'stable';
+console.log("The qualifier is " + qualifier);
 const RSP_SERVER_JAR_NAME = 'org.jboss.tools.rsp.distribution-latest.zip';
 const RSP_SERVER_JAR_URL = `http://download.jboss.org/jbosstools/adapters/${qualifier}/rsp-server/${RSP_SERVER_JAR_NAME}`;
 
