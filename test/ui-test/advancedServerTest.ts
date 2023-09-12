@@ -105,7 +105,7 @@ export function deploymentE2ETest(testServers: ServerTestType[]): void {
                 it('Verify deployed application', async function() {
                     this.timeout(30000);
                     const testFile = path.join(__dirname, 'my.out');
-                    await new Promise((resolve) => setTimeout(resolve, 30000));
+                    await new Promise((resolve) => setTimeout(resolve, 15000));
                     await downloadFile('http://localhost:8080/java-webapp', testFile);
                     const content = fs.readFileSync(testFile, 'utf-8');
                     expect(content).to.include('Test Deployment App');
