@@ -30,7 +30,7 @@ node('rhel8'){
         wrap([$class: 'Xvnc']) {
             try {
                 sh "npm test --silent"
-                //sh "npm run ui-test"
+                sh "npm run ui-test"
             } finally {
                 junit 'test-resources/test-report.xml'
                 archiveArtifacts artifacts: 'test-resources/**/*.xml, test-resources/**/*.png, test-resources/*.log, **/*.log, **/*.png'
