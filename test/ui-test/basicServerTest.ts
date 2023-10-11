@@ -4,7 +4,8 @@ import { serverHasState } from './common/util/serverUtils';
 import { expect } from 'chai';
 import * as os from 'os';
 import { ServerState } from './common/enum/serverState';
-import { downloadExtractFile } from './common/util/downloadServerUtil';
+import { Unpack } from './common/util/unpack';
+// import { downloadExtractFile } from './common/util/downloadServerUtil';
 
 import * as fs from 'fs';
 import path = require('path');
@@ -23,7 +24,7 @@ export function basicServerOperationTest(testServers: ServerTestType[]): void {
 
         let driver: WebDriver;
         // NEW_SERVER_ADAPTER
-        const EAP_URL = 'https://download-node-02.eng.bos.redhat.com/released/jboss/eap8/8.0.0-Beta/jboss-eap-8.0.0.Beta.zip';
+        // const EAP_URL = 'https://download-node-02.eng.bos.redhat.com/released/jboss/eap8/8.0.0-Beta/jboss-eap-8.0.0.Beta.zip';
         const downloadLocation = path.join(__dirname, 'eap-server.zip');
         const extractLocation = path.join(__dirname, 'eap-server');
 
@@ -58,11 +59,16 @@ export function basicServerOperationTest(testServers: ServerTestType[]): void {
                 } else {
                     it(`Create the ${testServer.serverDownloadName} server from the disk location`, async function() {
                         this.timeout(240000);
-                        log.info(`Downloading server at ${EAP_URL} to ${downloadLocation} and extracting to ${extractLocation}`);
+                        log.info(`Extracting downloaded EAP server from ${downloadLocation} to ${extractLocation}`);
+
+                        // Download is in the Jenkinsfile. Server is pre-downloaded.
+                        expect(fs.existsSync(downloadLocation)).to.be.true;
                         if (!fs.existsSync(extractLocation)) {
-                            await downloadExtractFile(EAP_URL, downloadLocation, extractLocation);
+                            // await downloadExtractFile(EAP_URL, downloadLocation, extractLocation);
+                            await Unpack.unpack(downloadLocation, extractLocation);
                         }
                         expect(fs.existsSync(extractLocation)).to.be.true;
+
                         try {
                             const realPath = path.join(extractLocation, testServer.serverName);
                             log.info(`Adding new local server at ${realPath}`);
