@@ -30,6 +30,8 @@ node('rhel8'){
         wrap([$class: 'Xvnc']) {
             try {
                 sh "npm test --silent"
+				// Download eap server before ui tests
+				sh "curl https://download-node-02.eng.bos.redhat.com/released/jboss/eap8/8.0.0-Beta/jboss-eap-8.0.0.Beta.zip -o out/test/ui-test/eap-server.zip"
                 sh "npm run ui-test"
             } finally {
                 junit 'test-resources/test-report.xml'
