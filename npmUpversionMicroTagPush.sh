@@ -35,7 +35,15 @@ read -p "Press enter to continue"
 
 npm install
 npm run build
-echo "Did the build work? If yes, let's package it"
+echo "Did the build work?"
+read -p "Press enter to continue"
+
+echo ""
+echo ""
+msgLine1=`ls server/bundle/*spi* | cut -f 2 -d "_" | cut -f 1,2,3 -d "." | awk '{ print "Now using the " $0 " release of rsp-server. "}'`
+echo $msgLine1
+echo ""
+echo "Let's package it now"
 read -p "Press enter to continue"
 
 vsce package
