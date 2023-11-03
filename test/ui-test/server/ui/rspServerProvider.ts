@@ -132,7 +132,7 @@ export class RSPServerProvider extends AbstractServer {
     }
 
     public async createLocalServer(serverPath: string, serverName: string, webView = false): Promise<void> {
-        log.info(`Creating new local server at ${serverPath}`);
+        log.info(`Creating new local server at ${serverPath} with name ${serverName}`);
         const quick = await this.getCreateNewServerBox();
         await quick.selectQuickPick('No, use server on disk');
         log.info(`Selected use server on disk`);
