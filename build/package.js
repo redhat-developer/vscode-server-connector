@@ -28,8 +28,10 @@ Promise.resolve()
     .then((v)=> v.split('\n')[1])
     .then((v)=> v.split('=')[1])
     .then((v)=> {console.log("downloading " + v); return v;})
-    .then((v)=> {download(v, './'); return v;})
-    .then((v)=> v.split('/').reverse()[0])
-    .then((v)=> { console.log("decompressing " + v); return v;})
-    .then((v)=> decompress(v, './server', { strip: 1 }))
+    .then((v)=> {
+                    download(v, './')
+		    .then(()=>v.split('/').reverse()[0])
+                    .then((x)=>decompress(x, './server', { strip: 1}))
+	            .catch((err)=>{throw err;});
+	        })
     .catch((err)=>{ throw err; });
