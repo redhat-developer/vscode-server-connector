@@ -132,8 +132,13 @@ export class RSPServerProvider extends AbstractServer {
     }
 
     public async createLocalServer(serverPath: string, serverName: string, webView = false): Promise<void> {
+        log.info(`Creating new local server at ${serverPath} with name ${serverName}`);
         const quick = await this.getCreateNewServerBox();
         await quick.selectQuickPick('No, use server on disk');
+        log.info(`Selected use server on disk`);
+
+        log.info(`Awaiting possible file manager input box`);
+
         // it might happen, depending on vscode settings, that native file manager dialog wont appear
         // instead we got input box where we can search for files
         try {
@@ -144,7 +149,9 @@ export class RSPServerProvider extends AbstractServer {
             log.warn(`InputBox bar did not appear, ${error.name}`);
             throw error;
         }
+
         // might get secure storage input box
+        log.info(`Awaiting possible secure storage prompt`);
         try {
             const secureStorage = await InputBox.create();
             const indexOf = (await secureStorage.getMessage()).indexOf('secure storage');
@@ -157,6 +164,7 @@ export class RSPServerProvider extends AbstractServer {
         // Since rsp-ui 0.23.9 there is by default new webView now
         // can be turned off by setting property: rsp-ui.newserverwebviewworkflow = false
         if (webView) {
+            log.info(`Filling out new server details via webview`);
             await VSBrowser.instance.driver.wait(async () => editorIsOpened('New Server'), 3000);
             const editorView = new EditorView();
             const editors = await editorView.getOpenEditorTitles();
@@ -168,12 +176,14 @@ export class RSPServerProvider extends AbstractServer {
             await serverView.setServerId(serverName);
             await serverView.finish();
         } else {
+            log.info(`Filling out new server details via input box`);
             const nameInput = await InputBox.create();
             await nameInput.setText(serverName);
             await nameInput.confirm();
             const optionsInput = await InputBox.create();
             await optionsInput.selectQuickPick('No');
         }
+        log.info(`Done creating new server from local disk`);
     }
 
     public async createServer(testServer: ServerTestType): Promise<void> {

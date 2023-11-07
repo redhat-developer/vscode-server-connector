@@ -23,7 +23,7 @@ fi
 
 echo ""
 echo "These are the commits for the release"
-commits=`git lg | grep -n -m 1 "Upversion to " |sed  's/\([0-9]*\).*/\1/' | tail -n 1`
+commits=`git log --color --pretty=format:'%h - %s' --abbrev-commit | grep -n -m 1 "Upversion to " |sed  's/\([0-9]*\).*/\1/' | tail -n 1`
 commitMsgs=`git log --color --pretty=format:'%h - %s' --abbrev-commit | head -n $commits`
 echo "$commitMsgs"
 read -p "Press enter to continue"
@@ -35,7 +35,15 @@ read -p "Press enter to continue"
 
 npm install
 npm run build
-echo "Did the build work? If yes, let's package it"
+echo "Did the build work?"
+read -p "Press enter to continue"
+
+echo ""
+echo ""
+msgLine1=`ls server/bundle/*spi* | cut -f 2 -d "_" | cut -f 1,2,3 -d "." | awk '{ print "Now using the " $0 " release of rsp-server. "}'`
+echo $msgLine1
+echo ""
+echo "Let's package it now"
 read -p "Press enter to continue"
 
 vsce package

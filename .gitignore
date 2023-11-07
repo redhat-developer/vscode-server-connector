@@ -9,3 +9,4 @@ felix-cache/
 test-resources/
 *.tgz
 .nyc_output/
+LATEST

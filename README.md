@@ -78,6 +78,22 @@ Stable releases are archived under http://download.jboss.org/jbosstools/adapters
 
 **Chat:** Chat with us on [Gitter](https://gitter.im/redhat-developer/server-connector).
 
+**UI Testing:**
+
+You can perform UI testing by running the following commands:
+1. Download package and it's dependencies
+```sh
+npm install
+```
+2. Build the project
+```sh
+npm run build
+```
+3. Run UI tests
+```sh
+npm run public-ui-test
+```
+
 License
 =======
 EPL 2.0, See [LICENSE](LICENSE) for more information.
