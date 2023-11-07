@@ -23,7 +23,7 @@ fi
 
 echo ""
 echo "These are the commits for the release"
-commits=`git lg | grep -n -m 1 "Upversion to " |sed  's/\([0-9]*\).*/\1/' | tail -n 1`
+commits=`git log --color --pretty=format:'%h - %s' --abbrev-commit | grep -n -m 1 "Upversion to " |sed  's/\([0-9]*\).*/\1/' | tail -n 1`
 commitMsgs=`git log --color --pretty=format:'%h - %s' --abbrev-commit | head -n $commits`
 echo "$commitMsgs"
 read -p "Press enter to continue"
