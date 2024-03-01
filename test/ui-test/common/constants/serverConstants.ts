@@ -19,7 +19,7 @@ export class ServersConstants {
 
     public static eap80: ServerTestType = {
         serverName: 'jboss-eap-8.0',
-        serverDownloadName: 'Red Hat JBoss EAP 8.0.0 Beta',
+        serverDownloadName: 'Red Hat JBoss EAP 8.0.0',
         serverInstallationName: 'jbosseap800'
     }
     /* 
