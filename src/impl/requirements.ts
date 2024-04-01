@@ -101,6 +101,9 @@ async function checkJavaRuntime(): Promise<string | RspRequirementsRejection> {
         if (!pathExists.sync(javaHome)) {
             return getRejectionWithDownloadUrl(`${source} points to a missing folder`);
         }
+        if (!pathExists.sync(path.resolve(javaHome, 'bin', JAVA_FILENAME))) {
+            return getRejectionWithDownloadUrl(`${source} does not point to a JDK. The '${JAVA_FILENAME}' command is missing.`);
+        }
         if (!pathExists.sync(path.resolve(javaHome, 'bin', JAVAC_FILENAME))) {
             return getRejectionWithDownloadUrl(`${source} does not point to a JDK. The '${JAVAC_FILENAME}' command is missing.`);
         }
