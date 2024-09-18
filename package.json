@@ -100,7 +100,7 @@
     "targz": "^1.0.1",
     "tslog": "^3.2.0",
     "typescript": "^4.0.3",
-    "unzip-stream": "^0.3.1",
+    "unzip-stream": "^0.3.4",
     "utf-8-validate": "^5.0.2",
     "selenium-webdriver": "^4.1.0",
     "vscode-extension-tester": "^5.0.0",
