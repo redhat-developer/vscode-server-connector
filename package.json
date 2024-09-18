@@ -109,7 +109,7 @@
   },
   "dependencies": {
     "@redhat-developer/vscode-extension-proposals": "^0.0.22",
-    "@redhat-developer/vscode-redhat-telemetry": "0.4.2",
+    "@redhat-developer/vscode-redhat-telemetry": "0.8.0",
     "expand-home-dir": "0.0.3",
     "find-java-home": "^1.2.2",
     "fs-extra": "10.0.0",
@@ -117,6 +117,6 @@
     "portfinder": "^1.0.28",
     "tcp-port-used": "^1.0.2",
     "vscode-server-connector-api": "0.1.7",
-    "wait-on": "^5.2.1"
+    "wait-on": "^8.0.1"
   }
 }
