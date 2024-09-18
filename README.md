@@ -2,17 +2,19 @@
 
 [![Visual Studio Marketplace](https://img.shields.io/visual-studio-marketplace/v/redhat.vscode-server-connector?style=for-the-badge&label=VS%20Marketplace&logo=visual-studio-code&color=blue)](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-server-connector)
 [![Downloads](https://img.shields.io/visual-studio-marketplace/d/redhat.vscode-server-connector?style=for-the-badge&color=purple)](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-server-connector)
-[![Gitter](https://img.shields.io/gitter/room/redhat-developer/server-connector?style=for-the-badge&logo=gitter)](https://gitter.im/redhat-developer/server-connector)
-[![Build Status](https://img.shields.io/github/workflow/status/redhat-developer/vscode-server-connector/ServerConnectorCI?style=for-the-badge&logo=github)](https://github.com/redhat-developer/vscode-server-connector/actions)
 [![License](https://img.shields.io/badge/license-EPLv2.0-brightgreen.png?style=for-the-badge)](https://github.com/redhat-developer/vscode-server-connector/blob/master/LICENSE)
 
-A Visual Studio Code extension for interacting with Red Hat Servers and Runtimes.
+A Visual Studio Code extension for interacting with Red Hat JBoss EAP Servers and Runtimes.
+
+### Supported Servers
+   * WildFly 33 and below (WildFly 8)
+   * Red Hat JBoss Enterprise Application Platform (EAP) 8.0 and below (EAP 4.3)
 
 ## Commands and features
 
 ![ screencast ](https://raw.githubusercontent.com/redhat-developer/vscode-server-connector/master/screencast/vscode-server-connector.gif)
 
-This extension depends on VSCode RSP UI Extension which is going to be installed automatically along with VSCode Server Connector Extension. RSP UI in conjuction with Server Connector Extension supports a number of commands for interacting with supported server adapters; these are accessible via the command menu (`Cmd+Shift+P` on macOS or `Ctrl+Shift+P` on Windows and Linux) and may be bound to keys in the normal way.
+This extension depends on VSCode RSP UI Extension which is going to be installed automatically along with VSCode Server Connector Extension. RSP UI in conjunction with Server Connector Extension supports several commands for interacting with supported server adapters; these are accessible via the command menu (`Cmd+Shift+P` on macOS or `Ctrl+Shift+P` on Windows and Linux) and may be bound to keys in the normal way.
 
 ### Available Commands
    This extension provides no additional commands other than those available in [rsp-ui](https://github.com/redhat-developer/vscode-rsp-ui#available-commands)
@@ -23,18 +25,12 @@ This extension depends on VSCode RSP UI Extension which is going to be installed
 ## Server Parameters
    This extension provides some ADDITIONAL server parameters in addition to those available in rsp-ui. To see a list of global server parameters, please go [here](https://github.com/redhat-developer/vscode-rsp-ui#server-parameters). Below are JBoss / WildFly specific parameters.
 
-   * `"args.vm.override.string"` - allow to override vm arguments. Once you edited this flag, *make sure "args.override.boolean" is set to true before launching your server. Otherwise the server will attempt to auto-generate the launch arguments as it normally does.*
-   * `"args.program.override.string"` - allow to override program arguments. Once you edited this flag, *make sure "args.override.boolean" is set to true before launching your server. Otherwise the server will attempt to auto-generate the launch arguments as it normally does.*
+   * `"args.vm.override.string"` - allow to override VM arguments. Once you edit this flag, *make sure "args.override.boolean" is set to true before launching your server. Otherwise, the server will attempt to auto-generate the launch arguments as it normally does.*
+   * `"args.program.override.string"` - allow to override program arguments. Once you edit this flag, *make sure "args.override.boolean" is set to true before launching your server. Otherwise, the server will attempt to auto-generate the launch arguments as it normally does.*
 
-   * `"jboss.server.host"` - allow to set the host you want the current Jboss/Wildfly instance to bind to (default localhost)
-   * `"jboss.server.port"` - allow to set the port you want the current Jboss/Wildfly instance to bind to (default 8080)
-   * `"wildfly.server.config.file"` - name of the configuration file to be used for the current Jboss/Wildfly instance. The file has to be stored in the same folder as the default standalone.xml file. (e.g "wildfly.server.config.file": "newconfigfile.xml")
-
-### Supported Servers
-   * Wildfly [8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23 | 24 | 25 | 26 | 27 | 28 | 29 | 30]
-   * Red Hat Enterprise Application Platform (EAP) [4.3 | 5.0 | 6.0 | 6.1 | 6.2 | 6.3 | 6.4 | 7.0 | 7.1 | 7.2 | 7.3| 7.4]
-   * Minishift / Red Hat Container Development Kit (CDK) / Red Hat CodeReady Containers (CRC) binaries
-
+   * `"jboss.server.host"` - allow to set the host you want the current JBoss/Wildfly instance to bind to (default localhost)
+   * `"jboss.server.port"` - allow to set the port you want the current JBoss/Wildfly instance to bind to (default 8080)
+   * `"wildfly.server.config.file"` - the name of the configuration file to be used for the current Jboss/Wildfly instance. The file has to be stored in the same folder as the default standalone.xml file. (e.g "wildfly.server.config.file": "newconfigfile.xml")
 
 ## FAQ
 ---
@@ -72,16 +68,16 @@ Stable releases are archived under http://download.jboss.org/jbosstools/adapters
 
 ## Community, discussion, contribution, and support
 
-**Issues:** If you have an issue/feature-request with Server Connector extension, please file it [here](https://github.com/redhat-developer/vscode-server-connector/issues).
+**Issues:** If you have an issue/feature-request with the Server Connector extension, please file it [here](https://github.com/redhat-developer/vscode-server-connector/issues).
 
-**Contributing:** Want to become a contributor and submit your own code? Have a look at our [development guide](https://github.com/redhat-developer/vscode-server-connector/blob/master/CONTRIBUTING.md).
+**Contributing:** Want to become a contributor and submit your code? Have a look at our [development guide](https://github.com/redhat-developer/vscode-server-connector/blob/master/CONTRIBUTING.md).
 
-**Chat:** Chat with us on [Gitter](https://gitter.im/redhat-developer/server-connector).
+**Chat:** Open a [Discussion on GitHub](https://github.com/redhat-developer/vscode-server-connector/discussions)
 
 **UI Testing:**
 
 You can perform UI testing by running the following commands:
-1. Download package and it's dependencies
+1. Download the package and its dependencies
 ```sh
 npm install
 ```
