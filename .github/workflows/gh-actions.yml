@@ -12,17 +12,16 @@ jobs:
 
     strategy:
       matrix:
-        os: [macOS-latest, windows-latest, ubuntu-latest]
-        node: [16]
-      fail-fast: false
+        os: [macos-latest, windows-latest, ubuntu-latest]
+        node: [ 20 ]
 
     steps:
     # Checkout
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     # Setup node
     - name: Setup node
-      uses: actions/setup-node@v1
+      uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node }}
 
@@ -46,7 +45,7 @@ jobs:
 
     # Archive test artifacts
     - name: Archiving test artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       if: failure()
       with: 
         name: artifacts-${{ matrix.os }}
@@ -56,7 +55,7 @@ jobs:
 
     # Upload code coverage
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v2
+      uses: codecov/codecov-action@v4
       with:
         file: ./coverage/coverage-final.json
             
