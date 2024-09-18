@@ -103,7 +103,7 @@
     "unzip-stream": "^0.3.1",
     "utf-8-validate": "^5.0.2",
     "selenium-webdriver": "^4.1.0",
-    "vscode-extension-tester": "^5.0.0",
+    "vscode-extension-tester": "^5.10.0",
     "vscode-extension-tester-locators": "^3.0.0",
     "vscode-test": "^1.4.0"
   },
