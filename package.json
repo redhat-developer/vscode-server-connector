@@ -1,7 +1,7 @@
 {
   "name": "vscode-server-connector",
-  "displayName": "Server Connector",
-  "description": "Allows to start, stop and deploy to Red Hat server and runtime products like Wildfly, JBoss EAP (Enterprise Application Platform), Minishift, CDK (Container Development Kit).",
+  "displayName": "JBoss Toolkit",
+  "description": "Allows a user to start, stop and deploy to Red Hat server and runtime products like Wildfly and JBoss EAP (Enterprise Application Platform).",
   "version": "0.26.17",
   "license": "SEE LICENSE IN LICENSE",
   "publisher": "redhat",
@@ -48,9 +48,6 @@
     "red hat",
     "jboss",
     "wildfly",
-    "minishift",
-    "container development kit",
-    "cdk",
     "enterprise application platform",
     "eap"
   ],

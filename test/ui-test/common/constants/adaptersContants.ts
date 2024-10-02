@@ -20,7 +20,7 @@ export class AdaptersConstants {
     public static readonly RSP_DOWNLOADING_NOTIFICATION = 'Job Download runtime:';
 
     // RSP server provider constants
-    public static readonly RSP_SERVER_PROVIDER_NAME = 'Red Hat Server Connector';
+    public static readonly RSP_SERVER_PROVIDER_NAME = 'JBoss Toolkit';
     public static readonly RSP_SERVER_PROVIDER_CREATE_NEW_SERVER = 'Create New Server...';
     public static readonly RSP_SERVER_PROVIDER_START = 'Start / Connect to RSP Provider';
     public static readonly RSP_SERVER_PROVIDER_STOP = 'Stop RSP Provider';

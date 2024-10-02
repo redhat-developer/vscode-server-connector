@@ -65,7 +65,7 @@ suite('Extension API', () => {
                 await extensionApi.startRSP(stdCallback, stdCallback);
                 expect.fail('No error was thrown');
             } catch (err) {
-                expect(err).equals('RSP Error - Red Hat Server Connector failed to start - Error');
+                expect(err).equals('RSP Error - JBoss Toolkit failed to start - Error');
             }
         });
 

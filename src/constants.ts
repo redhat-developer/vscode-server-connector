@@ -14,7 +14,7 @@ const RSP_PROVIDER_ID = 'redhat.vscode-server-connector';
 /**
  * RSP Provider Name - it will be displayed in the tree node
  */
-const RSP_PROVIDER_NAME = 'Red Hat Server Connector';
+const RSP_PROVIDER_NAME = 'JBoss Toolkit';
 
 /**
  * The provider id to be used in the .rsp folder

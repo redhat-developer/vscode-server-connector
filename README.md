@@ -1,10 +1,10 @@
-# Server Connector
+# JBoss Toolkit
 
 [![Visual Studio Marketplace](https://img.shields.io/visual-studio-marketplace/v/redhat.vscode-server-connector?style=for-the-badge&label=VS%20Marketplace&logo=visual-studio-code&color=blue)](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-server-connector)
 [![Downloads](https://img.shields.io/visual-studio-marketplace/d/redhat.vscode-server-connector?style=for-the-badge&color=purple)](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-server-connector)
 [![License](https://img.shields.io/badge/license-EPLv2.0-brightgreen.png?style=for-the-badge)](https://github.com/redhat-developer/vscode-server-connector/blob/master/LICENSE)
 
-A Visual Studio Code extension for interacting with Red Hat JBoss EAP Servers and Runtimes.
+A Visual Studio Code extension for interacting with Red Hat Servers and Runtimes like WildFly and Red Hat EAP.
 
 ### Supported Servers
    * WildFly 33 and below (WildFly 8)
@@ -14,7 +14,7 @@ A Visual Studio Code extension for interacting with Red Hat JBoss EAP Servers an
 
 ![ screencast ](https://raw.githubusercontent.com/redhat-developer/vscode-server-connector/master/screencast/vscode-server-connector.gif)
 
-This extension depends on VSCode RSP UI Extension which is going to be installed automatically along with VSCode Server Connector Extension. RSP UI in conjunction with Server Connector Extension supports several commands for interacting with supported server adapters; these are accessible via the command menu (`Cmd+Shift+P` on macOS or `Ctrl+Shift+P` on Windows and Linux) and may be bound to keys in the normal way.
+This extension depends on VSCode RSP UI Extension which is going to be installed automatically along with the JBoss Toolkit  Extension. RSP UI, in conjunction with JBoss Toolkit Extension supports several commands for interacting with supported server adapters; these are accessible via the command menu (`Cmd+Shift+P` on macOS or `Ctrl+Shift+P` on Windows and Linux) and may be bound to keys in the normal way.
 
 ### Available Commands
    This extension provides no additional commands other than those available in [rsp-ui](https://github.com/redhat-developer/vscode-rsp-ui#available-commands)
@@ -55,7 +55,7 @@ Right-click your server -> Edit Server -> add "jboss.server.port": "8888". Chang
 
 Now if you start the server it should run on the specified port.
 
-### 3. Is there a video that explain how the VSCode Server Connector extension and the Runtime Server Protocol work?
+### 3. Is there a video that explain how the JBoss Toolkit extension and the Runtime Server Protocol work?
 Yes. This is the video you can watch to learn more about this extension https://www.youtube.com/watch?v=sP2Hlw-C_7I
 
 -----------------------------------------------------------------------------------------------------------
@@ -68,7 +68,7 @@ Stable releases are archived under http://download.jboss.org/jbosstools/adapters
 
 ## Community, discussion, contribution, and support
 
-**Issues:** If you have an issue/feature-request with the Server Connector extension, please file it [here](https://github.com/redhat-developer/vscode-server-connector/issues).
+**Issues:** If you have an issue/feature-request with the JBoss Toolkit extension, please file it [here](https://github.com/redhat-developer/vscode-server-connector/issues).
 
 **Contributing:** Want to become a contributor and submit your code? Have a look at our [development guide](https://github.com/redhat-developer/vscode-server-connector/blob/master/CONTRIBUTING.md).
 

@@ -224,7 +224,7 @@ export class FelixRspLauncher {
                             vscode.commands.executeCommand('vscode.open', btnSelected.openUrl);
                         } else {
                             vscode.window.showInformationMessage(
-                                `To configure Java for Server Connector Extensions add "rsp-ui.rsp.java.home" property to your settings file
+                                `To configure Java for the JBoss Toolkit Extension, add "rsp-ui.rsp.java.home" property to your settings file
                         (ex. "rsp-ui.rsp.java.home": "/usr/local/java/jdk-${this.options.minimumSupportedJava}.0.1").`);
                             vscode.commands.executeCommand(
                                 'workbench.action.openSettingsJson'

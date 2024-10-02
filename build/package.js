@@ -6,16 +6,11 @@ const qualifier = process.env.RSP_QUALIFIER === 'snapshots' ? 'snapshots' : 'sta
 console.log("The qualifier is " + qualifier);
 const RSP_PREFIX = `http://download.jboss.org/jbosstools/adapters/${qualifier}/rsp-server`;
 const RSP_SERVER_LATEST = 'LATEST';
-const RSP_SERVER_LATEST_URL = `${RSP_PREFIX}/${RSP_SERVER_LATEST}`;
-const RSP_SERVER_JAR_NAME = 'org.jboss.tools.rsp.distribution-latest.zip';
-const RSP_SERVER_JAR_URL = `${RSP_PREFIX}/${RSP_SERVER_JAR_NAME}`;
+const RSP_SERVER_LATEST_URL = "https://raw.githubusercontent.com/redhat-developer/rsp-server/refs/heads/master/LATEST"
 
 
 function clean() {
-    return Promise.resolve()
-        .then(()=>fs.remove('server'))
-        .then(()=>fs.pathExists(RSP_SERVER_JAR_NAME))
-        .then((exists)=>(exists?fs.unlink(RSP_SERVER_JAR_NAME):undefined));
+    return Promise.resolve();
 }
 
 Promise.resolve()
