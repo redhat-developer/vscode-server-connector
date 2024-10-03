@@ -31,7 +31,7 @@ export async function showErrorNotifications(): Promise<void> {
     const errors = await getNotifications(NotificationType.Error);
     if (errors && errors.length > 0) {
         const report = await Promise.all(errors.map(async error => {
-            return `${await error.getSource()}: ${await error.getMessage()} \r\n`;
+            return `${await error.getType()}: ${await error.getMessage()} \r\n`;
         }));
         console.log(`Error appeared during creating local server adapter: ${report}`);
     }

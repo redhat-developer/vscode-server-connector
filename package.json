@@ -13,7 +13,7 @@
   },
   "bugs": "https://github.com/redhat-developer/vscode-server-connector/issues/",
   "engines": {
-    "vscode": "^1.56.0"
+    "vscode": "^1.77.0"
   },
   "activationEvents": [
     "onCommand:server.createServer",
