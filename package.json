@@ -2,7 +2,7 @@
   "name": "vscode-server-connector",
   "displayName": "JBoss Toolkit",
   "description": "Allows a user to start, stop and deploy to Red Hat server and runtime products like Wildfly and JBoss EAP (Enterprise Application Platform).",
-  "version": "0.26.17",
+  "version": "0.26.18",
   "license": "SEE LICENSE IN LICENSE",
   "publisher": "redhat",
   "author": "Red Hat",
