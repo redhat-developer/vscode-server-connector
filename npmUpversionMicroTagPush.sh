@@ -49,8 +49,9 @@ read -p "Press enter to continue"
 vsce package
 echo "Did the package work?"
 read -p "Press enter to continue"
-
-echo "Go to Jenkins and do a proper build there first."
+echo ""
+echo ""
+echo "Go to https://github.com/redhat-developer/vscode-server-connector/actions/workflows/gh-actions.yml and trigger a build there first."
 echo "Come back when that's green."
 read -p "Press enter to continue"
 
