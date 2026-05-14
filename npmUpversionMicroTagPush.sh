@@ -59,14 +59,12 @@ echo "It's green? Run it again with a release flag"
 echo "Did it succeed? Great. Let's continue with tagging and more"
 read -p "Press enter to continue"
 
-
-
-echo "Old version is $oldver"
-echo "Let's tag the release"
-
 oldver=`cat package.json  | grep "\"version\":" | cut -f 2 -d ":" | sed 's/"//g' | sed 's/,//g' | awk '{$1=$1};1'`
 oldVerUnderscore=`echo $oldver | sed 's/\./_/g'`
 vOldVerUnderscoreFinal=v$oldVerUnderscore.Final
+
+echo "Old version is $oldver"
+echo "Let's tag the release"
 git tag $vOldVerUnderscoreFinal
 if [ "$debug" -eq 0 ]; then
 	git push origin $vOldVerUnderscoreFinal
