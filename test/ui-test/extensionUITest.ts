@@ -35,13 +35,17 @@ export function extensionUIAssetsTest(): void {
 
         afterEach(async function() {
             this.timeout(10000);
-            if (sideBar && await sideBar.isDisplayed()) {
-                sideBar = await (await new ActivityBar().getViewControl('Extensions')).openView();
-                const titlePart = sideBar.getTitlePart();
-                const actionButton = new TitleActionButton(By.xpath('.//a[@aria-label="Clear Extensions Search Results"]'), titlePart);
-                if (actionButton.isEnabled()) {
-                    await actionButton.click();
+            try {
+                if (sideBar && await sideBar.isDisplayed()) {
+                    sideBar = await (await new ActivityBar().getViewControl('Extensions')).openView();
+                    const titlePart = sideBar.getTitlePart();
+                    const actionButton = new TitleActionButton(By.xpath('.//a[@aria-label="Clear Extensions Search Results"]'), titlePart);
+                    if (await actionButton.isEnabled()) {
+                        await actionButton.click();
+                    }
                 }
+            } catch {
+                // Button may not exist if no search was performed
             }
         });
 
