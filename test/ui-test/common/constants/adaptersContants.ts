@@ -10,7 +10,7 @@ export class AdaptersConstants {
 
     // RSP extensions properties
     public static readonly RSP_UI_NAME = 'Runtime Server Protocol UI';
-    public static readonly RSP_CONNECTOR_NAME = 'Server Connector';
+    public static readonly RSP_CONNECTOR_NAME = 'JBoss Toolkit';
     public static readonly RSP_COMMAND = 'Servers:';
     public static readonly RSP_SERVERS_LABEL = 'Servers';
     public static readonly RSP_ATIVITY_BAR_TITLE = 'SERVER CONNECTOR: SERVERS';
