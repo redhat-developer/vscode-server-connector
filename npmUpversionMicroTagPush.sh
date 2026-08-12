@@ -77,11 +77,11 @@ echo "Now we should actually create some releases"
 
 oldVerFinal=$oldver.Final
 echo "Making a release on github for $oldVerFinal"
-commitMsgsClean=`git log --color --pretty=format:'%s' --abbrev-commit | head -n $commits | awk '{ print " * " $0;}' | awk '{printf "%s\\\\n", $0}' | sed 's/"/\\"/g'`
+commitMsgsClean=`git log --color --pretty=format:'%s' --abbrev-commit | head -n $commits | awk '{ print " * " $0;}' | awk '{printf "%s\\n", $0}' | sed 's/"/\\"/g'`
 
 msgLine1=`ls server/bundle/*spi* | cut -f 2 -d "_" | cut -f 1,2,3 -d "." | awk '{ print "Now using the " $0 " release of rsp-server. "}'`
 msgLine2=`ls server/bundle/*spi* | cut -f 2 -d "_" | cut -f 1,2,3 -d "." | sed 's/\./_/g' | awk '{ print "See rsp-server CHANGELOG at https://github.com/redhat-developer/rsp-server/releases/tag/v" $0;}'`
-commitMsgsFinal="$msgLine1\\\\n$msgLine2\\\\n$commitMsgsClean"
+commitMsgsFinal="$msgLine1\\n$msgLine2\\n$commitMsgsClean"
 
 echo "Release commit log: $commitMsgsFinal"
 read -p "Press enter to continue"
