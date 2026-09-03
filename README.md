@@ -23,7 +23,9 @@ This extension depends on VSCode RSP UI Extension which is going to be installed
    This extension provides no additional settings other than those available in [rsp-ui](https://github.com/redhat-developer/vscode-rsp-ui#extension-settings)
 
 ## Server Parameters
-   This extension provides some ADDITIONAL server parameters in addition to those available in rsp-ui. To see a list of global server parameters, please go [here](https://github.com/redhat-developer/vscode-rsp-ui#server-parameters). Below are JBoss / WildFly specific parameters.
+   To change Server Parameters, right-click on the server you want to edit and select `Edit Server`.
+
+   This extension supports all global and provisional server parameters documented in [vscode-rsp-ui](https://github.com/redhat-developer/vscode-rsp-ui#server-parameters), including `mapProperty.launch.env` for setting environment variables. The parameters below are specific to JBoss / WildFly.
 
    * `"args.vm.override.string"` - allow to override VM arguments. Once you edit this flag, *make sure "args.override.boolean" is set to true before launching your server. Otherwise, the server will attempt to auto-generate the launch arguments as it normally does.*
    * `"args.program.override.string"` - allow to override program arguments. Once you edit this flag, *make sure "args.override.boolean" is set to true before launching your server. Otherwise, the server will attempt to auto-generate the launch arguments as it normally does.*
