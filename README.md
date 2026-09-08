@@ -29,24 +29,34 @@ This extension depends on VSCode RSP UI Extension which is going to be installed
 
    * `"args.vm.override.string"` - allow to override VM arguments. Once you edit this flag, *make sure "args.override.boolean" is set to true before launching your server. Otherwise, the server will attempt to auto-generate the launch arguments as it normally does.*
    * `"args.program.override.string"` - allow to override program arguments. Once you edit this flag, *make sure "args.override.boolean" is set to true before launching your server. Otherwise, the server will attempt to auto-generate the launch arguments as it normally does.*
+   * `"args.shutdown.override.boolean"` - allow to override shutdown program and VM arguments independently of the startup arguments. Works the same way as `"args.override.boolean"` but only affects the shutdown/stop launch.
+   * `"args.shutdown.vm.override.string"` - allow to override shutdown VM arguments. Set `"args.shutdown.override.boolean"` to `true` and start the server once to generate this property, then edit as needed.
+   * `"args.shutdown.program.override.string"` - allow to override shutdown program arguments. Set `"args.shutdown.override.boolean"` to `true` and start the server once to generate this property, then edit as needed.
 
    * `"jboss.server.host"` - allow to set the host you want the current JBoss/Wildfly instance to bind to (default localhost)
    * `"jboss.server.port"` - allow to set the port you want the current JBoss/Wildfly instance to bind to (default 8080)
-   * `"wildfly.server.config.file"` - the name of the configuration file to be used for the current Jboss/Wildfly instance. The file has to be stored in the same folder as the default standalone.xml file. (e.g "wildfly.server.config.file": "newconfigfile.xml")
+   * `"wildfly.server.config.file"` - the configuration file for the current JBoss/WildFly instance. You may browse to the file using the file picker; absolute paths are automatically resolved relative to the configuration directory. (e.g. `"wildfly.server.config.file": "standalone-ha.xml"`)
 
 ## FAQ
 ---
 
-### 1. How can i override Program and VM arguments?
-Due to some issues and requests we received from users we added an additional flag "args.override.boolean" to allow to override program and vm arguments.
+### 1. How can I override program and VM arguments?
 
-When a user attempts to launch his server, we will first check the override boolean value to see if we are overriding. If the user is overriding (right-click your server -> Edit Server -> set "args.override.boolean": "true" ), we will generate the vm args and program args at that time and set them in the server object.
+To override startup arguments:
 
-At this point the user will be able to see two other properties in the server editor: "args.vm.override.string" and "args.program.override.string".
+1. Right-click your server -> Edit Server -> set `"args.override.boolean"` to `true`.
+2. Start the server once. Two new properties will appear: `"args.vm.override.string"` and `"args.program.override.string"`, pre-populated with the auto-generated defaults.
+3. Edit those properties as needed. The server will use your values on subsequent launches.
+4. To return to auto-generated arguments, set `"args.override.boolean"` back to `false`.
 
-Now, if the user wishes to change these flags, he can simply change the override.boolean value to true, and make whatever changes he requires to the program or vm arguments.
+To override shutdown arguments (independently of startup):
 
-If "args.override.boolean" is set to false, the server will attempt to auto-generate the launch arguments as it normally does when launched.
+1. Right-click your server -> Edit Server -> set `"args.shutdown.override.boolean"` to `true`.
+2. Start (and stop) the server once. Two new properties will appear: `"args.shutdown.vm.override.string"` and `"args.shutdown.program.override.string"`.
+3. Edit those properties as needed.
+4. To return to auto-generated shutdown arguments, set `"args.shutdown.override.boolean"` back to `false`.
+
+Startup and shutdown overrides are independent — you can override one without affecting the other.
 
 ### 2. Can I run my Wildfly Server on a different port than the default one?
 Yes. To run a Wildfly Server on a different port you first have to edit the port in the standalone.xml file.
