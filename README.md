@@ -27,8 +27,8 @@ This extension depends on VSCode RSP UI Extension which is going to be installed
 
    This extension supports all global and provisional server parameters documented in [vscode-rsp-ui](https://github.com/redhat-developer/vscode-rsp-ui#server-parameters), including `mapProperty.launch.env` for setting environment variables. The parameters below are specific to JBoss / WildFly.
 
-   * `"args.vm.override.string"` - allow to override VM arguments. Once you edit this flag, *make sure "args.override.boolean" is set to true before launching your server. Otherwise, the server will attempt to auto-generate the launch arguments as it normally does.*
-   * `"args.program.override.string"` - allow to override program arguments. Once you edit this flag, *make sure "args.override.boolean" is set to true before launching your server. Otherwise, the server will attempt to auto-generate the launch arguments as it normally does.*
+   * `"args.vm.override.string"` - allow to override VM arguments. Once you edit this flag, *make sure "args.override.boolean" is set to true before launching your server. Otherwise, the server will attempt to auto-generate the launch arguments as it normally does.* Supports `${env_var:NAME}` substitution (see FAQ below).
+   * `"args.program.override.string"` - allow to override program arguments. Once you edit this flag, *make sure "args.override.boolean" is set to true before launching your server. Otherwise, the server will attempt to auto-generate the launch arguments as it normally does.* Supports `${env_var:NAME}` substitution (see FAQ below).
    * `"args.shutdown.override.boolean"` - allow to override shutdown program and VM arguments independently of the startup arguments. Works the same way as `"args.override.boolean"` but only affects the shutdown/stop launch.
    * `"args.shutdown.vm.override.string"` - allow to override shutdown VM arguments. Set `"args.shutdown.override.boolean"` to `true` and start the server once to generate this property, then edit as needed.
    * `"args.shutdown.program.override.string"` - allow to override shutdown program arguments. Set `"args.shutdown.override.boolean"` to `true` and start the server once to generate this property, then edit as needed.
@@ -58,7 +58,17 @@ To override shutdown arguments (independently of startup):
 
 Startup and shutdown overrides are independent — you can override one without affecting the other.
 
-### 2. Can I run my Wildfly Server on a different port than the default one?
+### 2. Can I use environment variables in VM or program arguments?
+
+Yes. Argument override strings support Eclipse-style `${env_var:NAME}` references. For example:
+
+```json
+"args.vm.override.string": "-Dapp.name=${env_var:MY_APP} -Ddb.host=${env_var:DB_HOST}"
+```
+
+The RSP server resolves these against its own process environment before launching the server. Environment variables exported in your shell before starting VS Code will be available. If a variable is not set, the `${env_var:NAME}` reference is left unchanged.
+
+### 3. Can I run my WildFly Server on a different port than the default one?
 Yes. To run a Wildfly Server on a different port you first have to edit the port in the standalone.xml file.
 
 The next step is to add the following setting through the Server Editor in VScode.
@@ -67,7 +77,7 @@ Right-click your server -> Edit Server -> add "jboss.server.port": "8888". Chang
 
 Now if you start the server it should run on the specified port.
 
-### 3. Is there a video that explain how the JBoss Toolkit extension and the Runtime Server Protocol work?
+### 4. Is there a video that explain how the JBoss Toolkit extension and the Runtime Server Protocol work?
 Yes. This is the video you can watch to learn more about this extension https://www.youtube.com/watch?v=sP2Hlw-C_7I
 
 -----------------------------------------------------------------------------------------------------------
