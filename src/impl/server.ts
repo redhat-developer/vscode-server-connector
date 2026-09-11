@@ -135,11 +135,33 @@ export class FelixRspLauncher {
 
         const felix = path.join(location, 'bin', 'felix.jar');
         const java = path.join(javaHome, 'bin', 'java');
+        const args = [`-Drsp.server.port=${port}`, `-Dorg.jboss.tools.rsp.id=${this.options.rspId}`, '-Dlogback.configurationFile=./conf/logback.xml'];
+
+        const config = vscode.workspace.getConfiguration();
+        if (config.get<boolean>('rsp-ui.enableCustomServerLocation', false)) {
+            const customPath = config.get<string>('rsp-ui.customServerLocation', '.rsp/servers');
+            if (customPath) {
+                let resolvedPath: string;
+                if (path.isAbsolute(customPath)) {
+                    resolvedPath = customPath;
+                } else {
+                    const folders = vscode.workspace.workspaceFolders;
+                    if (folders && folders.length > 0) {
+                        resolvedPath = path.join(folders[0].uri.fsPath, customPath);
+                    }
+                }
+                if (resolvedPath) {
+                    const serversDir = path.join(resolvedPath, this.options.rspId);
+                    args.push(`-Dorg.jboss.tools.rsp.data.servers=${serversDir}`);
+                }
+            }
+        }
+
+        args.push('-jar', felix);
         // Debuggable version
         // const process = cp.spawn(java, [`-Xdebug`, `-Xrunjdwp:transport=dt_socket,server=y,address=8001,suspend=y`, `-Drsp.server.port=${port}`, '-jar', felix], { cwd: location });
         // Production version
-        this.cpProcess = cp.spawn(java, [`-Drsp.server.port=${port}`, `-Dorg.jboss.tools.rsp.id=${this.options.rspId}`, '-Dlogback.configurationFile=./conf/logback.xml', '-jar', felix], 
-            { cwd: location, env: process.env });
+        this.cpProcess = cp.spawn(java, args, { cwd: location, env: process.env });
         if(this.cpProcess) {
             if (this.cpProcess.stdout)
                 this.cpProcess.stdout.on('data', stdoutCallback);
