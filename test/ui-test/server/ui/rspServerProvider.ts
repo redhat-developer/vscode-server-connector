@@ -121,11 +121,17 @@ export class RSPServerProvider extends AbstractServer {
             if (editor && await editor.isDisplayed()) {
                 await editorView.closeEditor(AdaptersConstants.LICENSE_EDITOR);
                 try {
-                    const dialog = new ModalDialog();
-                    await dialog.pushButton('Don\'t Save');
+                    await VSBrowser.instance.driver.wait(async () => {
+                        try {
+                            const dialog = new ModalDialog();
+                            await dialog.pushButton('Don\'t Save');
+                            return true;
+                        } catch {
+                            return false;
+                        }
+                    }, 5000);
                 } catch (error) {
-                    log.debug(`Error encountered opening modal dialog: ${error}:${error.message}`);
-                    throw error;
+                    log.debug(`No save dialog appeared within timeout: ${error.message}`);
                 }
             }
         }
