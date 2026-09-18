@@ -86,7 +86,7 @@ commitMsgsFinal="$msgLine1\\n$msgLine2\\n$commitMsgsClean"
 echo "Release commit log: $commitMsgsFinal"
 read -p "Press enter to continue"
 
-createReleasePayload="{\"tag_name\":\"$vOldVerUnderscoreFinal\",\"target_commitish\":\"$curBranch\",\"name\":\"$oldVerFinal\",\"body\":\"Release of $oldVerFinal:\\n\\n"$commitMsgsFinal"\",\"draft\":false,\"prerelease\":false,\"generate_release_notes\":false}"
+createReleasePayload="{\"tag_name\":\"$vOldVerUnderscoreFinal\",\"target_commitish\":\"$curBranch\",\"name\":\"$oldVerFinal\",\"body\":\"Release of $oldVerFinal:\\n\\n$commitMsgsFinal\",\"draft\":false,\"prerelease\":false,\"generate_release_notes\":false}"
 
 if [ "$debug" -eq 0 ]; then
 	curl -L \
