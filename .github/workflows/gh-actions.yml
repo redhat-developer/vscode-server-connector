@@ -109,6 +109,9 @@ jobs:
   release-job:
     environment: ${{ (inputs.publishToMarketPlace == 'true' || inputs.publishToOVSX == 'true') && 'release' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     needs: packaging-job
     steps:
       - name: Set Up NodeJS
@@ -126,7 +129,7 @@ jobs:
           ls -la #debug
           for platformVsix in vscode-server-connector/*.vsix; do
             echo "Running command: vsce publish --skip-duplicate -p SOME_SECRET --packagePath ${platformVsix}"
-            vsce publish --skip-duplicate -p ${{ secrets.VSCODE_MARKETPLACE_TOKEN }} --packagePath ${platformVsix}
+            vsce publish --skip-duplicate --oidc --packagePath ${platformVsix}
           done
       - name: Publish to OpenVSX Registry
         if: ${{ inputs.publishToOVSX == 'true' }}
@@ -134,5 +137,5 @@ jobs:
           ls -la #debug
           for platformVsix in vscode-server-connector/*.vsix; do
             echo "Running command: ovsx publish --skip-duplicate -p SOME_SECRET --packagePath ${platformVsix}"
-            ovsx publish --skip-duplicate -p ${{ secrets.OVSX_MARKETPLACE_TOKEN }} --packagePath ${platformVsix}
+            ovsx publish --skip-duplicate --trusted-publishing --packagePath ${platformVsix}
           done
