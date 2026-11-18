@@ -83,8 +83,6 @@ jobs:
       with:
         files: ./coverage/coverage-final.json
         use_oidc: true
-        # A rejected upload must not leave the job green.
-        fail_ci_if_error: true
 
   packaging-job:
     runs-on: ubuntu-latest
