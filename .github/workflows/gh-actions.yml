@@ -42,6 +42,15 @@ jobs:
       with:
         node-version: ${{ matrix.node }}
 
+    # Pin a JDK the UI-tested server adapters (e.g. WildFly 27, which only supports Java 11-21)
+    # are actually compatible with - without this, rsp-server discovers whatever JDK the runner
+    # image happens to default to, which drifts over time independently of this repo.
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '21'
+
     # Install from npm
     - run: npm install
 
