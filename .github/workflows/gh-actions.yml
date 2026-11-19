@@ -27,6 +27,13 @@ jobs:
   test:
     runs-on: ${{ matrix.os }} # runs a test on Ubuntu, Windows and macOS
 
+    # Codecov authenticates uploads with a short-lived OIDC token instead of a
+    # long-lived CODECOV_TOKEN. Fork PRs cannot request an id-token, so they keep
+    # using Codecov's tokenless path (owner:branch) as before.
+    permissions:
+      contents: read
+      id-token: write
+
     strategy:
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
@@ -83,7 +90,8 @@ jobs:
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
       with:
-        file: ./coverage/coverage-final.json
+        files: ./coverage/coverage-final.json
+        use_oidc: true
 
   packaging-job:
     runs-on: ubuntu-latest
